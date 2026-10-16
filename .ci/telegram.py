@@ -2,9 +2,9 @@
 """Announce a release in a Telegram channel, installers attached.
 
 The files are uploaded through the self-hosted Bot API server started by
-`.github/workflows/release.yaml`, so they are not subject to the 50 MB upload
-limit of Telegram's cloud Bot API. The bot must be an administrator of the
-target channel.
+`.github/workflows/publish-release.yaml`, so they are not subject to the 50 MB
+upload limit of Telegram's cloud Bot API. The bot must be an administrator of
+the target channel.
 """
 
 import html

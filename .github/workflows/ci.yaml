@@ -50,10 +50,18 @@ jobs:
       - name: Mirror main and dev
         id: mirror
         env:
-          GH_TOKEN: ${{ github.token }}
+          MIRROR_TOKEN: ${{ secrets.MIRROR_TOKEN }}
+          FALLBACK_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          auth="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+
+          # GITHUB_TOKEN is refused when a push creates or updates a file under
+          # .github/workflows, which mirroring upstream always does, so the
+          # push needs a PAT carrying the `workflow` scope. It also means the
+          # push notifies other workflows -- upstream's own build.yml and
+          # pages.yml are disabled in this repository so they do not run here.
+          token="${MIRROR_TOKEN:-$FALLBACK_TOKEN}"
+          auth="https://x-access-token:${token}@github.com/${GITHUB_REPOSITORY}.git"
 
           git clone --quiet --mirror "https://github.com/${UPSTREAM_REPO}.git" upstream.git
           cd upstream.git
@@ -105,7 +113,7 @@ jobs:
     name: Build stable
     needs: mirror
     if: needs.mirror.outputs.build_stable == 'true'
-    uses: ./.github/workflows/build.yaml
+    uses: ./.github/workflows/build-channel.yaml
     with:
       channel: stable
       branch: main
@@ -116,7 +124,7 @@ jobs:
     name: Build dev
     needs: mirror
     if: needs.mirror.outputs.build_dev == 'true'
-    uses: ./.github/workflows/build.yaml
+    uses: ./.github/workflows/build-channel.yaml
     with:
       channel: dev
       branch: dev
@@ -132,7 +140,7 @@ jobs:
       always() &&
       needs.mirror.outputs.build_stable == 'true' &&
       needs.build-stable.result != 'cancelled'
-    uses: ./.github/workflows/release.yaml
+    uses: ./.github/workflows/publish-release.yaml
     with:
       channel: stable
       branch: main
@@ -146,7 +154,7 @@ jobs:
       always() &&
       needs.mirror.outputs.build_dev == 'true' &&
       needs.build-dev.result != 'cancelled'
-    uses: ./.github/workflows/release.yaml
+    uses: ./.github/workflows/publish-release.yaml
     with:
       channel: dev
       branch: dev
