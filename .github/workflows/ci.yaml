@@ -85,6 +85,19 @@ jobs:
             echo "dev_changed=$([ "$up_dev" != "$our_dev" ] && echo true || echo false)"
           } >> "$GITHUB_OUTPUT"
 
+      - name: Disable upstream's own workflows
+        # The mirrors carry upstream's .github/workflows, so without this every
+        # sync would also run this repository's copy of upstream CI. Neither of
+        # them can publish anything here: they are all gated on
+        # `github.repository == 'chen08209/FlClash'`.
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.MIRROR_TOKEN }}
+        run: |
+          for name in build.yaml pages.yaml; do
+            gh workflow disable "$name" --repo "$GITHUB_REPOSITORY" && echo "disabled $name"
+          done
+
       - name: Plan
         id: plan
         env:

@@ -199,6 +199,28 @@ jobs:
           ANDROID_NDK_HOME: ${{ steps.ndk.outputs.ndk-path }}
         run: dart setup.dart ${{ matrix.platform }} --env ${{ inputs.env }} -v
 
+      # Guards the whole point of this repository: a build that silently fell
+      # back to the debug key would still succeed and still upload, so fail here
+      # instead of publishing an APK that is not signed with our certificate.
+      - name: Verify the APK is signed with our key
+        if: matrix.platform == 'android'
+        run: |
+          set -euo pipefail
+          build_tools="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)"
+          for apk in dist/*.apk; do
+            echo "== $(basename "$apk")"
+            "$build_tools/aapt2" dump badging "$apk" | sed -n '1p'
+            "$build_tools/apksigner" verify --print-certs "$apk" | sed -n '1,4p'
+            if "$build_tools/aapt2" dump badging "$apk" | grep -q "com\.follow\.clash\.dev"; then
+              echo "::error::$(basename "$apk") still carries the debug applicationId suffix"
+              exit 1
+            fi
+            if "$build_tools/apksigner" verify --print-certs "$apk" | grep -q "CN=Android Debug"; then
+              echo "::error::$(basename "$apk") is signed with the Android debug key"
+              exit 1
+            fi
+          done
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
