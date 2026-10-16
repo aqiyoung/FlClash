@@ -12,7 +12,7 @@
 
 | 分支 | 内容 |
 | --- | --- |
-| `ci`（默认） | 只有这份自动化：`.github/workflows/`、`.ci/telegram.py` |
+| `ci`（默认） | 只有这份自动化：`.github/workflows/` + 本文件 |
 | `main` | 【只读镜像】`chen08209/FlClash:main`，稳定通道 |
 | `dev` | 【只读镜像】`chen08209/FlClash:dev`，开发通道 |
 
@@ -63,16 +63,18 @@ gh workflow run ci.yaml -R aqiyoung/FlClash --ref ci -f force_build=true
 | `KEY_ALIAS` | key alias | 已配置 |
 | `KEY_PASSWORD` | key 密码 | 已配置 |
 | `MIRROR_TOKEN` | 推送镜像用的 PAT，需要 **`workflow`** scope | 已配置 |
-| `TELEGRAM_BOT_TOKEN` | 推送频道用的 bot | 未配置 |
-| `TELEGRAM_CHAT_ID` | 目标频道，如 `@yourchannel` 或 `-100xxxxxxxxxx` | 未配置 |
-| `TELEGRAM_API_ID` | <https://my.telegram.org> 申请的 API ID | 未配置 |
-| `TELEGRAM_API_HASH` | 同上，API hash | 未配置 |
+| `TELEGRAM_BOT_TOKEN` | 推送用的 bot token | 未配置 |
+| `TELEGRAM_CHAT_ID` | 目标会话 / 群，如 `-100xxxxxxxxxx` | 未配置 |
 
-四个 `TELEGRAM_*` 只要有一个没配，**推送步骤会自动跳过**，其余照常发布。配置要求：
+两个 `TELEGRAM_*` 只要有一个没配，**推送步骤会自动跳过**，其余照常发布。
 
-1. bot 需要是目标频道的**管理员**；
-2. `TELEGRAM_API_ID` / `TELEGRAM_API_HASH` 必填，因为安装包超过 Telegram 云端 Bot API 的 50 MB 上传上限，构建里会起一个自建的 `aiogram/telegram-bot-api` 容器把文件发出去；
-3. 想发哪些平台的安装包，改 `.ci/telegram.py` 里的 `KEYWORDS`。
+### 推送长什么样
+
+跟 `aqiyoung/datbox-android`、`aqiyoung/iptv-app-check` 里那套一样：`curl` 调 `sendMessage`，正文是几个平台的**下载直链**，直链前面挂 `https://gh-proxy.com/` 前缀（release 资产在 GitHub 上，很多人打不开）。因此：
+
+1. **不发文件本身**。安装包动辄 60 MB+，超过云端 Bot API 的 50 MB 上传上限；发链接就没有这个问题，也不用起自建的 Bot API 服务。
+2. **bot 得能往目标会话发消息**：发群要先把这个 bot 拉进群，`TELEGRAM_CHAT_ID` 用 `-100…` 那种群 id；发私聊就是你的 user id。
+3. 想增减推送哪些安装包，改 `publish-release.yaml` 里那个 `for name in …` 列表。
 
 ## 关于 MIRROR_TOKEN
 

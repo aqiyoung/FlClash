@@ -29,19 +29,11 @@ jobs:
     env:
       TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
       TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-      TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
-      TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
     steps:
       - name: Checkout mirrored source
         uses: actions/checkout@v4
         with:
           ref: ${{ inputs.branch }}
-
-      - name: Checkout ci files
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.ref }}
-          path: ci-files
 
       - name: Download artifacts
         uses: actions/download-artifact@v4
@@ -109,10 +101,13 @@ jobs:
             --notes-file release-notes.md \
             ${{ inputs.latest && '--latest' || '--latest=false' }}
 
+      # Same shape as the other release bots in this account
+      # (aqiyoung/datbox-android, aqiyoung/iptv-app-check): a plain sendMessage
+      # carrying download links. The installers are far over the 50 MB cap the
+      # cloud Bot API puts on uploads, and a link uploads nothing at all, so no
+      # self-hosted Bot API server is needed.
       - name: Announce on Telegram
-        if: >-
-          env.TELEGRAM_BOT_TOKEN != '' && env.TELEGRAM_CHAT_ID != '' &&
-          env.TELEGRAM_API_ID != '' && env.TELEGRAM_API_HASH != ''
+        if: env.TELEGRAM_BOT_TOKEN != '' && env.TELEGRAM_CHAT_ID != ''
         env:
           TAG: ${{ steps.meta.outputs.tag }}
           VERSION: ${{ steps.meta.outputs.version }}
@@ -120,22 +115,34 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Telegram's cloud Bot API caps bot uploads at 50 MB; the installers
-          # are bigger, so the files go through a self-hosted Bot API server.
-          docker run -d --name tgbotapi -p 8081:8081 \
-            -e TELEGRAM_API_ID="$TELEGRAM_API_ID" \
-            -e TELEGRAM_API_HASH="$TELEGRAM_API_HASH" \
-            aiogram/telegram-bot-api:latest
+          # gh-proxy.com in front of github.com: the assets live on GitHub,
+          # which is unreachable for a large part of the audience.
+          prefix="https://gh-proxy.com/https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/"
 
-          for _ in $(seq 1 30); do
-            if curl -sf "http://localhost:8081/bot${TELEGRAM_BOT_TOKEN}/getMe" > /dev/null; then
-              break
-            fi
-            sleep 2
-          done
-          curl -sf "http://localhost:8081/bot${TELEGRAM_BOT_TOKEN}/getMe" > /dev/null \
-            || { echo "::error::the local Telegram Bot API server did not come up"; docker logs tgbotapi; exit 1; }
+          {
+            echo "📦 FlClash ${VERSION}（${CHANNEL}）构建成功"
+            echo
+            for name in \
+              "FlClash-${VERSION}-android-arm64-v8a.apk" \
+              "FlClash-${VERSION}-android-armeabi-v7a.apk" \
+              "FlClash-${VERSION}-windows-amd64-setup.exe" \
+              "FlClash-${VERSION}-macos-arm64.dmg" \
+              "FlClash-${VERSION}-macos-amd64.dmg" \
+              "FlClash-${VERSION}-linux-amd64.AppImage"; do
+              [ -f "dist/$name" ] || continue
+              echo "• ${name}"
+              echo "  ${prefix}${name}"
+            done
+            echo
+            echo "全部文件：https://github.com/${GITHUB_REPOSITORY}/releases/tag/${TAG}"
+            echo "构建日志：${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          } > /tmp/msg.txt
 
-          python3 -m pip install --quiet requests
-          RELEASE_URL="https://github.com/${GITHUB_REPOSITORY}/releases/tag/${TAG}" \
-            python3 ci-files/.ci/telegram.py
+          cat /tmp/msg.txt
+
+          # -f: a rejected post (bad token, chat the bot cannot write to) fails
+          # visibly instead of reporting success.
+          curl -fsS -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+            --data-urlencode "text@/tmp/msg.txt" \
+            || echo "::error::Telegram 推送失败 — 检查 TELEGRAM_BOT_TOKEN 是否有效、TELEGRAM_CHAT_ID 是否是 bot 能发消息的会话或群"
