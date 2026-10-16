@@ -1,0 +1,141 @@
+name: release
+
+# Called by ci.yaml once per channel. Publishes whatever the build matrix
+# produced, so one failing platform does not block the release.
+
+on:
+  workflow_call:
+    inputs:
+      channel:
+        description: Release channel
+        required: true
+        type: string
+      branch:
+        description: Mirrored upstream branch the build came from
+        required: true
+        type: string
+      latest:
+        description: Mark this release as the repository's latest
+        required: true
+        type: boolean
+
+env:
+  UPSTREAM_REPO: chen08209/FlClash
+
+jobs:
+  release:
+    name: ${{ inputs.channel }}
+    runs-on: ubuntu-latest
+    env:
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+      TELEGRAM_API_ID: ${{ secrets.TELEGRAM_API_ID }}
+      TELEGRAM_API_HASH: ${{ secrets.TELEGRAM_API_HASH }}
+    steps:
+      - name: Checkout mirrored source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+
+      - name: Checkout ci files
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+          path: ci-files
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: artifact-${{ inputs.channel }}-*
+          merge-multiple: true
+          path: dist
+
+      - name: Prepare metadata
+        id: meta
+        env:
+          CHANNEL: ${{ inputs.channel }}
+          BRANCH: ${{ inputs.branch }}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          files=(dist/*)
+          if [ ${#files[@]} -eq 0 ]; then
+            echo "::error::no artifacts were produced for $CHANNEL; nothing to release"
+            exit 1
+          fi
+
+          version="$(sed -n 's/^version: *//p' pubspec.yaml | tr -d '\r' | cut -d+ -f1)"
+          commit="$(git rev-parse --short HEAD)"
+          stamp="$(date -u +%y%m%d%H)"
+          tag="${CHANNEL}-${version}-${stamp}.${{ github.run_number }}"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+          (cd dist && sha256sum ./* > SHA256SUMS)
+
+          {
+            echo "Self-signed build of \`${BRANCH}\` from [${UPSTREAM_REPO}](https://github.com/${UPSTREAM_REPO}/commit/${commit})."
+            echo
+            echo "- channel: \`${CHANNEL}\`"
+            echo "- version: \`${version}\`"
+            echo "- upstream commit: \`${commit}\`"
+            echo "- built: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo
+            echo "Signed with this repository's own keystore. Because the certificate differs from the official build, uninstall the previously installed FlClash once before installing this APK."
+            echo
+            echo "| file | download |"
+            echo "| --- | --- |"
+            for f in dist/*; do
+              name="$(basename "$f")"
+              [ "$name" = SHA256SUMS ] && continue
+              echo "| \`${name}\` | [download](https://github.com/${GITHUB_REPOSITORY}/releases/download/${tag}/${name}) |"
+            done
+          } > release-notes.md
+
+          echo "tag=$tag version=$version commit=$commit"
+          ls -la dist
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.meta.outputs.tag }}
+          BRANCH: ${{ inputs.branch }}
+        run: |
+          set -euo pipefail
+          gh release create "$TAG" dist/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$BRANCH" \
+            --title "FlClash ${{ steps.meta.outputs.version }} (${{ inputs.channel }}) ${{ steps.meta.outputs.tag }}" \
+            --notes-file release-notes.md \
+            ${{ inputs.latest && '--latest' || '--latest=false' }}
+
+      - name: Announce on Telegram
+        if: >-
+          env.TELEGRAM_BOT_TOKEN != '' && env.TELEGRAM_CHAT_ID != '' &&
+          env.TELEGRAM_API_ID != '' && env.TELEGRAM_API_HASH != ''
+        env:
+          TAG: ${{ steps.meta.outputs.tag }}
+          VERSION: ${{ steps.meta.outputs.version }}
+          CHANNEL: ${{ inputs.channel }}
+        run: |
+          set -euo pipefail
+
+          # Telegram's cloud Bot API caps bot uploads at 50 MB; the installers
+          # are bigger, so the files go through a self-hosted Bot API server.
+          docker run -d --name tgbotapi -p 8081:8081 \
+            -e TELEGRAM_API_ID="$TELEGRAM_API_ID" \
+            -e TELEGRAM_API_HASH="$TELEGRAM_API_HASH" \
+            aiogram/telegram-bot-api:latest
+
+          for _ in $(seq 1 30); do
+            if curl -sf "http://localhost:8081/bot${TELEGRAM_BOT_TOKEN}/getMe" > /dev/null; then
+              break
+            fi
+            sleep 2
+          done
+          curl -sf "http://localhost:8081/bot${TELEGRAM_BOT_TOKEN}/getMe" > /dev/null \
+            || { echo "::error::the local Telegram Bot API server did not come up"; docker logs tgbotapi; exit 1; }
+
+          python3 -m pip install --quiet requests
+          RELEASE_URL="https://github.com/${GITHUB_REPOSITORY}/releases/tag/${TAG}" \
+            python3 ci-files/.ci/telegram.py

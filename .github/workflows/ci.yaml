@@ -1,0 +1,154 @@
+name: mirror upstream and release
+
+# This branch (`ci`) is the repository's default branch and holds *only* the
+# automation. `main` and `dev` are read-only mirrors of chen08209/FlClash, so
+# every build always runs against untouched upstream source and the fork can
+# never conflict with an upstream rebase.
+#
+# Flow: mirror main+dev -> build the channels that changed -> sign with our own
+# keystore -> tag + GitHub Release -> announce on Telegram.
+
+on:
+  schedule:
+    # Every 2 hours.
+    - cron: '0 */2 * * *'
+  workflow_dispatch:
+    inputs:
+      channel:
+        description: Which channel to mirror and build
+        type: choice
+        options:
+          - all
+          - stable
+          - dev
+        default: all
+      force_build:
+        description: Build even when upstream has not moved
+        type: boolean
+        default: false
+
+concurrency:
+  group: mirror-and-release
+  cancel-in-progress: false
+
+# The mirror job force-pushes main/dev and the release job creates tags and
+# releases, so the token needs write access to contents.
+permissions:
+  contents: write
+
+env:
+  UPSTREAM_REPO: chen08209/FlClash
+
+jobs:
+  mirror:
+    name: Mirror upstream
+    runs-on: ubuntu-latest
+    outputs:
+      build_stable: ${{ steps.plan.outputs.build_stable }}
+      build_dev: ${{ steps.plan.outputs.build_dev }}
+    steps:
+      - name: Mirror main and dev
+        id: mirror
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          auth="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+
+          git clone --quiet --mirror "https://github.com/${UPSTREAM_REPO}.git" upstream.git
+          cd upstream.git
+
+          up_main=$(git rev-parse refs/heads/main)
+          up_dev=$(git rev-parse refs/heads/dev)
+          our_main=$(git ls-remote "$auth" refs/heads/main | cut -f1)
+          our_dev=$(git ls-remote "$auth" refs/heads/dev | cut -f1)
+          echo "main  upstream=${up_main} ours=${our_main:-none}"
+          echo "dev   upstream=${up_dev} ours=${our_dev:-none}"
+
+          # main/dev carry no commits of our own, so overwriting them is always
+          # safe. Upstream rebases `dev` regularly, which is why this cannot be
+          # a fast-forward.
+          git push --quiet --force "$auth" \
+            refs/heads/main:refs/heads/main \
+            refs/heads/dev:refs/heads/dev
+
+          {
+            echo "main_changed=$([ "$up_main" != "$our_main" ] && echo true || echo false)"
+            echo "dev_changed=$([ "$up_dev" != "$our_dev" ] && echo true || echo false)"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Plan
+        id: plan
+        env:
+          CHANNEL: ${{ inputs.channel || 'all' }}
+          FORCE: ${{ inputs.force_build || 'false' }}
+          MAIN_CHANGED: ${{ steps.mirror.outputs.main_changed }}
+          DEV_CHANGED: ${{ steps.mirror.outputs.dev_changed }}
+        run: |
+          set -euo pipefail
+          case "$CHANNEL" in
+            all) want_stable=true; want_dev=true ;;
+            stable) want_stable=true; want_dev=false ;;
+            dev) want_stable=false; want_dev=true ;;
+            *) echo "::error::unknown channel '$CHANNEL'"; exit 1 ;;
+          esac
+
+          decided() { # $1 = wanted, $2 = changed
+            [ "$1" = true ] && { [ "$2" = true ] || [ "$FORCE" = true ]; } && echo true || echo false
+          }
+
+          echo "build_stable=$(decided "$want_stable" "$MAIN_CHANGED")" >> "$GITHUB_OUTPUT"
+          echo "build_dev=$(decided "$want_dev" "$DEV_CHANGED")" >> "$GITHUB_OUTPUT"
+          echo "plan: stable=$want_stable changed=$MAIN_CHANGED / dev=$want_dev changed=$DEV_CHANGED / force=$FORCE"
+
+  build-stable:
+    name: Build stable
+    needs: mirror
+    if: needs.mirror.outputs.build_stable == 'true'
+    uses: ./.github/workflows/build.yaml
+    with:
+      channel: stable
+      branch: main
+      env: stable
+    secrets: inherit
+
+  build-dev:
+    name: Build dev
+    needs: mirror
+    if: needs.mirror.outputs.build_dev == 'true'
+    uses: ./.github/workflows/build.yaml
+    with:
+      channel: dev
+      branch: dev
+      env: dev
+    secrets: inherit
+
+  # `always()` so a single failed platform still publishes the rest; the job
+  # fails loudly when nothing was produced at all.
+  release-stable:
+    name: Release stable
+    needs: [mirror, build-stable]
+    if: >-
+      always() &&
+      needs.mirror.outputs.build_stable == 'true' &&
+      needs.build-stable.result != 'cancelled'
+    uses: ./.github/workflows/release.yaml
+    with:
+      channel: stable
+      branch: main
+      latest: true
+    secrets: inherit
+
+  release-dev:
+    name: Release dev
+    needs: [mirror, build-dev]
+    if: >-
+      always() &&
+      needs.mirror.outputs.build_dev == 'true' &&
+      needs.build-dev.result != 'cancelled'
+    uses: ./.github/workflows/release.yaml
+    with:
+      channel: dev
+      branch: dev
+      latest: false
+    secrets: inherit
