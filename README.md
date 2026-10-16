@@ -32,6 +32,8 @@
 ```
 
 - **只在有更新时才构建**，避免每 2 小时发一个内容相同的 release 刷屏。
+- android 构建后会**强制校验**包名和签名证书：一旦发现退回 debug 签名（包名带 `.dev` 后缀或证书是 `CN=Android Debug`），直接让构建失败，不发布。
+- 同步时会**禁用上游自带的** `build.yaml` / `pages.yaml`。原因是推镜像用的是 PAT，会触发这两个工作流，而它们在本仓库里什么也做不了（都被 `github.repository == 'chen08209/FlClash'` 挡掉），只会刷满 Actions。
 - `macos` 没有 Apple 开发者证书，产物是**未签名**的（使用前需要在「系统设置 → 隐私与安全性」里放行）。
 - 单个平台构建失败**不会**阻塞其它平台的发布；全部都失败则不发布。
 
@@ -60,6 +62,7 @@ gh workflow run ci.yaml -R aqiyoung/FlClash --ref ci -f force_build=true
 | `STORE_PASSWORD` | keystore 密码 | 已配置 |
 | `KEY_ALIAS` | key alias | 已配置 |
 | `KEY_PASSWORD` | key 密码 | 已配置 |
+| `MIRROR_TOKEN` | 推送镜像用的 PAT，需要 **`workflow`** scope | 已配置 |
 | `TELEGRAM_BOT_TOKEN` | 推送频道用的 bot | 未配置 |
 | `TELEGRAM_CHAT_ID` | 目标频道，如 `@yourchannel` 或 `-100xxxxxxxxxx` | 未配置 |
 | `TELEGRAM_API_ID` | <https://my.telegram.org> 申请的 API ID | 未配置 |
@@ -70,6 +73,16 @@ gh workflow run ci.yaml -R aqiyoung/FlClash --ref ci -f force_build=true
 1. bot 需要是目标频道的**管理员**；
 2. `TELEGRAM_API_ID` / `TELEGRAM_API_HASH` 必填，因为安装包超过 Telegram 云端 Bot API 的 50 MB 上传上限，构建里会起一个自建的 `aiogram/telegram-bot-api` 容器把文件发出去；
 3. 想发哪些平台的安装包，改 `.ci/telegram.py` 里的 `KEYWORDS`。
+
+## 关于 MIRROR_TOKEN
+
+推镜像时如果提交里包含 `.github/workflows/` 下的文件，GitHub 会拒绝 `GITHUB_TOKEN`（它拿不到 `workflows` 权限）。上游仓库里就有这些文件，所以镜像推送必须用一个带 `workflow` scope 的 PAT。
+
+> ⚠️ 目前填的是账号的 **classic PAT**，权限很宽（含 `delete_repo`、`admin:org` 等）。建议换成**只对这个仓库生效的 fine-grained PAT**：
+> - Repository access：仅 `aqiyoung/FlClash`
+> - Permissions：`Contents: Read and write`、`Workflows: Read and write`
+>
+> 换掉之后不需要改工作流，只要更新 `MIRROR_TOKEN` 这个 secret。
 
 ## 换签名 / 换包名
 
