@@ -69,7 +69,9 @@ jobs:
           git clone --quiet --filter=blob:none "$auth" work
           cd work
           git remote add upstream "https://github.com/${UPSTREAM_REPO}.git"
-          git fetch --quiet --filter=blob:none upstream
+          # Only the two branches we track: a bare fetch pulls every feature
+          # branch upstream happens to have open.
+          git fetch --quiet --filter=blob:none upstream main dev
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
