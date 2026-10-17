@@ -10,8 +10,12 @@ name: mirror upstream and release
 
 on:
   schedule:
-    # Every 2 hours.
-    - cron: '0 */2 * * *'
+    # Hourly. GitHub's `schedule` is best effort and routinely lands late, so the
+    # two hour cron drifted to 2.5-3.5 hours apart in practice; checking hourly
+    # keeps the worst case near two hours. A check that finds nothing new costs
+    # one ~1 minute mirror job, because every build is gated on an upstream
+    # commit actually having changed.
+    - cron: '0 * * * *'
   workflow_dispatch:
     inputs:
       channel:

@@ -21,7 +21,7 @@
 ## 流程
 
 ```
-每 2 小时（cron '0 */2 * * *'）
+每小时检查一次（cron '0 * * * *'）
   └─ mirror   同步 main / dev，比对上游 commit，判断哪个通道有更新
       └─ build      有更新的通道才构建，矩阵 7 个平台
           android            ubuntu-latest
@@ -31,7 +31,8 @@
           └─ release   自签名产物 + SHA256SUMS → 打 tag → GitHub Release → 推送 TG
 ```
 
-- **只在有更新时才构建**，避免每 2 小时发一个内容相同的 release 刷屏。
+- **只在有更新时才构建**，避免定时任务发一堆内容相同的 release 刷屏。
+- cron 是每小时，但 **GitHub 的 `schedule` 是 best-effort、不保证准点**：实测设成 2 小时时，实际是 2h50m、3h30m 才跑一次，高负载时甚至会漏掉一班。改成每小时只是把最坏情况压到 2 小时左右 —— 这是 GitHub 侧的行为，改不掉。要准点只能走外部定时（见下）。
 - android 构建后会**强制校验**包名和签名证书：一旦发现退回 debug 签名（包名带 `.dev` 后缀或证书是 `CN=Android Debug`），直接让构建失败，不发布。
 - 同步时会**禁用上游自带的** `build.yaml` / `pages.yaml`。原因是推镜像用的是 PAT，会触发这两个工作流，而它们在本仓库里什么也做不了（都被 `github.repository == 'chen08209/FlClash'` 挡掉），只会刷满 Actions。
 - `macos` 没有 Apple 开发者证书，产物是**未签名**的（使用前需要在「系统设置 → 隐私与安全性」里放行）。
