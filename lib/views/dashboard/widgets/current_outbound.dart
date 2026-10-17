@@ -560,12 +560,19 @@ class _CountryBadgeState extends State<_CountryBadge>
                   : Text(
                       code.countryFlagEmoji,
                       maxLines: 1,
-                      style: AppTextStyle.footnote
-                          .of(context, emphasized: true)
-                          .copyWith(
-                            color: foreground,
-                            fontFamily: FontFamily.twEmoji.value,
-                          ),
+                      // Sized against the badge it marks, not against the type
+                      // scale: at footnote size a 48 point clover swallows it.
+                      // A flag's ink fills its box where a glyph's is inset, so
+                      // it stays close to the placeholder's fraction.
+                      style: AppTextStyle.custom(
+                        context,
+                        size: size * 0.45,
+                        leading: size * 0.45,
+                        weight: FontWeight.w600,
+                      ).copyWith(
+                        color: foreground,
+                        fontFamily: FontFamily.twEmoji.value,
+                      ),
                     ),
             ),
           ),
