@@ -1,7 +1,6 @@
-# TEMPORARY verification workflow, dispatch only. It unpacks our re-signed APK
-# and upstream's official APK built from the very same commit (03f95538) and
-# compares them entry by entry, then prints both signing certificates. Delete it
-# once the comparison has been read.
+# TEMPORARY verification workflow, dispatch only. Job 1 compares our re-signed
+# APK against upstream's official APK built from the same commit (03f95538) entry
+# by entry. Job 2 digs into the four entries that differ. Delete after reading.
 name: verify apk
 
 on:
@@ -71,3 +70,106 @@ jobs:
             "$BT/apksigner" verify --print-certs "$apk" 2>&1 \
               | grep -iE "verified using|signer #1 certificate (dn|sha-256)|number of signers" || true
           done
+
+  deep:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download both arm64 APKs
+        run: |
+          set -euo pipefail
+          curl -fsSL -o ours.apk   "https://github.com/aqiyoung/FlClash/releases/download/stable-0.9.0-26101615.4/FlClash-0.9.0-android-arm64-v8a.apk"
+          curl -fsSL -o theirs.apk "https://github.com/chen08209/FlClash/releases/download/v0.9.0/FlClash-0.9.0-android-arm64-v8a.apk"
+          for apk in ours theirs; do
+            mkdir -p "$apk"
+            unzip -q -o "$apk.apk" -d "$apk" \
+              classes.dex resources.arsc lib/arm64-v8a/libclash.so assets/dexopt/baseline.prof
+          done
+
+      - name: classes.dex - header counts and string table
+        run: |
+          python3 - <<'PY'
+          import struct
+
+
+          def load(path):
+              blob = open(path, "rb").read()
+
+              def u32(off):
+                  return struct.unpack_from("<I", blob, off)[0]
+
+              counts = {
+                  "file_size": u32(32),
+                  "data_size": u32(104),
+                  "string_ids": u32(56),
+                  "type_ids": u32(64),
+                  "proto_ids": u32(72),
+                  "field_ids": u32(80),
+                  "method_ids": u32(88),
+                  "class_defs": u32(96),
+              }
+              count, off = u32(56), u32(60)
+              strings = []
+              for i in range(count):
+                  ptr = u32(off + 4 * i)
+                  while blob[ptr] & 0x80:
+                      ptr += 1
+                  ptr += 1
+                  end = blob.index(b"\x00", ptr)
+                  strings.append(blob[ptr:end].decode("utf-8", "replace"))
+              return counts, strings
+
+
+          ca, sa = load("ours/classes.dex")
+          cb, sb = load("theirs/classes.dex")
+          print("counts ours  :", ca)
+          print("counts theirs:", cb)
+          print(f"string table: ours={len(sa)} upstream={len(sb)}")
+
+          positional = [(i, a, b) for i, (a, b) in enumerate(zip(sa, sb)) if a != b]
+          print(f"positional string differences: {len(positional)}")
+          for i, a, b in positional[:30]:
+              print(f"    [{i}] ours={a!r}")
+              print(f"         up  ={b!r}")
+
+          only_ours, only_theirs = set(sa) - set(sb), set(sb) - set(sa)
+          print(f"strings only in ours ({len(only_ours)}):")
+          for s in sorted(only_ours)[:40]:
+              print("    +", s)
+          print(f"strings only in upstream ({len(only_theirs)}):")
+          for s in sorted(only_theirs)[:40]:
+              print("    -", s)
+          PY
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.27.1'
+          cache: false
+
+      - name: libclash.so - Go build metadata
+        run: |
+          for side in ours theirs; do
+            go version -m "$side/lib/arm64-v8a/libclash.so" > "$side.gomd" 2>&1 || true
+          done
+          echo "=== ours ==="; head -40 ours.gomd
+          echo "=== theirs ==="; head -40 theirs.gomd
+          echo "=== diff (ours vs upstream) ==="
+          diff ours.gomd theirs.gomd || true
+
+      - name: resources.arsc and baseline.prof
+        run: |
+          SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
+          BT="$(ls -d "$SDK"/build-tools/* 2>/dev/null | sort -V | tail -1)"
+          for apk in ours theirs; do
+            "$BT/aapt2" dump resources "$apk.apk" 2>/dev/null | sort > "$apk.res.txt"
+          done
+          echo "resource dump lines: ours=$(wc -l < ours.res.txt) upstream=$(wc -l < theirs.res.txt)"
+          echo "--- first differences ---"
+          diff ours.res.txt theirs.res.txt | head -60 || true
+          echo
+          echo "--- baseline.prof: raw byte difference ---"
+          cmp ours/assets/dexopt/baseline.prof theirs/assets/dexopt/baseline.prof || true
+          echo "--- baseline.prof strings diff ---"
+          strings -n 6 ours/assets/dexopt/baseline.prof | sort > a.txt
+          strings -n 6 theirs/assets/dexopt/baseline.prof | sort > b.txt
+          diff a.txt b.txt | head -30 || true
