@@ -1,0 +1,169 @@
+# TEMPORARY diagnostic workflow #3. Two controlled experiments:
+#   E1  same upstream payload, brand-new certificate with a non-impersonating DN
+#       and a backdated validity -> is the old cert's identity the trigger?
+#   E2  same source and same cert, only the applicationId changed
+#       -> is the "known package name + foreign cert" mismatch the trigger?
+name: diag3
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  # ---------------------------------------------------------------- experiment 1
+  resign-newcert:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Download upstream official v0.9.0 arm64 APK
+        run: |
+          set -euo pipefail
+          curl -fsSL -o upstream.apk "https://github.com/chen08209/FlClash/releases/download/v0.9.0/FlClash-0.9.0-android-arm64-v8a.apk"
+          sha256sum upstream.apk
+
+      - name: Create a fresh, neutrally named certificate and re-sign
+        run: |
+          set -euo pipefail
+          SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
+          BT="$(ls -d "$SDK"/build-tools/* | sort -V | tail -1)"
+          keytool -genkeypair -keystore /tmp/newkey.jks -storetype PKCS12 -alias flclash \
+            -keyalg RSA -keysize 2048 -sigalg SHA256withRSA -validity 7300 \
+            -startdate "2018/01/01 00:00:00" \
+            -dname "CN=FlClash Rebuild by aqiyoung, OU=personal fork, O=aqiyoung, L=Beijing, ST=Beijing, C=CN" \
+            -storepass rebuildexp -keypass rebuildexp
+          echo "===== the fresh certificate ====="
+          keytool -list -v -keystore /tmp/newkey.jks -storepass rebuildexp -alias flclash \
+            | grep -iE "Owner:|Issuer:|Valid from|Signature algorithm|Public Key" || true
+          V1=false
+          if unzip -l upstream.apk | grep -qE "META-INF/.*\.(RSA|SF|MF)"; then V1=true; fi
+          "$BT/zipalign" -p 4 -f upstream.apk aligned.apk
+          "$BT/apksigner" sign --ks /tmp/newkey.jks --ks-key-alias flclash \
+            --ks-pass pass:rebuildexp --key-pass pass:rebuildexp \
+            --v1-signing-enabled "$V1" --v2-signing-enabled true --v3-signing-enabled true \
+            --out resign-newcert.apk aligned.apk
+          "$BT/apksigner" verify --print-certs resign-newcert.apk | head -8
+          python3 - <<'PY'
+          import zipfile
+          a = set(zipfile.ZipFile('upstream.apk').namelist())
+          b = set(zipfile.ZipFile('resign-newcert.apk').namelist())
+          print('payload entries identical to upstream:', a == b)
+          PY
+          sha256sum resign-newcert.apk
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release delete diag-resign-newcert --repo aqiyoung/FlClash --yes --cleanup-tag || true
+          gh release create diag-resign-newcert resign-newcert.apk --repo aqiyoung/FlClash --prerelease \
+            --title "诊断 E1：上游官方载荷 + 全新中性证书签名" \
+            --notes "Same upstream v0.9.0 payload, re-signed with a freshly generated certificate whose subject does not impersonate FlClash and whose validity starts in 2018."
+
+  # ---------------------------------------------------------------- experiment 2
+  renamed-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      FLUTTER_VERSION: '3.47.6'
+      GO_VERSION: '1.27.1'
+      NDK_VERSION: r28c
+    steps:
+      - name: Checkout dev branch
+        uses: actions/checkout@v4
+        with:
+          ref: dev
+          submodules: recursive
+
+      - name: Set up Android release signing and rename the applicationId
+        env:
+          KEYSTORE_B64: ${{ secrets.KEYSTORE }}
+          STORE_PW: ${{ secrets.STORE_PASSWORD }}
+          KEY_PW: ${{ secrets.KEY_PASSWORD }}
+          ALIAS: ${{ secrets.KEY_ALIAS }}
+        run: |
+          set -euo pipefail
+          pw="${STORE_PW:-${KEY_PW:-}}"
+          alias="${ALIAS:-flclash}"
+          echo "$KEYSTORE_B64" | base64 -d > /tmp/keystore.p12
+          keytool -importkeystore -srckeystore /tmp/keystore.p12 -srcstoretype PKCS12 \
+            -srcstorepass "$pw" -destkeystore android/app/keystore.jks -deststoretype JKS \
+            -deststorepass "$pw" -destkeypass "$pw" -noprompt
+          {
+            echo "storePassword=$pw"
+            echo "keyAlias=$alias"
+            echo "keyPassword=$pw"
+          } >> android/local.properties
+          python3 - <<'PY'
+          p = "android/app/build.gradle.kts"
+          s = open(p, encoding="utf-8").read()
+          before = s.count('applicationId = "com.follow.clash"')
+          s = s.replace('applicationId = "com.follow.clash"', 'applicationId = "com.follow.clash.re"')
+          open(p, "w", encoding="utf-8").write(s)
+          print("applicationId occurrences replaced:", before)
+          PY
+          grep -n "applicationId" android/app/build.gradle.kts
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: core/go.sum
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: master
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Set up NDK
+        uses: nttld/setup-ndk@v1
+        id: ndk
+        with:
+          ndk-version: ${{ env.NDK_VERSION }}
+          add-to-path: true
+          link-to-sdk: true
+
+      - name: Get Flutter dependencies
+        run: |
+          flutter --version
+          flutter pub get
+
+      - name: Build
+        env:
+          ANDROID_NDK_HOME: ${{ steps.ndk.outputs.ndk-path }}
+        run: dart setup.dart android --env dev -v
+
+      - name: Show what was built
+        run: |
+          set -euo pipefail
+          SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
+          BT="$(ls -d "$SDK"/build-tools/* | sort -V | tail -1)"
+          ls -l dist/
+          for apk in dist/*.apk; do
+            echo "== $apk"
+            "$BT/aapt2" dump badging "$apk" | head -1
+            "$BT/apksigner" verify --print-certs "$apk" | sed -n '1,6p'
+          done
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release delete diag-renamed --repo aqiyoung/FlClash --yes --cleanup-tag || true
+          gh release create diag-renamed dist/*.apk --repo aqiyoung/FlClash --prerelease \
+            --title "诊断 E2：同源码 + 同一签名，仅包名改为 com.follow.clash.re" \
+            --notes "Identical source and identical signing key as the dev channel; the only change is the applicationId. Installing it does not replace the existing com.follow.clash app."
