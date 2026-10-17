@@ -11,7 +11,11 @@ name: sync upstream and release
 # sign with our own keystore -> tag + GitHub Release -> announce on Telegram.
 
 on:
-  # The hourly schedule is switched on together with this pipeline's go-live.
+  # Hourly. The sync job compares branch tips first, so a run with nothing new
+  # to bring in stops there and publishes nothing -- "upstream moved" is the
+  # trigger, not the clock.
+  schedule:
+    - cron: '17 * * * *'
   workflow_dispatch:
     inputs:
       channel:
@@ -29,7 +33,7 @@ on:
       publish:
         description: Create the release and announce it on Telegram
         type: boolean
-        default: false
+        default: true
 
 concurrency:
   group: sync-and-release
