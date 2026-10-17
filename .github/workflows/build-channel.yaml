@@ -105,18 +105,28 @@ jobs:
           ref: ${{ inputs.branch }}
           submodules: recursive
 
-      # Our own number, upstream's version: `<upstream>+<YYYYMMDD><sequence>`.
-      # Injected here rather than committed so an upstream version bump can
-      # never conflict with it, and so the app's update check orders releases
-      # the same way upstream's does.
+      # Every release gets a number of its own: upstream's version plus a build
+      # stamp, which is what the app's own update check compares. It is never
+      # committed -- both build and release receive it as an input, so an
+      # upstream version bump can never conflict with ours.
       - name: Inject our version
+        shell: bash
         env:
           VERSION: ${{ inputs.version }}
         run: |
           set -euo pipefail
-          echo "upstream had: $(grep -n '^version:' pubspec.yaml)"
-          sed -i "s|^version: .*|version: ${VERSION}|" pubspec.yaml
-          grep -n '^version:' pubspec.yaml
+          count="$(grep -c '^version:' pubspec.yaml || true)"
+          if [ "$count" != "1" ]; then
+            echo "::error::expected exactly one top-level version line, found $count"
+            exit 1
+          fi
+          echo "upstream had: $(grep '^version:' pubspec.yaml)"
+          # awk, not sed: this runs on the Windows and macOS runners too, where
+          # the shell is pwsh and `sed -i` is a GNU extension.
+          awk -v v="$VERSION" '/^version:/{ print "version: " v; next } { print }' \
+            pubspec.yaml > pubspec.yaml.new
+          mv pubspec.yaml.new pubspec.yaml
+          echo "we build as:  $(grep '^version:' pubspec.yaml)"
 
       - name: Set up Rust (Windows arm64)
         if: matrix.os == 'windows-11-arm'

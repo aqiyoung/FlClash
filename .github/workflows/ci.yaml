@@ -87,8 +87,10 @@ jobs:
 
             if ! git rev-parse --verify --quiet "refs/remotes/origin/$ch" >/dev/null; then
               echo "::notice::$ch does not exist yet, nothing to sync"
+              echo "exists_$ch=false" >> "$GITHUB_OUTPUT"
               continue
             fi
+            echo "exists_$ch=true" >> "$GITHUB_OUTPUT"
 
             git checkout --quiet -B "$ch" "refs/remotes/origin/$ch"
 
@@ -175,6 +177,8 @@ jobs:
           SYNCED_BETA: ${{ steps.rebase.outputs.synced_beta }}
           CONFLICT_STABLE: ${{ steps.rebase.outputs.conflict_stable }}
           CONFLICT_BETA: ${{ steps.rebase.outputs.conflict_beta }}
+          EXISTS_STABLE: ${{ steps.rebase.outputs.exists_stable }}
+          EXISTS_BETA: ${{ steps.rebase.outputs.exists_beta }}
         run: |
           set -euo pipefail
           case "$CHANNEL" in
@@ -184,15 +188,18 @@ jobs:
             *) echo "::error::unknown channel '$CHANNEL'"; exit 1 ;;
           esac
 
-          decided() { # $1 = wanted, $2 = synced, $3 = conflicted
-            [ "$1" = true ] && [ "$3" != true ] &&
+          # A channel only gets built if it exists: `force_build` means "build
+          # even without new upstream commits", not "build the ones we have not
+          # created yet".
+          decided() { # $1 = wanted, $2 = synced, $3 = conflicted, $4 = exists
+            [ "$1" = true ] && [ "$3" != true ] && [ "$4" = true ] &&
               { [ "$2" = true ] || [ "$FORCE" = true ]; } && echo true || echo false
           }
 
-          echo "build_stable=$(decided "$want_stable" "$SYNCED_STABLE" "$CONFLICT_STABLE")" >> "$GITHUB_OUTPUT"
-          echo "build_beta=$(decided "$want_beta" "$SYNCED_BETA" "$CONFLICT_BETA")" >> "$GITHUB_OUTPUT"
-          echo "plan: stable=$want_stable synced=$SYNCED_STABLE conflict=$CONFLICT_STABLE"
-          echo "plan: beta=$want_beta synced=$SYNCED_BETA conflict=$CONFLICT_BETA force=$FORCE"
+          echo "build_stable=$(decided "$want_stable" "$SYNCED_STABLE" "$CONFLICT_STABLE" "$EXISTS_STABLE")" >> "$GITHUB_OUTPUT"
+          echo "build_beta=$(decided "$want_beta" "$SYNCED_BETA" "$CONFLICT_BETA" "$EXISTS_BETA")" >> "$GITHUB_OUTPUT"
+          echo "plan: stable=$want_stable exists=$EXISTS_STABLE synced=$SYNCED_STABLE conflict=$CONFLICT_STABLE"
+          echo "plan: beta=$want_beta exists=$EXISTS_BETA synced=$SYNCED_BETA conflict=$CONFLICT_BETA force=$FORCE"
 
   test-stable:
     name: Test stable
