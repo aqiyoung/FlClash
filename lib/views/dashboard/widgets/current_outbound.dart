@@ -558,13 +558,13 @@ class _CountryBadgeState extends State<_CountryBadge>
                       color: foreground,
                     )
                   : Text(
-                      code.toUpperCase(),
+                      code.countryFlagEmoji,
                       maxLines: 1,
                       style: AppTextStyle.footnote
                           .of(context, emphasized: true)
                           .copyWith(
                             color: foreground,
-                            letterSpacing: 0.04 * AppTextStyle.footnote.size,
+                            fontFamily: FontFamily.twEmoji.value,
                           ),
                     ),
             ),
