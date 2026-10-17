@@ -1,19 +1,21 @@
 name: sync upstream and release
 
-# `main` is what this repository shows by default: upstream's `main` plus our
-# own commits rebased on top, which is also what the stable channel builds.
-# `beta` is ours the same way, on top of upstream's `dev`. The `ci` branch holds
-# *only* the automation, and a copy of it lives on `main` because GitHub runs
-# scheduled workflows from the default branch alone.
+# `beta` is the channel that follows upstream: upstream's `dev` plus our own
+# commits rebased on top. `main` is the stable channel and is *never* synced
+# from upstream -- it only moves when a beta is promoted into it (the `promote`
+# input), so the stable channel ships code that already ran as beta. The `ci`
+# branch holds *only* the automation, and a copy of it lives on `main` because
+# GitHub runs scheduled workflows from the default branch alone; a promotion
+# refreshes that copy from `ci`.
 #
 # Rebasing is what keeps our patches alive across every upstream sync, and
 # upstream rewrites `dev` (force-pushes) often enough that a merge is not an
 # option. A sync that cannot be applied cleanly stops loudly and tells Telegram
 # instead of quietly shipping upstream alone.
 #
-# Flow: rebase main<-upstream/main and beta<-upstream/dev -> build the channels
-# that moved -> sign with our own keystore -> tag + GitHub Release -> announce on
-# Telegram.
+# Flow: rebase beta<-upstream/dev -> [promote beta into main] -> build the
+# channels that moved -> sign with our own keystore -> tag + GitHub Release ->
+# announce on Telegram.
 
 on:
   # Hourly. The sync job compares branch tips first, so a run with nothing new
@@ -31,6 +33,10 @@ on:
           - stable
           - beta
         default: all
+      promote:
+        description: Promote beta into main (the stable channel) and build it -- needs channel=all or stable
+        type: boolean
+        default: false
       force_build:
         description: Build even when upstream has not moved
         type: boolean
@@ -61,8 +67,10 @@ jobs:
       build_beta: ${{ steps.plan.outputs.build_beta }}
       version_stable: ${{ steps.rebase.outputs.version_stable }}
       version_beta: ${{ steps.rebase.outputs.version_beta }}
+      build_number_stable: ${{ steps.rebase.outputs.build_number_stable }}
+      build_number_beta: ${{ steps.rebase.outputs.build_number_beta }}
     steps:
-      - name: Rebase our branches onto upstream
+      - name: Sync upstream into our branches
         id: rebase
         env:
           # GITHUB_TOKEN is refused when a push touches .github/workflows, which
@@ -70,6 +78,7 @@ jobs:
           # `workflow` scope.
           TOKEN: ${{ secrets.MIRROR_TOKEN || github.token }}
           CHANNEL: ${{ inputs.channel || 'all' }}
+          PROMOTE: ${{ inputs.promote || 'false' }}
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
@@ -78,9 +87,9 @@ jobs:
           git clone --quiet --filter=blob:none "$auth" work
           cd work
           git remote add upstream "https://github.com/${UPSTREAM_REPO}.git"
-          # Only the two branches we track: a bare fetch pulls every feature
-          # branch upstream happens to have open.
-          git fetch --quiet --filter=blob:none upstream main dev
+          # Only the branch we follow: a bare fetch pulls every feature branch
+          # upstream happens to have open.
+          git fetch --quiet --filter=blob:none upstream dev
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
@@ -97,99 +106,157 @@ jobs:
           # only the git work below uses $br.
           branch_of() { [ "$1" = stable ] && echo main || echo "$1"; }
 
-          for ch in $channels; do
-            br=$(branch_of "$ch")
-            if [ "$ch" = stable ]; then up=main; else up=dev; fi
+          # main is never synced from upstream -- only promoted into -- so unlike
+          # beta it has no "nothing to sync yet" case.
+          if git rev-parse --verify --quiet refs/remotes/origin/main >/dev/null; then
+            echo "exists_stable=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::main does not exist yet, nothing to promote into"
+            echo "exists_stable=false" >> "$GITHUB_OUTPUT"
+          fi
 
-            if ! git rev-parse --verify --quiet "refs/remotes/origin/$br" >/dev/null; then
-              echo "::notice::$br does not exist yet, nothing to sync"
-              echo "exists_$ch=false" >> "$GITHUB_OUTPUT"
-              continue
-            fi
-            echo "exists_$ch=true" >> "$GITHUB_OUTPUT"
+          # beta follows upstream's preview branch.
+          if ! git rev-parse --verify --quiet refs/remotes/origin/beta >/dev/null; then
+            echo "::notice::beta does not exist yet, nothing to sync"
+            echo "exists_beta=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists_beta=true" >> "$GITHUB_OUTPUT"
+            git checkout --quiet -B beta refs/remotes/origin/beta
 
-            git checkout --quiet -B "$br" "refs/remotes/origin/$br"
-
-            upstream_tip=$(git rev-parse "upstream/$up")
-            base=$(git merge-base "refs/heads/$br" "upstream/$up")
-            echo "$ch ($br): upstream/$up tip=$upstream_tip, our base=$base"
+            upstream_tip=$(git rev-parse upstream/dev)
+            base=$(git merge-base refs/heads/beta upstream/dev)
+            echo "beta: upstream/dev tip=$upstream_tip, our base=$base"
 
             if [ "$upstream_tip" = "$base" ]; then
-              echo "$ch: upstream has not moved"
-              continue
-            fi
-
-            # Our commits are exactly what sits after the old merge base, so
-            # replaying that range on the new upstream tip carries our patches
-            # over and leaves the branch a straight line on top of upstream.
-            if git rebase --onto "upstream/$up" "$base" "$br"; then
-              git push --quiet --force-with-lease origin "$br"
-              echo "synced_$ch=true" >> "$GITHUB_OUTPUT"
-              echo "$ch: rebased onto $upstream_tip and pushed"
+              echo "beta: upstream has not moved"
             else
-              git rebase --abort
-              echo "conflict_$ch=true" >> "$GITHUB_OUTPUT"
-              echo "::error::$ch: our commits no longer apply to upstream/$up ($upstream_tip)"
+              # Our commits are exactly what sits after the old merge base, so
+              # replaying that range on the new upstream tip carries our patches
+              # over and leaves the branch a straight line on top of upstream.
+              if git rebase --onto upstream/dev "$base" beta; then
+                git push --quiet --force-with-lease origin beta
+                echo "synced_beta=true" >> "$GITHUB_OUTPUT"
+                echo "beta: rebased onto $upstream_tip and pushed"
+              else
+                git rebase --abort
+                echo "conflict_beta=true" >> "$GITHUB_OUTPUT"
+                echo "::error::beta: our commits no longer apply to upstream/dev ($upstream_tip)"
+              fi
             fi
-          done
+          fi
 
-          # Every release carries a build stamp of its own: upstream's version
-          # plus <date><sequence>. It is never committed -- build and release
-          # both receive it as an input, so an upstream version bump can never
-          # conflict with ours. The stamp becomes the versionCode, which is what
-          # lets one build install over another.
+          # Promotion: the stable channel ships what beta has already run, so it
+          # takes beta's tree wholesale.
           #
-          # The sequence is one past the highest spent *that day*: not the number
-          # of tags, because counting assumes the stamps are contiguous and any
-          # tag that ever went missing would hand the same number out twice; and
-          # not per version, because that restarts at 01 the moment upstream
-          # ships a new version, and on a day that already had a release it would
-          # produce a lower versionCode than the one already on the phone, which
-          # Android refuses to install over.
+          # A merge -- even with `-X theirs` -- is not an option: upstream's main
+          # and dev have diverged (each carries commits the other never got,
+          # upstream cherry-picks between them), so their common ancestor is far
+          # behind and merging would union both lines. The stable channel would
+          # then ship code beta never ran. Instead the index is reset onto beta's
+          # tree, the working tree follows it, and anything beta does not have is
+          # dropped. The workflow copies, which live on main and ci alone, are
+          # then taken from ci, their source of truth.
+          if [ "$PROMOTE" = true ]; then
+            case " $channels " in
+              *" stable "*) ;;
+              *) echo "::notice::promote needs the stable channel; use channel=all or channel=stable"; PROMOTE=false ;;
+            esac
+          fi
+          if [ "$PROMOTE" = true ]; then
+            main_before=$(git rev-parse refs/remotes/origin/main)
+            beta_tip=$(git rev-parse refs/heads/beta)
+            git checkout --quiet -B main "$main_before"
+            git read-tree -u --reset beta
+            git clean --quiet -fd
+            git checkout --quiet refs/remotes/origin/ci -- \
+              .github/workflows/ci.yaml \
+              .github/workflows/build-channel.yaml \
+              .github/workflows/publish-release.yaml
+            git add -A
+            if git diff --quiet --cached HEAD; then
+              echo "main already carries beta; nothing to promote"
+            else
+              git commit --quiet -m "promote: beta $(git rev-parse --short "$beta_tip") into main"
+              # The stable channel has to build exactly what beta ran, so the
+              # workflow copies are the only thing allowed to differ -- checked
+              # rather than trusted.
+              unexpected=$(git diff --name-only beta \
+                | grep -vE '^\.github/workflows/[A-Za-z0-9_.-]+$' || true)
+              if [ -n "$unexpected" ]; then
+                echo "::error::main does not match beta after promotion:"
+                printf '%s\n' "$unexpected"
+                exit 1
+              fi
+              git push --quiet origin main
+              echo "synced_stable=true" >> "$GITHUB_OUTPUT"
+              echo "stable: promoted beta $(git rev-parse --short "$beta_tip") into main"
+            fi
+          fi
+
+          # Two numbers per release.
           #
-          # Both channels draw from the one counter. stable is tagged with the
-          # bare version while beta keeps the stamp, so the releases carry the
-          # stamps that the tags alone would miss.
+          # The one users see is upstream's three components plus a fourth of our
+          # own, counting every release we ever make: it never restarts with an
+          # upstream version bump, and a promoted beta takes a fresh number so
+          # that beta users are offered the stable build as well. Only Android
+          # can display it (see the build workflow), and the release tag is
+          # exactly it -- so the app's own update check, which compares the
+          # latest tag against its own versionName, compares like with like.
+          #
+          # The versionCode -- what Android uses to decide whether one build may
+          # install over another -- comes from a build number of <date><sequence
+          # that day>, the shape upstream itself uses. The sequence is one past
+          # the highest spent *that day*: not the number of tags, because
+          # counting assumes the stamps are contiguous and any tag that ever went
+          # missing would hand the same number out twice; and not per version,
+          # because that restarts at 01 the moment upstream ships a new version,
+          # and on a day that already had a release it would produce a lower
+          # versionCode than the one already on the phone, which Android refuses
+          # to install over. Both channels draw from the one counter, stable
+          # first: the same day gives stable ...05 and beta ...06.
+          #
+          # The tags carry only the version, so the build number is read back
+          # from the release titles and notes, which is where it is written;
+          # releases come back newest first, so the ones spent today are on the
+          # first page. The revision is counted from the tags in the clone
+          # instead of the tags API, which pages at 100 names and upstream alone
+          # already has more tags than that.
           today=$(date -u +%Y%m%d)
-          releases=$(gh api "repos/${GITHUB_REPOSITORY}/releases?per_page=100" \
-            --jq '[.[] | .name, .tag_name] | .[]' 2>/dev/null || true)
-          tags=$(gh api "repos/${GITHUB_REPOSITORY}/tags?per_page=100" \
-            --jq '.[] | .name' 2>/dev/null || true)
-          highest=$(printf '%s\n%s\n' "$releases" "$tags" \
+          titles=$(gh api "repos/${GITHUB_REPOSITORY}/releases?per_page=100" \
+            --jq '[.[] | .name, .body] | .[]' 2>/dev/null || true)
+          highest_stamp=$(printf '%s\n' "$titles" \
             | sed -n "s/.*${today}\([0-9][0-9]*\).*/\1/p" | sort -n | tail -1)
+          highest_revision=$(git tag --list 'v*' \
+            | sed -n 's/^v[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.\([0-9][0-9]*\)$/\1/p' \
+            | sort -n | tail -1)
           # 10#: past the eighth build of a day the stamp carries a leading zero,
           # and bash would read a bare 09 as an invalid octal number.
-          stamp=$(( 10#${highest:-0} + 1 ))
+          stamp=$(( 10#${highest_stamp:-0} + 1 ))
+          revision=$(( 10#${highest_revision:-0} + 1 ))
           for ch in $channels; do
             br=$(branch_of "$ch")
             git rev-parse --verify --quiet "refs/heads/$br" >/dev/null || continue
             base_version=$(git show "$br:pubspec.yaml" | sed -n 's/^version: *\([^+]*\).*/\1/p' | tr -d '\r')
             seq=$(printf '%02d' "$stamp")
+            echo "version_$ch=${base_version}.${revision}" >> "$GITHUB_OUTPUT"
+            echo "build_number_$ch=${today}${seq}" >> "$GITHUB_OUTPUT"
+            echo "$ch ($br): next version ${base_version}.${revision}, build number ${today}${seq}"
+            revision=$(( revision + 1 ))
             stamp=$(( stamp + 1 ))
-            echo "version_$ch=${base_version}+${today}${seq}" >> "$GITHUB_OUTPUT"
-            echo "$ch ($br): next version ${base_version}+${today}${seq}"
           done
 
       - name: Tell Telegram when a sync could not be applied
-        if: >-
-          always() &&
-          (steps.rebase.outputs.conflict_stable == 'true' ||
-           steps.rebase.outputs.conflict_beta == 'true')
+        if: always() && steps.rebase.outputs.conflict_beta == 'true'
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          CONFLICT_STABLE: ${{ steps.rebase.outputs.conflict_stable }}
-          CONFLICT_BETA: ${{ steps.rebase.outputs.conflict_beta }}
         run: |
           set -euo pipefail
           [ -n "${TELEGRAM_BOT_TOKEN:-}" ] && [ -n "${TELEGRAM_CHAT_ID:-}" ] || exit 0
-          which=""
-          [ "$CONFLICT_STABLE" = true ] && which="stable（← 上游 main）"
-          [ "$CONFLICT_BETA" = true ] && which="${which:+$which / }beta（← 上游 dev）"
           {
             echo "⚠️ FlClash 同步中止：上游更新与我们的改动冲突"
             echo
-            echo "冲突分支：${which}"
+            echo "冲突分支：beta（← 上游 dev）"
             echo "没有构建、没有发布，等人工处理。"
             echo "构建日志：${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
           } > /tmp/msg.txt
@@ -199,9 +266,7 @@ jobs:
             || echo "::warning::Telegram 推送失败"
 
       - name: Fail when a rebase conflicted
-        if: >-
-          steps.rebase.outputs.conflict_stable == 'true' ||
-          steps.rebase.outputs.conflict_beta == 'true'
+        if: steps.rebase.outputs.conflict_beta == 'true'
         run: |
           echo "::error::resolve the conflict by hand, then re-run the sync"
           exit 1
@@ -213,7 +278,6 @@ jobs:
           FORCE: ${{ inputs.force_build || 'false' }}
           SYNCED_STABLE: ${{ steps.rebase.outputs.synced_stable }}
           SYNCED_BETA: ${{ steps.rebase.outputs.synced_beta }}
-          CONFLICT_STABLE: ${{ steps.rebase.outputs.conflict_stable }}
           CONFLICT_BETA: ${{ steps.rebase.outputs.conflict_beta }}
           EXISTS_STABLE: ${{ steps.rebase.outputs.exists_stable }}
           EXISTS_BETA: ${{ steps.rebase.outputs.exists_beta }}
@@ -228,15 +292,16 @@ jobs:
 
           # A channel only gets built if it exists: `force_build` means "build
           # even without new upstream commits", not "build the ones we have not
-          # created yet".
-          decided() { # $1 = wanted, $2 = synced, $3 = conflicted, $4 = exists
-            [ "$1" = true ] && [ "$3" != true ] && [ "$4" = true ] &&
+          # created yet". The stable channel's "new upstream commits" are a
+          # promotion.
+          decided() { # $1 = wanted, $2 = synced, $3 = exists
+            [ "$1" = true ] && [ "$3" = true ] &&
               { [ "$2" = true ] || [ "$FORCE" = true ]; } && echo true || echo false
           }
 
-          echo "build_stable=$(decided "$want_stable" "$SYNCED_STABLE" "$CONFLICT_STABLE" "$EXISTS_STABLE")" >> "$GITHUB_OUTPUT"
-          echo "build_beta=$(decided "$want_beta" "$SYNCED_BETA" "$CONFLICT_BETA" "$EXISTS_BETA")" >> "$GITHUB_OUTPUT"
-          echo "plan: stable=$want_stable exists=$EXISTS_STABLE synced=$SYNCED_STABLE conflict=$CONFLICT_STABLE"
+          echo "build_stable=$(decided "$want_stable" "$SYNCED_STABLE" "$EXISTS_STABLE")" >> "$GITHUB_OUTPUT"
+          echo "build_beta=$(decided "$want_beta" "$SYNCED_BETA" "$EXISTS_BETA")" >> "$GITHUB_OUTPUT"
+          echo "plan: stable=$want_stable exists=$EXISTS_STABLE synced=$SYNCED_STABLE"
           echo "plan: beta=$want_beta exists=$EXISTS_BETA synced=$SYNCED_BETA conflict=$CONFLICT_BETA force=$FORCE"
 
   test-stable:
@@ -249,6 +314,7 @@ jobs:
       branch: main
       env: stable
       version: ${{ needs.sync.outputs.version_stable }}
+      build_number: ${{ needs.sync.outputs.build_number_stable }}
       stage: test
     secrets: inherit
 
@@ -262,6 +328,7 @@ jobs:
       branch: main
       env: stable
       version: ${{ needs.sync.outputs.version_stable }}
+      build_number: ${{ needs.sync.outputs.build_number_stable }}
       stage: build
     secrets: inherit
 
@@ -275,6 +342,7 @@ jobs:
       branch: beta
       env: pre
       version: ${{ needs.sync.outputs.version_beta }}
+      build_number: ${{ needs.sync.outputs.build_number_beta }}
       stage: test
     secrets: inherit
 
@@ -288,6 +356,7 @@ jobs:
       branch: beta
       env: pre
       version: ${{ needs.sync.outputs.version_beta }}
+      build_number: ${{ needs.sync.outputs.build_number_beta }}
       stage: build
     secrets: inherit
 
@@ -307,6 +376,7 @@ jobs:
       channel: stable
       branch: main
       version: ${{ needs.sync.outputs.version_stable }}
+      build_number: ${{ needs.sync.outputs.build_number_stable }}
       prerelease: false
     secrets: inherit
 
@@ -323,5 +393,6 @@ jobs:
       channel: beta
       branch: beta
       version: ${{ needs.sync.outputs.version_beta }}
+      build_number: ${{ needs.sync.outputs.build_number_beta }}
       prerelease: true
     secrets: inherit
