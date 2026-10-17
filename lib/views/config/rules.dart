@@ -111,12 +111,15 @@ class _AddedRulesViewState extends ConsumerState<AddedRulesView> {
       ),
     ];
     return CommonPopScope(
-      onPop: isSelecting
-          ? (_) {
-              ref.read(itemsProvider(_key).notifier).value = {};
-              return false;
-            }
-          : null,
+      onPop: (_) {
+        if (selectedRules.isNotEmpty) {
+          ref.read(itemsProvider(_key).notifier).value = {};
+          return false;
+        }
+        Navigator.of(context).pop();
+        return false;
+      },
+
       child: CommonScaffold(
         title: appLocalizations.addedRules,
         searchState: AppBarSearchState(onSearch: _handleSearch),

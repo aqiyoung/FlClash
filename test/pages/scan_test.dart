@@ -118,7 +118,7 @@ void main() {
     addTearDown(platform.close);
   });
 
-  /// The scan effect repeats for as long as the camera runs, so
+  /// The scan effect repeats for as long as the page is mounted, so
   /// `pumpAndSettle` only returns once the page has been popped or unmounted.
   Future<void> pumpFrames(WidgetTester tester) async {
     await tester.pump();
@@ -127,7 +127,7 @@ void main() {
 
   /// Pushes the page onto a route so `Navigator.pop` from `_handleBarcode` has
   /// something to pop, and reports what the page popped with.
-  Future<void> pushScanPage(
+  Future<void> pumpScanPage(
     WidgetTester tester, {
     required void Function(String? result) onPopped,
     VoidCallback? onBelowPopped,
@@ -162,20 +162,7 @@ void main() {
           )
           .then(onPopped),
     );
-    await tester.pump();
-  }
-
-  Future<void> pumpScanPage(
-    WidgetTester tester, {
-    required void Function(String? result) onPopped,
-    VoidCallback? onBelowPopped,
-  }) async {
-    await pushScanPage(
-      tester,
-      onPopped: onPopped,
-      onBelowPopped: onBelowPopped,
-    );
-    await tester.pump(const Duration(seconds: 1));
+    await pumpFrames(tester);
   }
 
   Future<void> sendLifecycle(WidgetTester tester, AppLifecycleState state) {
@@ -234,19 +221,6 @@ void main() {
   });
 
   group('ScanPage barcode handling', () {
-    testWidgets(
-      'the whole preview scans, since the platform takes a code first seen '
-      'outside a scan window for a duplicate once it is inside',
-      (tester) async {
-        await pumpScanPage(tester, onPopped: (_) {});
-
-        expect(
-          tester.widget<MobileScanner>(find.byType(MobileScanner)).scanWindow,
-          isNull,
-        );
-      },
-    );
-
     testWidgets('a url barcode pops its raw value', (tester) async {
       String? result;
       var popped = false;
@@ -400,32 +374,6 @@ void main() {
   });
 
   group('ScanPage app lifecycle', () {
-    testWidgets('the camera starts only once the push has settled', (
-      tester,
-    ) async {
-      await pushScanPage(tester, onPopped: (_) {});
-      await sendLifecycle(tester, AppLifecycleState.resumed);
-      await tester.pump();
-
-      expect(platform.startCalls, 0);
-
-      await tester.pump(const Duration(seconds: 1));
-
-      expect(platform.startCalls, 1);
-    });
-
-    testWidgets('the scan effect waits for the camera to run', (tester) async {
-      final gate = Completer<void>();
-      platform.startGate = gate;
-      await pumpScanPage(tester, onPopped: (_) {});
-
-      await tester.pumpAndSettle();
-      gate.complete();
-      await tester.pump();
-
-      expect(tester.hasRunningAnimations, isTrue);
-    });
-
     testWidgets('a resume during a pending start does not start again', (
       tester,
     ) async {

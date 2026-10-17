@@ -25,13 +25,6 @@ const _systemUiOverlayStyle = SystemUiOverlayStyle(
 
 const _invalidHintDuration = Duration(seconds: 2);
 
-const _previewRevealDuration = Duration(milliseconds: 600);
-const _previewRevealAwaitingFirstFrame = Interval(
-  0.4,
-  1,
-  curve: Curves.easeOut,
-);
-
 class ScanPage extends ConsumerStatefulWidget {
   const ScanPage({super.key});
 
@@ -40,10 +33,7 @@ class ScanPage extends ConsumerStatefulWidget {
 }
 
 class _ScanPageState extends ConsumerState<ScanPage>
-    with
-        WidgetsBindingObserver,
-        SingleTickerProviderStateMixin,
-        RouteSettledMixin<ScanPage> {
+    with WidgetsBindingObserver, SingleTickerProviderStateMixin {
   final _controller = MobileScannerController(
     autoStart: false,
     detectionSpeed: DetectionSpeed.noDuplicates,
@@ -73,6 +63,7 @@ class _ScanPageState extends ConsumerState<ScanPage>
       _handleCapture,
       onError: _handleDetectError,
     );
+    unawaited(_start());
   }
 
   @override
@@ -82,15 +73,9 @@ class _ScanPageState extends ConsumerState<ScanPage>
     _syncEffect();
   }
 
-  // Android binds the camera on the platform thread, which the UI shares.
-  @override
-  void didSettleRoute() {
-    unawaited(_start());
-  }
-
   void _syncEffect() {
-    if (_disableAnimations || !_controller.value.isRunning) {
-      _effectController.reset();
+    if (_disableAnimations || _controller.value.error != null) {
+      _effectController.stop();
     } else if (!_effectController.isAnimating) {
       _effectController.repeat();
     }
@@ -100,7 +85,7 @@ class _ScanPageState extends ConsumerState<ScanPage>
   // the first start is still pending, and a second `start` would throw.
   Future<void> _start() async {
     final state = _controller.value;
-    if (_completed || !routeSettled || state.isStarting || state.isRunning) {
+    if (_completed || state.isStarting || state.isRunning) {
       return;
     }
     try {
@@ -233,22 +218,8 @@ class _ScanPageState extends ConsumerState<ScanPage>
                     Positioned.fill(
                       child: MobileScanner(
                         controller: _controller,
+                        scanWindow: layout.scanWindow,
                         errorBuilder: (_, _) => const SizedBox.shrink(),
-                      ),
-                    ),
-                    Positioned.fill(
-                      child: ValueListenableBuilder<MobileScannerState>(
-                        valueListenable: _controller,
-                        builder: (context, state, _) => AnimatedOpacity(
-                          opacity: state.isRunning || state.error != null
-                              ? 0
-                              : 1,
-                          duration: _disableAnimations || !state.isRunning
-                              ? Duration.zero
-                              : _previewRevealDuration,
-                          curve: _previewRevealAwaitingFirstFrame,
-                          child: const ColoredBox(color: Colors.black),
-                        ),
                       ),
                     ),
                     Positioned.fill(
@@ -657,16 +628,27 @@ class ScannerOverlay extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final backgroundWithCutout = Path()
-      ..fillType = PathFillType.evenOdd
-      ..addRect(Offset.zero & size)
+    final backgroundPath = Path()..addRect(Rect.largest);
+
+    final cutoutPath = Path()
       ..addRSuperellipse(
         RSuperellipse.fromRectAndRadius(
           scanWindow,
           Radius.circular(borderRadius),
         ),
       );
-    canvas.drawPath(backgroundWithCutout, Paint()..color = color);
+
+    final backgroundPaint = Paint()
+      ..color = color
+      ..style = PaintingStyle.fill;
+
+    final backgroundWithCutout = Path.combine(
+      PathOperation.difference,
+      backgroundPath,
+      cutoutPath,
+    );
+
+    canvas.drawPath(backgroundWithCutout, backgroundPaint);
   }
 
   @override

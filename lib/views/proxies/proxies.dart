@@ -23,10 +23,6 @@ class ProxiesView extends ConsumerStatefulWidget {
 
 class _ProxiesViewState extends ConsumerState<ProxiesView> {
   final GlobalKey<ProxiesTabViewState> _proxiesTabKey = GlobalKey();
-
-  // The same instance on every build, so the bar changing with the current
-  // group or its delay test leaves the page alone.
-  late final _tabView = ProxiesTabView(key: _proxiesTabKey);
   bool _isTab = false;
 
   List<CommonPopupMenuItem> _buildMenuItems(BuildContext context) {
@@ -54,7 +50,16 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
     if (!_isTab) {
       return null;
     }
-    final isDelayTesting = ref.watch(currentGroupDelayTestingProvider);
+    final currentGroupName = ref.watch(
+      proxiesTabControllerStateProvider.select(
+        (state) => state.currentGroupName,
+      ),
+    );
+    final isDelayTesting = ref.watch(
+      delayTestingGroupsProvider.select(
+        (state) => state.contains(currentGroupName),
+      ),
+    );
     return IconButtonData(
       glyph: AppGlyphs.bolt,
       onPressed: () {
@@ -114,7 +119,7 @@ class _ProxiesViewState extends ConsumerState<ProxiesView> {
       title: context.appLocalizations.proxies,
       searchState: AppBarSearchState(onSearch: _onSearch),
       body: switch (proxiesType) {
-        ProxiesType.tab => _tabView,
+        ProxiesType.tab => ProxiesTabView(key: _proxiesTabKey),
         ProxiesType.list => const ProxiesListView(),
       },
     );

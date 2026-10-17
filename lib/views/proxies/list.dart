@@ -508,66 +508,49 @@ class _GroupSliverState extends ConsumerState<_GroupSliver>
   /// Rounds the header and lifts it as its own rows scroll under it, and lets
   /// the shadow go before the end of the group pushes it out. The page color
   /// behind its upper half hides the rows that went under it, which would
-  /// otherwise show around its top corners and above it. Every header is laid
-  /// out on every pass, so one beyond the cache area builds nothing.
+  /// otherwise show around its top corners and above it.
   Widget _buildPinnedHeader(
     bool isExpand,
     Widget Function({double floating, double lift}) buildHeader,
   ) {
     final columns = widget.columns;
-    final rowCount = (widget.group.all.length + columns - 1) ~/ columns;
-    final rowsExtent = isExpand ? _rowsExtent(rowCount, _rowExtent) : 0.0;
-    final groupExtent =
-        listHeaderHeight +
-        (_controller.isDismissed
-            ? 0.0
-            : _rowsExtent(rowCount, getRowExtent(widget.cardType)));
+    final rowsExtent = isExpand
+        ? _rowsExtent(
+            (widget.group.all.length + columns - 1) ~/ columns,
+            _rowExtent,
+          )
+        : 0.0;
     (double, double, double, Color)? headerState;
     Widget? header;
     return SliverLayoutBuilder(
       builder: (context, constraints) {
-        final beyondCache =
-            constraints.remainingCacheExtent <= 0 ||
-            constraints.scrollOffset + constraints.cacheOrigin >= groupExtent;
         final under = isExpand
             ? constraints.scrollOffset + constraints.overlap
             : 0.0;
-        final state = beyondCache
-            ? null
-            : (
-                (under / _liftDistance).clamp(0.0, 1.0),
-                (min(under, rowsExtent - under) / _liftDistance).clamp(
-                  0.0,
-                  1.0,
-                ),
-                isExpand ? constraints.overlap : 0.0,
-                context.surfaceLevel.colorOf(context.colorScheme),
-              );
-        if (header != null && state == headerState) {
+        final state = (
+          (under / _liftDistance).clamp(0.0, 1.0),
+          (min(under, rowsExtent - under) / _liftDistance).clamp(0.0, 1.0),
+          isExpand ? constraints.overlap : 0.0,
+          context.surfaceLevel.colorOf(context.colorScheme),
+        );
+        if (state == headerState) {
           return header!;
         }
         headerState = state;
-        if (state == null) {
-          return header = PinnedHeaderSliver(
-            child: SizedBox(height: listHeaderHeight),
-          );
-        }
         final (floating, lift, cover, pageColor) = state;
         return header = PinnedHeaderSliver(
-          child: RepaintBoundary(
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                Positioned(
-                  top: -cover,
-                  left: 0,
-                  right: 0,
-                  height: cover + listHeaderHeight / 2,
-                  child: ColoredBox(color: pageColor),
-                ),
-                buildHeader(floating: floating, lift: lift),
-              ],
-            ),
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Positioned(
+                top: -cover,
+                left: 0,
+                right: 0,
+                height: cover + listHeaderHeight / 2,
+                child: ColoredBox(color: pageColor),
+              ),
+              buildHeader(floating: floating, lift: lift),
+            ],
           ),
         );
       },

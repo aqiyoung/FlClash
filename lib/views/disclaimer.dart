@@ -6,7 +6,8 @@ import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// True only after "Agree" and the restatement; any other way out declines.
+/// True only after "Agree" and acknowledging the statement; any other way out
+/// declines.
 Future<bool> requestDisclaimerConsent() async {
   return await BaseNavigator.push<bool>(
         rootNavigatorKey.currentContext!,
@@ -436,13 +437,10 @@ class _RestateDialogState extends State<_RestateDialog> {
   @override
   Widget build(BuildContext context) {
     final appLocalizations = context.appLocalizations;
-    final statement = appLocalizations.disclaimerNoServiceStatement;
-    // Typing the statement out takes hundreds of presses on a remote, and it
-    // is just as unwelcome on a phone: keep the statement, take the checkbox.
     return _buildDialog(
       title: appLocalizations.disclaimerAcknowledgeTitle,
       tip: appLocalizations.disclaimerAcknowledgeTip,
-      statement: statement,
+      statement: appLocalizations.disclaimerNoServiceStatement,
       canConfirm: _acknowledged,
       confirmation: generateSection(
         items: [

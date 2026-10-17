@@ -15,6 +15,7 @@ class Navigation implements NavigationPort {
   }) {
     return [
       NavigationItem(
+        keep: false,
         glyph: AppGlyphs.dashboard,
         label: PageLabel.dashboard,
         builder: (_) =>
