@@ -69,7 +69,17 @@ TextButton _restateConfirmButton(WidgetTester tester) {
 Future<void> _agreeAndRestate(WidgetTester tester) async {
   await tester.tap(find.text('Agree'));
   await tester.pumpAndSettle();
-  await tester.tap(find.text('I have read and understand this statement'));
+  final acknowledge = find.text('I have read and understand this statement');
+  if (find
+      .ancestor(of: acknowledge, matching: find.byType(Scrollable))
+      .evaluate()
+      .isNotEmpty) {
+    // The statement is long, so on a small window the dialog body scrolls and
+    // the row has to be brought into view before it can be tapped.
+    await tester.ensureVisible(acknowledge);
+    await tester.pumpAndSettle();
+  }
+  await tester.tap(acknowledge);
   await tester.pump();
   await tester.tap(find.text('Confirm'));
   await tester.pumpAndSettle();
