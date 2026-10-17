@@ -1,3 +1,5 @@
+> **Fork notice** — this is [aqiyoung](https://github.com/aqiyoung)'s fork of FlClash. Builds are published in [this repository's releases](../../releases/latest); see [FORK.md](FORK.md) for the version scheme, the signing change and the full list of patches. The upstream project is [chen08209/FlClash](https://github.com/chen08209/FlClash).
+
 <div align="center">
 
 <img src="assets/images/icon.png" alt="FlClash" width="88">
