@@ -1,0 +1,73 @@
+# TEMPORARY verification workflow, dispatch only. It unpacks our re-signed APK
+# and upstream's official APK built from the very same commit (03f95538) and
+# compares them entry by entry, then prints both signing certificates. Delete it
+# once the comparison has been read.
+name: verify apk
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download both arm64 APKs
+        run: |
+          set -euo pipefail
+          curl -fsSL -o ours.apk   "https://github.com/aqiyoung/FlClash/releases/download/stable-0.9.0-26101615.4/FlClash-0.9.0-android-arm64-v8a.apk"
+          curl -fsSL -o theirs.apk "https://github.com/chen08209/FlClash/releases/download/v0.9.0/FlClash-0.9.0-android-arm64-v8a.apk"
+          ls -l ours.apk theirs.apk
+          sha256sum ours.apk theirs.apk
+
+      - name: Compare every zip entry (decompressed, so zipalign is irrelevant)
+        run: |
+          python3 - <<'PY'
+          import collections, hashlib, zipfile
+
+
+          def dump(path):
+              out = {}
+              with zipfile.ZipFile(path) as zf:
+                  for info in zf.infolist():
+                      data = zf.read(info)
+                      out[info.filename] = (len(data), hashlib.sha256(data).hexdigest())
+              return out
+
+
+          ours, theirs = dump("ours.apk"), dump("theirs.apk")
+          print(f"entries: ours={len(ours)} upstream={len(theirs)}")
+
+          only_ours = sorted(set(ours) - set(theirs))
+          only_theirs = sorted(set(theirs) - set(ours))
+          print(f"ONLY in ours     ({len(only_ours)}): {only_ours}")
+          print(f"ONLY in upstream ({len(only_theirs)}): {only_theirs}")
+
+          differ = sorted(n for n in set(ours) & set(theirs) if ours[n][1] != theirs[n][1])
+          print(f"same name, different content ({len(differ)}):")
+          for name in differ:
+              print(f"    {name}  ours={ours[name][0]}B  upstream={theirs[name][0]}B")
+          print("by top level:", dict(collections.Counter(n.split('/')[0] for n in differ)))
+          PY
+
+      - name: Package id / version of both
+        run: |
+          SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
+          BT="$(ls -d "$SDK"/build-tools/* 2>/dev/null | sort -V | tail -1)"
+          echo "build-tools: $BT"
+          for apk in ours.apk theirs.apk; do
+            echo "--- $apk"
+            "$BT/aapt2" dump badging "$apk" 2>/dev/null | grep -E "^package:|^application-label:" || echo "  (aapt2 failed)"
+          done
+
+      - name: Signing certificates and signature schemes
+        run: |
+          SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
+          BT="$(ls -d "$SDK"/build-tools/* 2>/dev/null | sort -V | tail -1)"
+          for apk in ours.apk theirs.apk; do
+            echo "--- $apk"
+            "$BT/apksigner" verify --print-certs "$apk" 2>&1 \
+              | grep -iE "verified using|signer #1 certificate (dn|sha-256)|number of signers" || true
+          done
