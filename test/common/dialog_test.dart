@@ -69,8 +69,14 @@ TextButton _restateConfirmButton(WidgetTester tester) {
 Future<void> _agreeAndAcknowledge(WidgetTester tester) async {
   await tester.tap(find.text('Agree'));
   await tester.pumpAndSettle();
-  await tester.tap(find.text('I have read and understand this statement'));
+  // In a phone-sized window the checkbox sits below the fold of the dialog's
+  // scroll view, so it has to be brought into view before it can be tapped.
+  final acknowledge = find.text('I have read and understand this statement');
+  await tester.ensureVisible(acknowledge);
+  await tester.pumpAndSettle();
+  await tester.tap(acknowledge);
   await tester.pump();
+  expect(_restateConfirmButton(tester).onPressed, isNotNull);
   await tester.tap(find.text('Confirm'));
   await tester.pumpAndSettle();
 }
