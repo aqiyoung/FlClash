@@ -145,16 +145,17 @@ jobs:
             fi
           fi
 
-          # Promotion: the stable channel ships what beta has already run.
+          # Promotion: the stable channel ships what beta has already run, so it
+          # takes beta's tree wholesale.
           #
-          # Our patches sit on both sides as different commits (beta's are
-          # rebased onto upstream/dev, main's onto whatever was there before), so
-          # the two tips have diverged and a plain merge fights over them.
-          # `-X theirs` resolves every disagreement in beta's favour, which is
-          # what promoting means; files that only ever live on main (FORK.md, the
-          # README's fork note) are untouched by beta and survive, and a forced
-          # merge commit keeps them even when beta could have fast-forwarded over
-          # them. What comes out is checked below rather than trusted.
+          # A merge -- even with `-X theirs` -- is not an option: upstream's main
+          # and dev have diverged (each carries commits the other never got,
+          # upstream cherry-picks between them), so their common ancestor is far
+          # behind and merging would union both lines. The stable channel would
+          # then ship code beta never ran. Instead the index is reset onto beta's
+          # tree, the working tree follows it, and anything beta does not have is
+          # dropped. The workflow copies, which live on main and ci alone, are
+          # then taken from ci, their source of truth.
           if [ "$PROMOTE" = true ]; then
             case " $channels " in
               *" stable "*) ;;
@@ -162,37 +163,33 @@ jobs:
             esac
           fi
           if [ "$PROMOTE" = true ]; then
-            git checkout --quiet -B main refs/remotes/origin/main
-            if git merge --quiet --no-ff --no-edit -X theirs beta; then
-              # The workflows on main have to stay byte-identical to `ci`, their
-              # source of truth: taking them here is what stops the copy the
-              # scheduler runs from drifting.
-              git checkout --quiet refs/remotes/origin/ci -- \
-                .github/workflows/ci.yaml \
-                .github/workflows/build-channel.yaml \
-                .github/workflows/publish-release.yaml
-              git add -A
-              if git diff --quiet --cached HEAD; then
-                echo "main already carries beta; nothing to promote"
-              else
-                git commit --quiet -m "promote: beta into main"
-                # The stable channel has to build exactly what beta ran. Only
-                # the docs and the workflow copies are allowed to differ.
-                unexpected=$(git diff --name-only beta \
-                  | grep -vE '^(README(_zh_CN)?\.md|FORK\.md|\.github/workflows/[A-Za-z0-9_.-]+)$' || true)
-                if [ -n "$unexpected" ]; then
-                  echo "::error::main does not match beta after promotion:"
-                  printf '%s\n' "$unexpected"
-                  exit 1
-                fi
-                git push --quiet origin main
-                echo "synced_stable=true" >> "$GITHUB_OUTPUT"
-                echo "stable: promoted beta ($(git rev-parse --short HEAD)) into main"
-              fi
+            main_before=$(git rev-parse refs/remotes/origin/main)
+            beta_tip=$(git rev-parse refs/heads/beta)
+            git checkout --quiet -B main "$main_before"
+            git read-tree -u --reset beta
+            git clean --quiet -fd
+            git checkout --quiet refs/remotes/origin/ci -- \
+              .github/workflows/ci.yaml \
+              .github/workflows/build-channel.yaml \
+              .github/workflows/publish-release.yaml
+            git add -A
+            if git diff --quiet --cached HEAD; then
+              echo "main already carries beta; nothing to promote"
             else
-              git merge --abort || true
-              echo "::error::promoting beta into main failed"
-              exit 1
+              git commit --quiet -m "promote: beta $(git rev-parse --short "$beta_tip") into main"
+              # The stable channel has to build exactly what beta ran, so the
+              # workflow copies are the only thing allowed to differ -- checked
+              # rather than trusted.
+              unexpected=$(git diff --name-only beta \
+                | grep -vE '^\.github/workflows/[A-Za-z0-9_.-]+$' || true)
+              if [ -n "$unexpected" ]; then
+                echo "::error::main does not match beta after promotion:"
+                printf '%s\n' "$unexpected"
+                exit 1
+              fi
+              git push --quiet origin main
+              echo "synced_stable=true" >> "$GITHUB_OUTPUT"
+              echo "stable: promoted beta $(git rev-parse --short "$beta_tip") into main"
             fi
           fi
 
@@ -219,15 +216,17 @@ jobs:
           # first: the same day gives stable ...05 and beta ...06.
           #
           # The tags carry only the version, so the build number is read back
-          # from the release titles and notes, which is where it is written.
+          # from the release titles and notes, which is where it is written;
+          # releases come back newest first, so the ones spent today are on the
+          # first page. The revision is counted from the tags in the clone
+          # instead of the tags API, which pages at 100 names and upstream alone
+          # already has more tags than that.
           today=$(date -u +%Y%m%d)
           titles=$(gh api "repos/${GITHUB_REPOSITORY}/releases?per_page=100" \
             --jq '[.[] | .name, .body] | .[]' 2>/dev/null || true)
-          tags=$(gh api "repos/${GITHUB_REPOSITORY}/tags?per_page=100" \
-            --jq '.[] | .name' 2>/dev/null || true)
           highest_stamp=$(printf '%s\n' "$titles" \
             | sed -n "s/.*${today}\([0-9][0-9]*\).*/\1/p" | sort -n | tail -1)
-          highest_revision=$(printf '%s\n' "$tags" \
+          highest_revision=$(git tag --list 'v*' \
             | sed -n 's/^v[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.\([0-9][0-9]*\)$/\1/p' \
             | sort -n | tail -1)
           # 10#: past the eighth build of a day the stamp carries a leading zero,
