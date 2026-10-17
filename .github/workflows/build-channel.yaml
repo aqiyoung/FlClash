@@ -26,7 +26,11 @@ on:
         required: true
         type: string
       version:
-        description: Version to inject into pubspec.yaml
+        description: Version this release shows (upstream's three components plus ours)
+        required: true
+        type: string
+      build_number:
+        description: Build number after the '+', which becomes the versionCode
         required: true
         type: string
       stage:
@@ -105,14 +109,22 @@ jobs:
           ref: ${{ inputs.branch }}
           submodules: recursive
 
-      # Every release gets a number of its own: upstream's version plus a build
-      # stamp, which is what the app's own update check compares. It is never
-      # committed -- both build and release receive it as an input, so an
+      # Our version reaches the build through two channels, and neither is
+      # committed -- build and release both receive them as inputs, so an
       # upstream version bump can never conflict with ours.
+      #
+      # pubspec.yaml takes upstream's three components plus the build number,
+      # which is what turns into Android's versionCode; that number has to stay
+      # monotone or Android refuses to install one build over another. The fourth
+      # component -- the revision we iterate -- cannot go in there (pub refuses a
+      # four-part version, and the desktop packaging configs want three), so
+      # Android gets it as its versionName through the environment instead. Only
+      # Android can show four components.
       - name: Inject our version
         shell: bash
         env:
           VERSION: ${{ inputs.version }}
+          BUILD_NUMBER: ${{ inputs.build_number }}
         run: |
           set -euo pipefail
           count="$(grep -c '^version:' pubspec.yaml || true)"
@@ -121,12 +133,18 @@ jobs:
             exit 1
           fi
           echo "upstream had: $(grep '^version:' pubspec.yaml)"
+          base="${VERSION%.*}"
+          if ! printf '%s' "$base" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::expected a four-component version, got '$VERSION'"
+            exit 1
+          fi
           # awk, not sed: this runs on the Windows and macOS runners too, where
           # the shell is pwsh and `sed -i` is a GNU extension.
-          awk -v v="$VERSION" '/^version:/{ print "version: " v; next } { print }' \
+          awk -v v="${base}+${BUILD_NUMBER}" '/^version:/{ print "version: " v; next } { print }' \
             pubspec.yaml > pubspec.yaml.new
           mv pubspec.yaml.new pubspec.yaml
           echo "we build as:  $(grep '^version:' pubspec.yaml)"
+          echo "android takes ${VERSION} as its versionName"
 
       - name: Set up Rust (Windows arm64)
         if: matrix.os == 'windows-11-arm'
@@ -263,6 +281,9 @@ jobs:
       - name: Build
         env:
           ANDROID_NDK_HOME: ${{ steps.ndk.outputs.ndk-path }}
+          # Android's versionName, four components; build.gradle.kts picks it up.
+          # Harmless for the other platforms, which take the pubspec's three.
+          APP_VERSION_NAME: ${{ inputs.version }}
         run: dart setup.dart ${{ matrix.platform }} --env ${{ inputs.env }} -v
 
       # Guards the whole point of this repository. Any certificate other than
@@ -296,8 +317,8 @@ jobs:
               echo "::error::$(basename "$apk") is not signed with our certificate (expected SHA-256 $CERT_SHA256)"
               exit 1
             fi
-            if ! "$build_tools/aapt2" dump badging "$apk" | grep -q "versionName='${VERSION%%+*}'"; then
-              echo "::error::$(basename "$apk") does not carry the version we injected ($VERSION)"
+            if ! "$build_tools/aapt2" dump badging "$apk" | grep -q "versionName='$VERSION'"; then
+              echo "::error::$(basename "$apk") does not carry ${VERSION} as its versionName"
               exit 1
             fi
           done

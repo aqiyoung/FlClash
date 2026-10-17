@@ -15,16 +15,17 @@ on:
         required: true
         type: string
       version:
-        description: Version this release carries; a prerelease also tags it
+        description: Version this release carries; the tag is exactly it
+        required: true
+        type: string
+      build_number:
+        description: Build number after the '+', carried in the release title
         required: true
         type: string
       prerelease:
         description: Publish as a prerelease instead of the repository's latest
         required: true
         type: boolean
-
-env:
-  UPSTREAM_REPO: chen08209/FlClash
 
 jobs:
   release:
@@ -52,6 +53,7 @@ jobs:
           CHANNEL: ${{ inputs.channel }}
           BRANCH: ${{ inputs.branch }}
           VERSION: ${{ inputs.version }}
+          BUILD_NUMBER: ${{ inputs.build_number }}
           PRERELEASE: ${{ inputs.prerelease }}
         run: |
           set -euo pipefail
@@ -62,18 +64,12 @@ jobs:
             exit 1
           fi
 
-          # The app's update check compares the latest release's tag against its
-          # own versionName, which Android takes as the part of the pubspec
-          # version *before* the '+'. A tag carrying our build stamp therefore
-          # reads as a newer build of the version already installed and the check
-          # never settles. stable tags the bare upstream version; beta keeps the
-          # stamp because it is published as a prerelease and /releases/latest
-          # skips those, so its tag is never compared.
-          if [ "$PRERELEASE" = true ]; then
-            tag="v${VERSION}"
-          else
-            tag="v${VERSION%%+*}"
-          fi
+          # The tag is the version itself, for both channels: the app's update
+          # check compares the latest release's tag against its own versionName,
+          # and this is the versionName Android carries (see the build workflow).
+          # The build number -- which is the versionCode, not part of the version
+          # we show -- goes in the notes, where the next run reads it back from.
+          tag="v${VERSION}"
           commit="$(git rev-parse --short HEAD)"
           # `+` needs escaping the moment the URL travels through anything that
           # reads it as a space, which is every link in the Telegram message.
@@ -85,16 +81,19 @@ jobs:
 
           if [ "$CHANNEL" = stable ]; then
             label="正式版"
+            origin="上游 dev 的代码（在 beta 渠道验证过之后晋升进来的）"
           else
             label="beta"
+            origin="上游 dev 的最新代码"
           fi
 
           {
-            echo "本仓库自编译的 FlClash：\`${BRANCH}\` 分支 = 上游 [${UPSTREAM_REPO}](https://github.com/${UPSTREAM_REPO}/commit/${commit}) 的最新代码 + 我们自己的改动。"
+            echo "本仓库自编译的 FlClash：\`${BRANCH}\` 分支 = ${origin} + 我们自己的改动。"
             echo
             echo "- 渠道：\`${label}\`"
-            echo "- 版本：\`${VERSION}\`（上游版本 + 我们的构建序号）"
-            echo "- 上游提交：\`${commit}\`"
+            echo "- 版本：\`${VERSION}\`（前三段跟上游，第四位是我们自己的迭代号）"
+            echo "- 构建号：\`${BUILD_NUMBER}\`（APK 的 versionCode）"
+            echo "- 提交：[\`${commit}\`](https://github.com/${GITHUB_REPOSITORY}/commit/${commit})"
             echo "- 构建时间：$(date -u +%Y-%m-%dT%H:%M:%SZ)"
             echo
             echo "签名用的是本仓库自己的证书，与上游官方构建不同，所以：**装过其它版本（官方版或本仓库更早的构建）必须先卸载一次**，之后就能直接覆盖升级。"
@@ -118,6 +117,7 @@ jobs:
           TAG: ${{ steps.meta.outputs.tag }}
           BRANCH: ${{ inputs.branch }}
           VERSION: ${{ inputs.version }}
+          BUILD_NUMBER: ${{ inputs.build_number }}
           CHANNEL: ${{ inputs.channel }}
         run: |
           set -euo pipefail
@@ -126,10 +126,10 @@ jobs:
           else
             title="FlClash ${VERSION}（beta）"
           fi
-          # stable reuses its tag when the same upstream version is rebuilt, so
-          # the release it already has is replaced instead of the create failing
-          # on an existing tag. Keeping the tag keeps the download URLs -- and
-          # therefore the links already announced -- working.
+          # A tag is a version that has already been published, so this only
+          # happens when a run is retried: replacing the release keeps the
+          # download URLs -- and therefore every link already announced --
+          # working.
           if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             echo "replacing the existing release $TAG"
             gh release delete "$TAG" --repo "$GITHUB_REPOSITORY" --yes --cleanup-tag
