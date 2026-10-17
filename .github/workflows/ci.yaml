@@ -1,42 +1,42 @@
-name: mirror upstream and release
+name: sync upstream and release
 
-# This branch (`ci`) is the repository's default branch and holds *only* the
-# automation. `main` and `dev` are read-only mirrors of chen08209/FlClash, so
-# every build always runs against untouched upstream source and the fork can
-# never conflict with an upstream rebase.
+# `ci` is this repository's default branch and holds *only* the automation.
+# `stable` and `beta` are ours: upstream's branch plus our own commits rebased on
+# top. Rebasing is what keeps our patches alive across every upstream sync, and
+# upstream rewrites `dev` (force-pushes) often enough that a merge is not an
+# option. A sync that cannot be applied cleanly stops loudly and tells Telegram
+# instead of quietly shipping upstream alone.
 #
-# Flow: mirror main+dev -> build the channels that changed -> sign with our own
-# keystore -> tag + GitHub Release -> announce on Telegram.
+# Flow: rebase stable<-main and beta<-dev -> build the channels that moved ->
+# sign with our own keystore -> tag + GitHub Release -> announce on Telegram.
 
 on:
-  schedule:
-    # Hourly. GitHub's `schedule` is best effort and routinely lands late, so the
-    # two hour cron drifted to 2.5-3.5 hours apart in practice; checking hourly
-    # keeps the worst case near two hours. A check that finds nothing new costs
-    # one ~1 minute mirror job, because every build is gated on an upstream
-    # commit actually having changed.
-    - cron: '0 * * * *'
+  # The hourly schedule is switched on together with this pipeline's go-live.
   workflow_dispatch:
     inputs:
       channel:
-        description: Which channel to mirror and build
+        description: Which channel to sync and build
         type: choice
         options:
           - all
           - stable
-          - dev
+          - beta
         default: all
       force_build:
         description: Build even when upstream has not moved
         type: boolean
         default: false
+      publish:
+        description: Create the release and announce it on Telegram
+        type: boolean
+        default: false
 
 concurrency:
-  group: mirror-and-release
+  group: sync-and-release
   cancel-in-progress: false
 
-# The mirror job force-pushes main/dev and the release job creates tags and
-# releases, so the token needs write access to contents.
+# The sync force-pushes our branches and the release creates tags, so the token
+# needs write access to contents.
 permissions:
   contents: write
 
@@ -44,136 +44,237 @@ env:
   UPSTREAM_REPO: chen08209/FlClash
 
 jobs:
-  mirror:
-    name: Mirror upstream
+  sync:
+    name: Sync upstream
     runs-on: ubuntu-latest
     outputs:
       build_stable: ${{ steps.plan.outputs.build_stable }}
-      build_dev: ${{ steps.plan.outputs.build_dev }}
+      build_beta: ${{ steps.plan.outputs.build_beta }}
+      version_stable: ${{ steps.rebase.outputs.version_stable }}
+      version_beta: ${{ steps.rebase.outputs.version_beta }}
     steps:
-      - name: Mirror main and dev
-        id: mirror
+      - name: Rebase our branches onto upstream
+        id: rebase
         env:
-          MIRROR_TOKEN: ${{ secrets.MIRROR_TOKEN }}
-          FALLBACK_TOKEN: ${{ github.token }}
+          # GITHUB_TOKEN is refused when a push touches .github/workflows, which
+          # an upstream sync regularly does, so the push needs a PAT carrying the
+          # `workflow` scope.
+          TOKEN: ${{ secrets.MIRROR_TOKEN || github.token }}
+          CHANNEL: ${{ inputs.channel || 'all' }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
 
-          # GITHUB_TOKEN is refused when a push creates or updates a file under
-          # .github/workflows, which mirroring upstream always does, so the
-          # push needs a PAT carrying the `workflow` scope. It also means the
-          # push notifies other workflows -- upstream's own build.yml and
-          # pages.yml are disabled in this repository so they do not run here.
-          token="${MIRROR_TOKEN:-$FALLBACK_TOKEN}"
-          auth="https://x-access-token:${token}@github.com/${GITHUB_REPOSITORY}.git"
+          auth="https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git clone --quiet --filter=blob:none "$auth" work
+          cd work
+          git remote add upstream "https://github.com/${UPSTREAM_REPO}.git"
+          git fetch --quiet --filter=blob:none upstream
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git clone --quiet --mirror "https://github.com/${UPSTREAM_REPO}.git" upstream.git
-          cd upstream.git
+          case "$CHANNEL" in
+            all) channels="stable beta" ;;
+            stable) channels="stable" ;;
+            beta) channels="beta" ;;
+            *) echo "::error::unknown channel '$CHANNEL'"; exit 1 ;;
+          esac
 
-          up_main=$(git rev-parse refs/heads/main)
-          up_dev=$(git rev-parse refs/heads/dev)
-          our_main=$(git ls-remote "$auth" refs/heads/main | cut -f1)
-          our_dev=$(git ls-remote "$auth" refs/heads/dev | cut -f1)
-          echo "main  upstream=${up_main} ours=${our_main:-none}"
-          echo "dev   upstream=${up_dev} ours=${our_dev:-none}"
+          for ch in $channels; do
+            if [ "$ch" = stable ]; then up=main; else up=dev; fi
 
-          # main/dev carry no commits of our own, so overwriting them is always
-          # safe. Upstream rebases `dev` regularly, which is why this cannot be
-          # a fast-forward.
-          git push --quiet --force "$auth" \
-            refs/heads/main:refs/heads/main \
-            refs/heads/dev:refs/heads/dev
+            if ! git rev-parse --verify --quiet "refs/remotes/origin/$ch" >/dev/null; then
+              echo "::notice::$ch does not exist yet, nothing to sync"
+              continue
+            fi
 
-          {
-            echo "main_changed=$([ "$up_main" != "$our_main" ] && echo true || echo false)"
-            echo "dev_changed=$([ "$up_dev" != "$our_dev" ] && echo true || echo false)"
-          } >> "$GITHUB_OUTPUT"
+            git checkout --quiet -B "$ch" "refs/remotes/origin/$ch"
 
-      - name: Disable upstream's own workflows
-        # The mirrors carry upstream's .github/workflows, so without this every
-        # sync would also run this repository's copy of upstream CI. Neither of
-        # them can publish anything here: they are all gated on
-        # `github.repository == 'chen08209/FlClash'`.
-        continue-on-error: true
-        env:
-          GH_TOKEN: ${{ secrets.MIRROR_TOKEN }}
-        run: |
-          for name in build.yaml pages.yaml; do
-            gh workflow disable "$name" --repo "$GITHUB_REPOSITORY" && echo "disabled $name"
+            upstream_tip=$(git rev-parse "upstream/$up")
+            base=$(git merge-base "refs/heads/$ch" "upstream/$up")
+            echo "$ch: upstream/$up tip=$upstream_tip, our base=$base"
+
+            if [ "$upstream_tip" = "$base" ]; then
+              echo "$ch: upstream has not moved"
+              continue
+            fi
+
+            # Our commits are exactly what sits after the old merge base, so
+            # replaying that range on the new upstream tip carries our patches
+            # over and leaves the branch a straight line on top of upstream.
+            if git rebase --onto "upstream/$up" "$base" "$ch"; then
+              git push --quiet --force-with-lease origin "$ch"
+              echo "synced_$ch=true" >> "$GITHUB_OUTPUT"
+              echo "$ch: rebased onto $upstream_tip and pushed"
+            else
+              git rebase --abort
+              echo "conflict_$ch=true" >> "$GITHUB_OUTPUT"
+              echo "::error::$ch: our commits no longer apply to upstream/$up ($upstream_tip)"
+            fi
           done
+
+          # Every release gets a number of its own: upstream's version plus a
+          # build stamp, which is what the app's own update check compares. It is
+          # never committed -- both build and release receive it as an input, so
+          # an upstream version bump can never conflict with ours.
+          today=$(date -u +%Y%m%d)
+          for ch in $channels; do
+            git rev-parse --verify --quiet "refs/heads/$ch" >/dev/null || continue
+            base_version=$(git show "$ch:pubspec.yaml" | sed -n 's/^version: *\([^+]*\).*/\1/p' | tr -d '\r')
+            prefix="v${base_version}+${today}"
+            used=$(gh api "repos/${GITHUB_REPOSITORY}/git/matching-refs/tags/${prefix}" --jq 'length' 2>/dev/null || echo 0)
+            seq=$(printf '%02d' $(( used + 1 )))
+            echo "version_$ch=${base_version}+${today}${seq}" >> "$GITHUB_OUTPUT"
+            echo "$ch: next version ${base_version}+${today}${seq}"
+          done
+
+      - name: Tell Telegram when a sync could not be applied
+        if: >-
+          always() &&
+          (steps.rebase.outputs.conflict_stable == 'true' ||
+           steps.rebase.outputs.conflict_beta == 'true')
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          CONFLICT_STABLE: ${{ steps.rebase.outputs.conflict_stable }}
+          CONFLICT_BETA: ${{ steps.rebase.outputs.conflict_beta }}
+        run: |
+          set -euo pipefail
+          [ -n "${TELEGRAM_BOT_TOKEN:-}" ] && [ -n "${TELEGRAM_CHAT_ID:-}" ] || exit 0
+          which=""
+          [ "$CONFLICT_STABLE" = true ] && which="stable（← 上游 main）"
+          [ "$CONFLICT_BETA" = true ] && which="${which:+$which / }beta（← 上游 dev）"
+          {
+            echo "⚠️ FlClash 同步中止：上游更新与我们的改动冲突"
+            echo
+            echo "冲突分支：${which}"
+            echo "没有构建、没有发布，等人工处理。"
+            echo "构建日志：${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          } > /tmp/msg.txt
+          curl -fsS -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+            --data-urlencode "text@/tmp/msg.txt" \
+            || echo "::warning::Telegram 推送失败"
+
+      - name: Fail when a rebase conflicted
+        if: >-
+          steps.rebase.outputs.conflict_stable == 'true' ||
+          steps.rebase.outputs.conflict_beta == 'true'
+        run: |
+          echo "::error::resolve the conflict by hand, then re-run the sync"
+          exit 1
 
       - name: Plan
         id: plan
         env:
           CHANNEL: ${{ inputs.channel || 'all' }}
           FORCE: ${{ inputs.force_build || 'false' }}
-          MAIN_CHANGED: ${{ steps.mirror.outputs.main_changed }}
-          DEV_CHANGED: ${{ steps.mirror.outputs.dev_changed }}
+          SYNCED_STABLE: ${{ steps.rebase.outputs.synced_stable }}
+          SYNCED_BETA: ${{ steps.rebase.outputs.synced_beta }}
+          CONFLICT_STABLE: ${{ steps.rebase.outputs.conflict_stable }}
+          CONFLICT_BETA: ${{ steps.rebase.outputs.conflict_beta }}
         run: |
           set -euo pipefail
           case "$CHANNEL" in
-            all) want_stable=true; want_dev=true ;;
-            stable) want_stable=true; want_dev=false ;;
-            dev) want_stable=false; want_dev=true ;;
+            all) want_stable=true; want_beta=true ;;
+            stable) want_stable=true; want_beta=false ;;
+            beta) want_stable=false; want_beta=true ;;
             *) echo "::error::unknown channel '$CHANNEL'"; exit 1 ;;
           esac
 
-          decided() { # $1 = wanted, $2 = changed
-            [ "$1" = true ] && { [ "$2" = true ] || [ "$FORCE" = true ]; } && echo true || echo false
+          decided() { # $1 = wanted, $2 = synced, $3 = conflicted
+            [ "$1" = true ] && [ "$3" != true ] &&
+              { [ "$2" = true ] || [ "$FORCE" = true ]; } && echo true || echo false
           }
 
-          echo "build_stable=$(decided "$want_stable" "$MAIN_CHANGED")" >> "$GITHUB_OUTPUT"
-          echo "build_dev=$(decided "$want_dev" "$DEV_CHANGED")" >> "$GITHUB_OUTPUT"
-          echo "plan: stable=$want_stable changed=$MAIN_CHANGED / dev=$want_dev changed=$DEV_CHANGED / force=$FORCE"
+          echo "build_stable=$(decided "$want_stable" "$SYNCED_STABLE" "$CONFLICT_STABLE")" >> "$GITHUB_OUTPUT"
+          echo "build_beta=$(decided "$want_beta" "$SYNCED_BETA" "$CONFLICT_BETA")" >> "$GITHUB_OUTPUT"
+          echo "plan: stable=$want_stable synced=$SYNCED_STABLE conflict=$CONFLICT_STABLE"
+          echo "plan: beta=$want_beta synced=$SYNCED_BETA conflict=$CONFLICT_BETA force=$FORCE"
 
-  build-stable:
-    name: Build stable
-    needs: mirror
-    if: needs.mirror.outputs.build_stable == 'true'
+  test-stable:
+    name: Test stable
+    needs: sync
+    if: needs.sync.outputs.build_stable == 'true'
     uses: ./.github/workflows/build-channel.yaml
     with:
       channel: stable
-      branch: main
+      branch: stable
       env: stable
+      version: ${{ needs.sync.outputs.version_stable }}
+      stage: test
     secrets: inherit
 
-  build-dev:
-    name: Build dev
-    needs: mirror
-    if: needs.mirror.outputs.build_dev == 'true'
+  build-stable:
+    name: Build stable
+    needs: [sync, test-stable]
+    if: needs.sync.outputs.build_stable == 'true'
     uses: ./.github/workflows/build-channel.yaml
     with:
-      channel: dev
-      branch: dev
-      env: dev
+      channel: stable
+      branch: stable
+      env: stable
+      version: ${{ needs.sync.outputs.version_stable }}
+      stage: build
     secrets: inherit
 
-  # `always()` so a single failed platform still publishes the rest; the job
-  # fails loudly when nothing was produced at all.
+  test-beta:
+    name: Test beta
+    needs: sync
+    if: needs.sync.outputs.build_beta == 'true'
+    uses: ./.github/workflows/build-channel.yaml
+    with:
+      channel: beta
+      branch: beta
+      env: pre
+      version: ${{ needs.sync.outputs.version_beta }}
+      stage: test
+    secrets: inherit
+
+  build-beta:
+    name: Build beta
+    needs: [sync, test-beta]
+    if: needs.sync.outputs.build_beta == 'true'
+    uses: ./.github/workflows/build-channel.yaml
+    with:
+      channel: beta
+      branch: beta
+      env: pre
+      version: ${{ needs.sync.outputs.version_beta }}
+      stage: build
+    secrets: inherit
+
+  # A release needs its own channel's tests to have passed. A single failed
+  # platform only costs that platform: fail-fast is off in the build matrix and
+  # publishing whatever arrived is the point, so only `cancelled` blocks it.
   release-stable:
     name: Release stable
-    needs: [mirror, build-stable]
+    needs: [sync, test-stable, build-stable]
     if: >-
-      always() &&
-      needs.mirror.outputs.build_stable == 'true' &&
+      inputs.publish &&
+      needs.sync.outputs.build_stable == 'true' &&
+      needs.test-stable.result == 'success' &&
       needs.build-stable.result != 'cancelled'
     uses: ./.github/workflows/publish-release.yaml
     with:
       channel: stable
-      branch: main
-      latest: true
+      branch: stable
+      version: ${{ needs.sync.outputs.version_stable }}
+      prerelease: false
     secrets: inherit
 
-  release-dev:
-    name: Release dev
-    needs: [mirror, build-dev]
+  release-beta:
+    name: Release beta
+    needs: [sync, test-beta, build-beta]
     if: >-
-      always() &&
-      needs.mirror.outputs.build_dev == 'true' &&
-      needs.build-dev.result != 'cancelled'
+      inputs.publish &&
+      needs.sync.outputs.build_beta == 'true' &&
+      needs.test-beta.result == 'success' &&
+      needs.build-beta.result != 'cancelled'
     uses: ./.github/workflows/publish-release.yaml
     with:
-      channel: dev
-      branch: dev
-      latest: false
+      channel: beta
+      branch: beta
+      version: ${{ needs.sync.outputs.version_beta }}
+      prerelease: true
     secrets: inherit

@@ -1,9 +1,14 @@
 name: build
 
-# Called by ci.yaml once per channel that upstream moved. The signing keystore
-# is injected from repository secrets; without it upstream's Gradle falls back
-# to the debug key and appends a `.dev` suffix, so every APK here is signed with
-# our own certificate and keeps the `com.follow.clash` package name.
+# Called twice per channel by ci.yaml: once with `stage: test` to gate the
+# channel on its own test suite, once with `stage: build` to produce the
+# artifacts. Split in two so a failing test blocks the release while a single
+# failing platform still publishes the rest.
+#
+# The signing keystore is injected from repository secrets; without it
+# upstream's Gradle falls back to the debug key and appends a `.dev` suffix, so
+# every APK here is signed with our own certificate and keeps the
+# `com.follow.clash` package name.
 
 on:
   workflow_call:
@@ -13,11 +18,19 @@ on:
         required: true
         type: string
       branch:
-        description: Branch to build (a pure upstream mirror)
+        description: Our branch to build (upstream plus our commits)
         required: true
         type: string
       env:
         description: Value passed to `dart setup.dart --env`
+        required: true
+        type: string
+      version:
+        description: Version to inject into pubspec.yaml
+        required: true
+        type: string
+      stage:
+        description: Whether to test or to build
         required: true
         type: string
 
@@ -27,8 +40,38 @@ env:
   NDK_VERSION: r28c
 
 jobs:
+  test:
+    name: Test
+    if: inputs.stage == 'test'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+          submodules: recursive
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: master
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Get Flutter dependencies
+        run: |
+          flutter --version
+          flutter pub get
+
+      # Upstream's own suite, unchanged apart from our patches' own test edits.
+      # A red suite stops the channel before anything is built or released.
+      - name: Run the tests
+        run: flutter test --reporter expanded
+
   build:
     name: ${{ matrix.platform }} ${{ matrix.arch }}
+    if: inputs.stage == 'build'
     runs-on: ${{ matrix.os }}
     timeout-minutes: 180
     strategy:
@@ -61,6 +104,19 @@ jobs:
         with:
           ref: ${{ inputs.branch }}
           submodules: recursive
+
+      # Our own number, upstream's version: `<upstream>+<YYYYMMDD><sequence>`.
+      # Injected here rather than committed so an upstream version bump can
+      # never conflict with it, and so the app's update check orders releases
+      # the same way upstream's does.
+      - name: Inject our version
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          echo "upstream had: $(grep -n '^version:' pubspec.yaml)"
+          sed -i "s|^version: .*|version: ${VERSION}|" pubspec.yaml
+          grep -n '^version:' pubspec.yaml
 
       - name: Set up Rust (Windows arm64)
         if: matrix.os == 'windows-11-arm'
@@ -204,6 +260,8 @@ jobs:
       # instead of publishing an APK that is not signed with our certificate.
       - name: Verify the APK is signed with our key
         if: matrix.platform == 'android'
+        env:
+          VERSION: ${{ inputs.version }}
         run: |
           set -euo pipefail
           build_tools="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)"
@@ -217,6 +275,10 @@ jobs:
             fi
             if "$build_tools/apksigner" verify --print-certs "$apk" | grep -q "CN=Android Debug"; then
               echo "::error::$(basename "$apk") is signed with the Android debug key"
+              exit 1
+            fi
+            if ! "$build_tools/aapt2" dump badging "$apk" | grep -q "versionName='${VERSION%%+*}'"; then
+              echo "::error::$(basename "$apk") does not carry the version we injected ($VERSION)"
               exit 1
             fi
           done
