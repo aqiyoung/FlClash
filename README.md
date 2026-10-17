@@ -1,6 +1,6 @@
 # FlClash 重建版（自签名 release）
 
-本分支（`ci`）是这个仓库的**默认分支**，只放自动化脚本，不存放应用源码。安装包发布在本仓库的 Releases。
+本分支（`ci`）只放自动化脚本，不存放应用源码；仓库的**默认分支是 `main`**，那上面是应用源码。同一份工作流在 `main` 上也有副本，因为 GitHub 的定时任务只在默认分支上运行。安装包发布在本仓库的 Releases。
 
 ## 为什么有它
 
@@ -26,11 +26,11 @@ APK 签名证书（SHA-256）：`04:89:68:C1:72:8E:0E:2E:27:E7:04:D6:B3:01:74:27
 
 | 分支 | 内容 |
 | --- | --- |
-| `ci`（默认） | 只有自动化：`.github/workflows/` + 本文件 |
-| `stable` | 上游 `main` + 我们自己的提交 |
+| `main`（默认） | 上游 `main` + 我们自己的提交；正式版渠道构建的就是它 |
 | `beta` | 上游 `dev` + 我们自己的提交 |
+| `ci` | 只有自动化：`.github/workflows/` + 本文件 |
 
-这里**不是**覆盖式镜像：`stable` / `beta` 上带着我们自己的提交，同步时用 **rebase** 把我们的提交重放到上游最新代码上。
+这里**不是**覆盖式镜像：`main` / `beta` 上带着我们自己的提交，同步时用 **rebase** 把我们的提交重放到上游最新代码上。
 
 为什么必须 rebase：上游会改写 `dev` 的历史（force-push），merge 无从谈起。rebase 的代价是遇到冲突要人处理，所以**冲突就停下**——同步任务会中止、推 TG 告警、并且**不构建**，不会静默地用上游代码盖掉我们的改动。
 
@@ -43,10 +43,11 @@ APK 签名证书（SHA-256）：`04:89:68:C1:72:8E:0E:2E:27:E7:04:D6:B3:01:74:27
 | 关于页 | 去掉上游的 Telegram 频道入口（那个频道不是我们运营的） |
 | 更新检查（两个渠道） | 指向本仓库的 Releases，而不是上游 |
 | 服务状态的图标 | 13 个服务图标由单色改为品牌色，图标底板固定浅色 |
+| 仪表盘的图标 | 「状态」卡片里的出口国家由两个大写字母改成国旗（沿用服务状态那套 Twemoji 国旗连字，不引入新资源） |
 
 免责声明那条是**接着上游写的**：上游 0.9.1 起给遥控器设备提供了勾选路径，但手机上仍然是打字。我们只是把这个勾选路径改成所有设备都走，差异因此很小。
 
-（0.9.0 时期 `stable` 上还从 `dev` 回移过三条 l10n 文案；上游 0.9.1 自己发了这些键，那条回移已经删掉。）
+（0.9.0 时期 `main` 上还从 `dev` 回移过三条 l10n 文案；上游 0.9.1 自己发了这些键，那条回移已经删掉。）
 
 服务图标那条只动了资产和一处底板颜色：13 个 SVG 原来是 `fill="currentColor"`（跟着主题染色），现在换成各自的品牌色，形状一个没动。因为 GitHub、TikTok 这些品牌色本身是纯黑，压到深色主题的卡片上会看不见，所以图标底板从"跟随主题的表面色"改成固定浅色。另外把"服务已关闭"的灰化从染色改成整枚图标降透明度（`opacity38` → `Opacity`），否则关掉的服务会和打开的长得一样。色值与出处记在 `assets/images/services/LICENSE.md`。
 
@@ -66,7 +67,7 @@ APK 签名证书（SHA-256）：`04:89:68:C1:72:8E:0E:2E:27:E7:04:D6:B3:01:74:27
 
 | 渠道 | 分支 | Release |
 | --- | --- | --- |
-| 正式版 | `stable` | 标记为 Latest |
+| 正式版 | `main` | 标记为 Latest |
 | 测试版 | `beta` | prerelease，**不抢占 Latest** |
 
 App 内更新检查读的是 `/releases/latest`（只挑正式版），所以测试版不会推给正式版用户。
@@ -75,7 +76,7 @@ App 内更新检查读的是 `/releases/latest`（只挑正式版），所以测
 
 ```
 每小时（cron '17 * * * *'）
-  └─ sync    上游 main/dev → rebase 进 stable/beta；我们的提交原样重放
+  └─ sync    上游 main/dev → rebase 进 main/beta；我们的提交原样重放
       ├─ 上游没动 → 到此为止，什么都不做（不会凭空重发）
       └─ 冲突     → 中止 + 推 TG，不构建
   └─ test    该渠道跑完整 flutter 测试
@@ -90,8 +91,8 @@ App 内更新检查读的是 `/releases/latest`（只挑正式版），所以测
 - **测试不过就不发布**：发布挂在"该渠道的测试通过"这个条件上。
 - 单个平台构建失败**不阻塞**其它平台的发布；该渠道整体失败则不发布。
 - `macos` 没有 Apple 开发者证书，产物是**未签名**的（首次打开要在「系统设置 → 隐私与安全性」里放行）。
-- GitHub 的 `schedule` 是 best-effort、不保证准点：高负载时会延后甚至漏掉一班。这是 GitHub 侧的行为，改不掉；要准点只能走外部定时。
-- 推 `stable`/`beta` 会触发这两个分支上**上游自带**的工作流。`build.yaml` 必须保持**手动禁用**：它的触发条件是 `branches: ['**']` 加 `tags: ['v*']`，也就是我们每次同步、每次发布打 tag 都会撞上它。`pages.yaml` 有 `github.repository` 守卫，跑起来什么也不做。
+- GitHub 的 `schedule` 是 best-effort、不保证准点：高负载时会延后甚至漏掉一班。这是 GitHub 侧的行为，改不掉；要准点只能走外部定时。另一个硬约束：`schedule` **只在默认分支上运行**，所以工作流在 `main`（默认）和 `ci` 上各放了一份副本，内容相同。
+- 推 `main`/`beta` 会触发这两个分支上**上游自带**的工作流。`build.yaml` 必须保持**手动禁用**：它的触发条件是 `branches: ['**']` 加 `tags: ['v*']`，也就是我们每次同步、每次发布打 tag 都会撞上它。`pages.yaml` 有 `github.repository` 守卫，跑起来什么也不做。
 
 ## 手动触发
 
@@ -111,9 +112,9 @@ gh workflow run ci.yaml -R aqiyoung/FlClash --ref ci -f channel=beta
 
 ## 需要修改代码时
 
-不要直接往 `stable` / `beta` 上提交 —— 下次同步时它们会被 rebase，你的提交会成为"我们自己的提交"的一部分（这没问题），但**未推送**的本地提交会被丢掉。
+不要直接往 `main` / `beta` 上提交 —— 下次同步时它们会被 rebase，你的提交会成为"我们自己的提交"的一部分（这没问题），但**未推送**的本地提交会被丢掉。
 
-改法：在 `stable` / `beta` 上正常提交并推送，然后让同步任务把它 rebase 到上游最新。改完先用 `publish=false` 跑一次确认测试是绿的。
+改法：在 `main` / `beta` 上正常提交并推送，然后让同步任务把它 rebase 到上游最新。改完先用 `publish=false` 跑一次确认测试是绿的。
 
 ## 同步报冲突时
 
@@ -137,7 +138,7 @@ gh workflow run ci.yaml -R aqiyoung/FlClash --ref ci \
 | `STORE_PASSWORD` | keystore 密码 | 已配置 |
 | `KEY_ALIAS` | key alias（`flclash`） | 已配置 |
 | `KEY_PASSWORD` | key 密码 | 已配置 |
-| `MIRROR_TOKEN` | 推送 `stable`/`beta` 用的 PAT，需要 **`workflow`** scope | 已配置 |
+| `MIRROR_TOKEN` | 推送 `main`/`beta` 用的 PAT，需要 **`workflow`** scope | 已配置 |
 | `TELEGRAM_BOT_TOKEN` | 推送用的 bot token | 已配置 |
 | `TELEGRAM_CHAT_ID` | 目标会话 / 群，如 `-100xxxxxxxxxx` | 已配置 |
 

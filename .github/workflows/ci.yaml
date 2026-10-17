@@ -1,14 +1,19 @@
 name: sync upstream and release
 
-# `ci` is this repository's default branch and holds *only* the automation.
-# `stable` and `beta` are ours: upstream's branch plus our own commits rebased on
-# top. Rebasing is what keeps our patches alive across every upstream sync, and
+# `main` is what this repository shows by default: upstream's `main` plus our
+# own commits rebased on top, which is also what the stable channel builds.
+# `beta` is ours the same way, on top of upstream's `dev`. The `ci` branch holds
+# *only* the automation, and a copy of it lives on `main` because GitHub runs
+# scheduled workflows from the default branch alone.
+#
+# Rebasing is what keeps our patches alive across every upstream sync, and
 # upstream rewrites `dev` (force-pushes) often enough that a merge is not an
 # option. A sync that cannot be applied cleanly stops loudly and tells Telegram
 # instead of quietly shipping upstream alone.
 #
-# Flow: rebase stable<-main and beta<-dev -> build the channels that moved ->
-# sign with our own keystore -> tag + GitHub Release -> announce on Telegram.
+# Flow: rebase main<-upstream/main and beta<-upstream/dev -> build the channels
+# that moved -> sign with our own keystore -> tag + GitHub Release -> announce on
+# Telegram.
 
 on:
   # Hourly. The sync job compares branch tips first, so a run with nothing new
@@ -83,24 +88,31 @@ jobs:
             all) channels="stable beta" ;;
             stable) channels="stable" ;;
             beta) channels="beta" ;;
-            *) echo "::error::unknown channel '$CHANNEL'"; exit 1 ;;
+            *) echo "::error::unknown channel '$CHANNEL' (expected all, stable or beta; the stable channel builds branch main)"; exit 1 ;;
           esac
 
+          # A channel is not a branch: the stable channel (what the repository
+          # shows by default) is our `main`, the beta channel is `beta`. The
+          # step outputs and the jobs that read them stay keyed by channel, so
+          # only the git work below uses $br.
+          branch_of() { [ "$1" = stable ] && echo main || echo "$1"; }
+
           for ch in $channels; do
+            br=$(branch_of "$ch")
             if [ "$ch" = stable ]; then up=main; else up=dev; fi
 
-            if ! git rev-parse --verify --quiet "refs/remotes/origin/$ch" >/dev/null; then
-              echo "::notice::$ch does not exist yet, nothing to sync"
+            if ! git rev-parse --verify --quiet "refs/remotes/origin/$br" >/dev/null; then
+              echo "::notice::$br does not exist yet, nothing to sync"
               echo "exists_$ch=false" >> "$GITHUB_OUTPUT"
               continue
             fi
             echo "exists_$ch=true" >> "$GITHUB_OUTPUT"
 
-            git checkout --quiet -B "$ch" "refs/remotes/origin/$ch"
+            git checkout --quiet -B "$br" "refs/remotes/origin/$br"
 
             upstream_tip=$(git rev-parse "upstream/$up")
-            base=$(git merge-base "refs/heads/$ch" "upstream/$up")
-            echo "$ch: upstream/$up tip=$upstream_tip, our base=$base"
+            base=$(git merge-base "refs/heads/$br" "upstream/$up")
+            echo "$ch ($br): upstream/$up tip=$upstream_tip, our base=$base"
 
             if [ "$upstream_tip" = "$base" ]; then
               echo "$ch: upstream has not moved"
@@ -110,8 +122,8 @@ jobs:
             # Our commits are exactly what sits after the old merge base, so
             # replaying that range on the new upstream tip carries our patches
             # over and leaves the branch a straight line on top of upstream.
-            if git rebase --onto "upstream/$up" "$base" "$ch"; then
-              git push --quiet --force-with-lease origin "$ch"
+            if git rebase --onto "upstream/$up" "$base" "$br"; then
+              git push --quiet --force-with-lease origin "$br"
               echo "synced_$ch=true" >> "$GITHUB_OUTPUT"
               echo "$ch: rebased onto $upstream_tip and pushed"
             else
@@ -149,12 +161,13 @@ jobs:
           # and bash would read a bare 09 as an invalid octal number.
           stamp=$(( 10#${highest:-0} + 1 ))
           for ch in $channels; do
-            git rev-parse --verify --quiet "refs/heads/$ch" >/dev/null || continue
-            base_version=$(git show "$ch:pubspec.yaml" | sed -n 's/^version: *\([^+]*\).*/\1/p' | tr -d '\r')
+            br=$(branch_of "$ch")
+            git rev-parse --verify --quiet "refs/heads/$br" >/dev/null || continue
+            base_version=$(git show "$br:pubspec.yaml" | sed -n 's/^version: *\([^+]*\).*/\1/p' | tr -d '\r')
             seq=$(printf '%02d' "$stamp")
             stamp=$(( stamp + 1 ))
             echo "version_$ch=${base_version}+${today}${seq}" >> "$GITHUB_OUTPUT"
-            echo "$ch: next version ${base_version}+${today}${seq}"
+            echo "$ch ($br): next version ${base_version}+${today}${seq}"
           done
 
       - name: Tell Telegram when a sync could not be applied
@@ -210,7 +223,7 @@ jobs:
             all) want_stable=true; want_beta=true ;;
             stable) want_stable=true; want_beta=false ;;
             beta) want_stable=false; want_beta=true ;;
-            *) echo "::error::unknown channel '$CHANNEL'"; exit 1 ;;
+            *) echo "::error::unknown channel '$CHANNEL' (expected all, stable or beta; the stable channel builds branch main)"; exit 1 ;;
           esac
 
           # A channel only gets built if it exists: `force_build` means "build
@@ -233,7 +246,7 @@ jobs:
     uses: ./.github/workflows/build-channel.yaml
     with:
       channel: stable
-      branch: stable
+      branch: main
       env: stable
       version: ${{ needs.sync.outputs.version_stable }}
       stage: test
@@ -246,7 +259,7 @@ jobs:
     uses: ./.github/workflows/build-channel.yaml
     with:
       channel: stable
-      branch: stable
+      branch: main
       env: stable
       version: ${{ needs.sync.outputs.version_stable }}
       stage: build
@@ -292,7 +305,7 @@ jobs:
     uses: ./.github/workflows/publish-release.yaml
     with:
       channel: stable
-      branch: stable
+      branch: main
       version: ${{ needs.sync.outputs.version_stable }}
       prerelease: false
     secrets: inherit
