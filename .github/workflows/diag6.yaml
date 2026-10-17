@@ -15,6 +15,10 @@ on:
         description: per-test timeout
         required: false
         default: 90s
+      path:
+        description: test file or directory to run
+        required: false
+        default: test/common/dialog_test.dart
 
 permissions:
   contents: read
@@ -49,5 +53,5 @@ jobs:
           echo "ref=${{ inputs.ref }}"
           git log --oneline -3
 
-      - name: Run the disclaimer dialog tests
-        run: flutter test test/common/dialog_test.dart --reporter expanded --timeout "${{ inputs.timeout }}"
+      - name: Run the tests
+        run: flutter test "${{ inputs.path }}" --reporter expanded --timeout "${{ inputs.timeout }}"
