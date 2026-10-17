@@ -121,32 +121,36 @@ jobs:
             fi
           done
 
-          # Every release gets a number of its own: upstream's version plus a
-          # build stamp, which is what the app's own update check compares. It is
-          # never committed -- both build and release receive it as an input, so
-          # an upstream version bump can never conflict with ours.
+          # Every release carries a build stamp of its own: upstream's version
+          # plus <date><sequence>. It is never committed -- build and release
+          # both receive it as an input, so an upstream version bump can never
+          # conflict with ours. The stamp becomes the versionCode, which is what
+          # lets one build install over another.
           #
-          # The number is one past the highest already used for that version and
-          # day, not the number of tags: counting assumes the stamps are
-          # contiguous, and any tag that ever went missing would hand the same
-          # number out twice. Both channels often sit on the same upstream
-          # version -- main and dev follow each other -- and they share one tag
-          # namespace, so they draw from a single counter per version+day and
-          # take the next number each.
+          # The sequence is one past the highest spent *that day*: not the number
+          # of tags, because counting assumes the stamps are contiguous and any
+          # tag that ever went missing would hand the same number out twice; and
+          # not per version, because that restarts at 01 the moment upstream
+          # ships a new version, and on a day that already had a release it would
+          # produce a lower versionCode than the one already on the phone, which
+          # Android refuses to install over.
+          #
+          # Both channels draw from the one counter. stable is tagged with the
+          # bare version while beta keeps the stamp, so the releases carry the
+          # stamps that the tags alone would miss.
           today=$(date -u +%Y%m%d)
-          declare -A next_stamp
+          releases=$(gh api "repos/${GITHUB_REPOSITORY}/releases?per_page=100" \
+            --jq '[.[] | .name, .tag_name] | .[]' 2>/dev/null || true)
+          tags=$(gh api "repos/${GITHUB_REPOSITORY}/tags?per_page=100" \
+            --jq '.[] | .name' 2>/dev/null || true)
+          highest=$(printf '%s\n%s\n' "$releases" "$tags" \
+            | sed -n "s/.*${today}\([0-9][0-9]*\).*/\1/p" | sort -n | tail -1)
+          stamp=$(( ${highest:-0} + 1 ))
           for ch in $channels; do
             git rev-parse --verify --quiet "refs/heads/$ch" >/dev/null || continue
             base_version=$(git show "$ch:pubspec.yaml" | sed -n 's/^version: *\([^+]*\).*/\1/p' | tr -d '\r')
-            prefix="v${base_version}+${today}"
-            if [ -z "${next_stamp[$prefix]:-}" ]; then
-              highest=$(gh api "repos/${GITHUB_REPOSITORY}/git/matching-refs/tags/${prefix}" \
-                --jq "[.[] | .ref | ltrimstr(\"refs/tags/${prefix}\") | select(. != \"\") | tonumber] | max // 0" \
-                2>/dev/null || echo 0)
-              next_stamp[$prefix]=$(( highest + 1 ))
-            fi
-            seq=$(printf '%02d' "${next_stamp[$prefix]}")
-            next_stamp[$prefix]=$(( ${next_stamp[$prefix]} + 1 ))
+            seq=$(printf '%02d' "$stamp")
+            stamp=$(( stamp + 1 ))
             echo "version_$ch=${base_version}+${today}${seq}" >> "$GITHUB_OUTPUT"
             echo "$ch: next version ${base_version}+${today}${seq}"
           done

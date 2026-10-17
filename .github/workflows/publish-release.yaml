@@ -15,7 +15,7 @@ on:
         required: true
         type: string
       version:
-        description: Version this release carries; also its tag
+        description: Version this release carries; a prerelease also tags it
         required: true
         type: string
       prerelease:
@@ -52,6 +52,7 @@ jobs:
           CHANNEL: ${{ inputs.channel }}
           BRANCH: ${{ inputs.branch }}
           VERSION: ${{ inputs.version }}
+          PRERELEASE: ${{ inputs.prerelease }}
         run: |
           set -euo pipefail
           shopt -s nullglob
@@ -61,7 +62,18 @@ jobs:
             exit 1
           fi
 
-          tag="v${VERSION}"
+          # The app's update check compares the latest release's tag against its
+          # own versionName, which Android takes as the part of the pubspec
+          # version *before* the '+'. A tag carrying our build stamp therefore
+          # reads as a newer build of the version already installed and the check
+          # never settles. stable tags the bare upstream version; beta keeps the
+          # stamp because it is published as a prerelease and /releases/latest
+          # skips those, so its tag is never compared.
+          if [ "$PRERELEASE" = true ]; then
+            tag="v${VERSION}"
+          else
+            tag="v${VERSION%%+*}"
+          fi
           commit="$(git rev-parse --short HEAD)"
           # `+` needs escaping the moment the URL travels through anything that
           # reads it as a space, which is every link in the Telegram message.
@@ -113,6 +125,14 @@ jobs:
             title="FlClash ${VERSION}（正式版）"
           else
             title="FlClash ${VERSION}（beta）"
+          fi
+          # stable reuses its tag when the same upstream version is rebuilt, so
+          # the release it already has is replaced instead of the create failing
+          # on an existing tag. Keeping the tag keeps the download URLs -- and
+          # therefore the links already announced -- working.
+          if gh release view "$TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "replacing the existing release $TAG"
+            gh release delete "$TAG" --repo "$GITHUB_REPOSITORY" --yes --cleanup-tag
           fi
           gh release create "$TAG" dist/* \
             --repo "$GITHUB_REPOSITORY" \
