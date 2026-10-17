@@ -1,0 +1,311 @@
+name: build
+
+# Called twice per channel by ci.yaml: once with `stage: test` to gate the
+# channel on its own test suite, once with `stage: build` to produce the
+# artifacts. Split in two so a failing test blocks the release while a single
+# failing platform still publishes the rest.
+#
+# The signing keystore is injected from repository secrets; without it
+# upstream's Gradle falls back to the debug key and appends a `.dev` suffix, so
+# every APK here is signed with our own certificate and keeps the
+# `com.follow.clash` package name.
+
+on:
+  workflow_call:
+    inputs:
+      channel:
+        description: Release channel the artifacts belong to
+        required: true
+        type: string
+      branch:
+        description: Our branch to build (upstream plus our commits)
+        required: true
+        type: string
+      env:
+        description: Value passed to `dart setup.dart --env`
+        required: true
+        type: string
+      version:
+        description: Version to inject into pubspec.yaml
+        required: true
+        type: string
+      stage:
+        description: Whether to test or to build
+        required: true
+        type: string
+
+env:
+  FLUTTER_VERSION: '3.47.6'
+  GO_VERSION: '1.27.1'
+  NDK_VERSION: r28c
+
+jobs:
+  test:
+    name: Test
+    if: inputs.stage == 'test'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+          submodules: recursive
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: master
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Get Flutter dependencies
+        run: |
+          flutter --version
+          flutter pub get
+
+      # Upstream's own suite, unchanged apart from our patches' own test edits.
+      # A red suite stops the channel before anything is built or released.
+      - name: Run the tests
+        run: flutter test --reporter expanded
+
+  build:
+    name: ${{ matrix.platform }} ${{ matrix.arch }}
+    if: inputs.stage == 'build'
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: android
+            os: ubuntu-latest
+          - platform: linux
+            os: ubuntu-22.04
+            arch: amd64
+          - platform: linux
+            os: ubuntu-24.04-arm
+            arch: arm64
+          - platform: windows
+            os: windows-2022
+            arch: amd64
+          - platform: windows
+            os: windows-11-arm
+            arch: arm64
+          - platform: macos
+            os: macos-15-intel
+            arch: amd64
+          - platform: macos
+            os: macos-latest
+            arch: arm64
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.branch }}
+          submodules: recursive
+
+      # Every release gets a number of its own: upstream's version plus a build
+      # stamp, which is what the app's own update check compares. It is never
+      # committed -- both build and release receive it as an input, so an
+      # upstream version bump can never conflict with ours.
+      - name: Inject our version
+        shell: bash
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          count="$(grep -c '^version:' pubspec.yaml || true)"
+          if [ "$count" != "1" ]; then
+            echo "::error::expected exactly one top-level version line, found $count"
+            exit 1
+          fi
+          echo "upstream had: $(grep '^version:' pubspec.yaml)"
+          # awk, not sed: this runs on the Windows and macOS runners too, where
+          # the shell is pwsh and `sed -i` is a GNU extension.
+          awk -v v="$VERSION" '/^version:/{ print "version: " v; next } { print }' \
+            pubspec.yaml > pubspec.yaml.new
+          mv pubspec.yaml.new pubspec.yaml
+          echo "we build as:  $(grep '^version:' pubspec.yaml)"
+
+      - name: Set up Rust (Windows arm64)
+        if: matrix.os == 'windows-11-arm'
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri "https://win.rustup.rs/aarch64" -OutFile rustup-init.exe
+          .\rustup-init.exe -y --default-toolchain stable
+          Add-Content $env:GITHUB_PATH "$env:USERPROFILE\.cargo\bin"
+
+      - name: Set up Android release signing
+        if: matrix.platform == 'android'
+        env:
+          KEYSTORE_B64: ${{ secrets.KEYSTORE }}
+          STORE_PW: ${{ secrets.STORE_PASSWORD }}
+          KEY_PW: ${{ secrets.KEY_PASSWORD }}
+          KEYSTORE_PW: ${{ secrets.KEYSTORE_PASS }}
+          ALIAS: ${{ secrets.KEY_ALIAS }}
+        run: |
+          set -euo pipefail
+          pw="${STORE_PW:-${KEY_PW:-${KEYSTORE_PW:-}}}"
+          alias="${ALIAS:-flclash}"
+
+          if [ -z "${KEYSTORE_B64:-}" ]; then
+            echo "::error::KEYSTORE secret is missing; refusing to publish a debug-signed APK"
+            exit 1
+          fi
+          if [ -z "$pw" ]; then
+            echo "::error::STORE_PASSWORD secret is missing"
+            exit 1
+          fi
+
+          # The secret holds a base64 PKCS12; Gradle's signing config wants a JKS.
+          echo "$KEYSTORE_B64" | base64 -d > /tmp/keystore.p12
+          keytool -importkeystore \
+            -srckeystore /tmp/keystore.p12 -srcstoretype PKCS12 -srcstorepass "$pw" \
+            -destkeystore android/app/keystore.jks -deststoretype JKS \
+            -deststorepass "$pw" -destkeypass "$pw" -noprompt
+
+          {
+            echo "storePassword=$pw"
+            echo "keyAlias=$alias"
+            echo "keyPassword=$pw"
+          } >> android/local.properties
+
+          # `assembleRelease` is finalizedBy the Crashlytics native symbol
+          # upload, which belongs to upstream's Firebase project. Drop the
+          # finalizer so the release build cannot fail on it.
+          python3 - <<'PY'
+          p = "android/app/build.gradle.kts"
+          s = open(p, encoding="utf-8").read()
+          marker = 'finalizedBy("uploadCrashlyticsSymbolFileRelease")'
+          if marker not in s:
+              print("Crashlytics finalizer absent, nothing to remove")
+          else:
+              idx = s.index(marker)
+              open_idx = s.rfind('if (hasReleaseSigning) {', 0, idx)
+              i = s.index('{', open_idx)
+              depth = 0
+              while i < len(s):
+                  if s[i] == '{':
+                      depth += 1
+                  elif s[i] == '}':
+                      depth -= 1
+                      if depth == 0:
+                          end = i
+                          break
+                  i += 1
+              open(p, "w", encoding="utf-8").write(s[:open_idx] + s[end + 1:])
+              print("Removed the Crashlytics finalizer block")
+          PY
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: core/go.sum
+
+      - name: Set up Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ inputs.channel }}-${{ matrix.platform }}-${{ matrix.arch }}
+          workspaces: services/helper
+          cache-directories: .dart_tool/hooks_runner
+
+      - name: Set up Java
+        if: matrix.platform == 'android'
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        if: matrix.platform == 'android'
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Enable git long paths
+        if: startsWith(matrix.os, 'windows')
+        run: git config --global core.longpaths true
+
+      - name: Set up Xcode
+        if: matrix.platform == 'macos'
+        run: |
+          sudo xcode-select -s /Applications/Xcode_26.3.app || sudo xcode-select -s /Applications/Xcode_26.2.app
+          xcodebuild -version
+
+      # `channel: master` with a pinned version makes the action clone the SDK at
+      # that tag and let it resolve the host's own Dart SDK, which is what the
+      # arm64 runners need; the `stable` channel publishes no arm64 archive.
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: master
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Set up NDK
+        if: matrix.platform == 'android'
+        uses: nttld/setup-ndk@v1
+        id: ndk
+        with:
+          ndk-version: ${{ env.NDK_VERSION }}
+          add-to-path: true
+          link-to-sdk: true
+
+      - name: Get Flutter dependencies
+        run: |
+          flutter --version
+          flutter pub get
+
+      - name: Disable Impeller on Intel macOS
+        if: matrix.platform == 'macos' && matrix.arch == 'amd64'
+        run: plutil -replace FLTEnableImpeller -bool NO macos/Runner/Info.plist
+
+      - name: Build
+        env:
+          ANDROID_NDK_HOME: ${{ steps.ndk.outputs.ndk-path }}
+        run: dart setup.dart ${{ matrix.platform }} --env ${{ inputs.env }} -v
+
+      # Guards the whole point of this repository. Any certificate other than
+      # ours is what gets an APK flagged by phone scanners, and a build that
+      # silently fell back to the debug key would still succeed and still
+      # upload -- so compare the signer's fingerprint itself rather than merely
+      # ruling out the debug key.
+      - name: Verify the APK is signed with our key
+        if: matrix.platform == 'android'
+        env:
+          VERSION: ${{ inputs.version }}
+          # SHA-256 of the certificate in the KEYSTORE secret, lower case, no
+          # separators. Rotating the keystore means updating this line, which is
+          # the point: a swap cannot happen without saying so here.
+          CERT_SHA256: 048968c1728e0e2e27e704d6b30174276579baa2fa288f4f1ba375b702c7e431
+        run: |
+          set -euo pipefail
+          build_tools="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)"
+          for apk in dist/*.apk; do
+            echo "== $(basename "$apk")"
+            "$build_tools/aapt2" dump badging "$apk" | sed -n '1p'
+            "$build_tools/apksigner" verify --print-certs "$apk" | sed -n '1,4p'
+            if "$build_tools/aapt2" dump badging "$apk" | grep -q "com\.follow\.clash\.dev"; then
+              echo "::error::$(basename "$apk") still carries the debug applicationId suffix"
+              exit 1
+            fi
+            # The digest is matched without its label so that a change in
+            # apksigner's wording cannot quietly turn this into a no-op, and
+            # without separators so a colon-separated digest still matches.
+            if ! "$build_tools/apksigner" verify --print-certs "$apk" | tr -d ':' | grep -qi "$CERT_SHA256"; then
+              echo "::error::$(basename "$apk") is not signed with our certificate (expected SHA-256 $CERT_SHA256)"
+              exit 1
+            fi
+            if ! "$build_tools/aapt2" dump badging "$apk" | grep -q "versionName='${VERSION%%+*}'"; then
+              echo "::error::$(basename "$apk") does not carry the version we injected ($VERSION)"
+              exit 1
+            fi
+          done
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifact-${{ inputs.channel }}-${{ matrix.platform }}${{ matrix.arch && format('-{0}', matrix.arch) || '' }}
+          path: ./dist
+          overwrite: true
+          if-no-files-found: error
