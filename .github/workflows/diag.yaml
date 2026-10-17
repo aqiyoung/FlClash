@@ -1,0 +1,186 @@
+# TEMPORARY diagnostic workflow. Two goals:
+#   1. byte-precise proof of whether anything was added to the payload
+#   2. publish upstream's official APK re-signed with our key (payload untouched),
+#      so it can be installed to isolate the signature as the trigger.
+name: diag
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      OURS_TAG: stable-0.9.0-26101615.4
+      UP_TAG: v0.9.0
+    steps:
+      - name: Download our stable APK and upstream official APK
+        run: |
+          set -euo pipefail
+          curl -fsSL -o ours.apk "https://github.com/aqiyoung/FlClash/releases/download/${OURS_TAG}/FlClash-0.9.0-android-arm64-v8a.apk"
+          curl -fsSL -o upstream.apk "https://github.com/chen08209/FlClash/releases/download/${UP_TAG}/FlClash-0.9.0-android-arm64-v8a.apk"
+          ls -l ours.apk upstream.apk
+          sha256sum ours.apk upstream.apk
+
+      - name: Restore our keystore and print its certificate
+        env:
+          KEYSTORE_B64: ${{ secrets.KEYSTORE }}
+          STORE_PW: ${{ secrets.STORE_PASSWORD }}
+          KEY_PW: ${{ secrets.KEY_PASSWORD }}
+          ALIAS: ${{ secrets.KEY_ALIAS }}
+        run: |
+          set -euo pipefail
+          pw="${STORE_PW:-${KEY_PW:-}}"
+          alias="${ALIAS:-flclash}"
+          echo "$KEYSTORE_B64" | base64 -d > /tmp/keystore.p12
+          keytool -importkeystore -srckeystore /tmp/keystore.p12 -srcstoretype PKCS12 \
+            -srcstorepass "$pw" -destkeystore /tmp/keystore.jks -deststoretype JKS \
+            -deststorepass "$pw" -destkeypass "$pw" -noprompt >/dev/null
+          {
+            echo "STORE_PW=$pw"
+            echo "KEY_ALIAS=$alias"
+          } >> "$GITHUB_ENV"
+          echo "===== our signing certificate ====="
+          keytool -list -v -keystore /tmp/keystore.jks -storepass "$pw" -alias "$alias" \
+            | grep -iE "Alias name|Owner:|Issuer:|Valid from|Signature algorithm|Public Key|Serial number|subject" || true
+
+      - name: Re-sign the upstream APK with our key (payload byte-identical)
+        run: |
+          set -euo pipefail
+          SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
+          BT="$(ls -d "$SDK"/build-tools/* | sort -V | tail -1)"
+          echo "build-tools: $BT"
+          V1=false
+          if unzip -l upstream.apk | grep -qE "META-INF/.*\.(RSA|SF|MF)"; then V1=true; fi
+          echo "upstream carries v1 signature entries: $V1"
+          "$BT/zipalign" -p 4 -f upstream.apk aligned.apk
+          "$BT/apksigner" sign --ks /tmp/keystore.jks --ks-key-alias "$KEY_ALIAS" \
+            --ks-pass "pass:$STORE_PW" --key-pass "pass:$STORE_PW" \
+            --v1-signing-enabled "$V1" --v2-signing-enabled true --v3-signing-enabled true \
+            --out resign-upstream.apk aligned.apk
+          echo "===== apksigner verify -v (re-signed) ====="
+          "$BT/apksigner" verify --print-certs -v resign-upstream.apk | head -25
+          echo "===== entry set: upstream vs re-signed ====="
+          python3 - <<'PY'
+          import zipfile
+          a = set(zipfile.ZipFile('upstream.apk').namelist())
+          b = set(zipfile.ZipFile('resign-upstream.apk').namelist())
+          print('only in upstream  :', sorted(a - b))
+          print('only in re-signed :', sorted(b - a))
+          print('payload entries identical:', a == b)
+          PY
+          sha256sum resign-upstream.apk
+
+      - name: Publish the diagnostic APK
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release delete diag-resign-v0.9.0 --repo aqiyoung/FlClash --yes --cleanup-tag || true
+          gh release create diag-resign-v0.9.0 resign-upstream.apk --repo aqiyoung/FlClash --prerelease \
+            --title "诊断用：上游官方 v0.9.0 载荷 + 我们的签名" \
+            --notes "Diagnostic only. This is upstream's official v0.9.0 arm64 APK, byte-for-byte unchanged inside, with only the signature replaced by our release key. Install it to tell whether the virus warning is caused by the signing key or by our build environment."
+
+      - name: Extract payload for byte-precise comparison
+        run: |
+          set -euo pipefail
+          for side in ours upstream; do
+            mkdir -p "x_$side"
+            unzip -o -q "$side.apk" -d "x_$side" classes.dex lib/arm64-v8a/libclash.so lib/arm64-v8a/libapp.so
+          done
+          ls -l x_ours/classes.dex x_upstream/classes.dex
+
+      - name: Byte-precise DEX comparison
+        run: |
+          python3 - <<'PY'
+          import bisect, struct, hashlib
+          from collections import Counter
+
+          NAMES = {
+              0x0000: 'header_item', 0x0001: 'string_id_item', 0x0002: 'type_id_item',
+              0x0003: 'proto_id_item', 0x0004: 'field_id_item', 0x0005: 'method_id_item',
+              0x0006: 'class_def_item', 0x0007: 'call_site_id_item',
+              0x0008: 'method_handle_item', 0x1000: 'map_list', 0x1001: 'type_list',
+              0x1002: 'annotation_set_ref_list', 0x1003: 'annotation_set_item',
+              0x2000: 'class_data_item', 0x2001: 'code_item', 0x2002: 'string_data_item',
+              0x2003: 'debug_info_item', 0x2004: 'annotation_item',
+              0x2005: 'encoded_array_item', 0x2006: 'annotations_directory_item',
+          }
+
+          a = open('x_ours/classes.dex', 'rb').read()
+          b = open('x_upstream/classes.dex', 'rb').read()
+          print('sizes                 :', len(a), len(b))
+          print('body sha256 (from 112):', hashlib.sha256(a[112:]).hexdigest()[:16],
+                hashlib.sha256(b[112:]).hexdigest()[:16])
+          n = min(len(a), len(b))
+          offs = [i for i in range(n) if a[i] != b[i]]
+          print('differing bytes       :', len(offs))
+          if not offs:
+              print('>>> the two classes.dex are byte-identical')
+              raise SystemExit
+          ranges = []
+          s = p = offs[0]
+          for i in offs[1:]:
+              if i == p + 1:
+                  p = i
+              else:
+                  ranges.append((s, p)); s = p = i
+          ranges.append((s, p))
+          print('differing ranges      :', len(ranges))
+          for r in ranges[:12]:
+              print('    bytes %d..%d (%d bytes)' % (r[0], r[1], r[1] - r[0] + 1))
+
+          map_off = struct.unpack_from('<I', a, 52)[0]
+          cnt = struct.unpack_from('<I', a, map_off)[0]
+          secs = []
+          for k in range(cnt):
+              t, _, size, off = struct.unpack_from('<HHII', a, map_off + 4 + k * 12)
+              if size:
+                  secs.append((off, size, t))
+          secs.sort()
+          starts = [s[0] for s in secs]
+          bysec, byrange = Counter(), Counter()
+          for i in offs:
+              j = bisect.bisect_right(starts, i) - 1
+              if j < 0:
+                  bysec['before-first-section'] += 1; continue
+              off, size, t = secs[j]
+              nm = NAMES.get(t, hex(t))
+              bysec[nm if off <= i < off + size else 'gap'] += 1
+          print('differing bytes by DEX section:')
+          for k, v in bysec.most_common():
+              print('    %-26s %d' % (k, v))
+          print('which section each range lands in:')
+          for r in ranges[:12]:
+              j = bisect.bisect_right(starts, r[0]) - 1
+              off, size, t = secs[j]
+              print('    %d..%d -> %s' % (r[0], r[1], NAMES.get(t, hex(t))))
+          print('>>> code_item differing bytes:', bysec.get('code_item', 0))
+          PY
+
+      - name: Native library comparison
+        run: |
+          set -euo pipefail
+          for side in ours upstream; do
+            so="x_$side/lib/arm64-v8a/libclash.so"
+            size -A "$so" | awk '$1 ~ /^\./ {print $1, $2}' > "$side.sections.txt"
+            readelf -sW "$so" | awk 'NF>=8 && $4=="FUNC" {print $8}' | sort > "$side.syms.txt"
+            objcopy -O binary --only-section=.text "$so" "/tmp/$side.text.bin"
+            objcopy -O binary --only-section=.gopclntab "$so" "/tmp/$side.pcln.bin"
+            for s in .text .gopclntab; do :; done
+          done
+          echo "=== section sizes: ours vs upstream ==="
+          diff ours.sections.txt upstream.sections.txt && echo "  (identical)"
+          echo "=== function symbol counts ==="
+          echo "  ours=$(wc -l < ours.syms.txt)  upstream=$(wc -l < upstream.syms.txt)"
+          diff ours.syms.txt upstream.syms.txt > /tmp/sym.diff || true
+          echo "  symbol-list diff lines: $(wc -l < /tmp/sym.diff)"
+          head -10 /tmp/sym.diff
+          echo "=== raw section hashes ==="
+          sha256sum /tmp/ours.text.bin /tmp/upstream.text.bin /tmp/ours.pcln.bin /tmp/upstream.pcln.bin
+          echo "=== libapp.so (Dart AOT) ==="
+          sha256sum x_ours/lib/arm64-v8a/libapp.so x_upstream/lib/arm64-v8a/libapp.so
