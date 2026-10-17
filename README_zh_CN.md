@@ -8,12 +8,12 @@
 
 [English](README.md) · **简体中文**
 
-[![Release](https://img.shields.io/github/v/release/chen08209/FlClash?style=flat-square&label=release)](https://github.com/chen08209/FlClash/releases/latest)
-[![Downloads](https://img.shields.io/github/downloads/chen08209/FlClash/total?style=flat-square&logo=github)](https://github.com/chen08209/FlClash/releases)
-[![License](https://img.shields.io/github/license/chen08209/FlClash?style=flat-square)](LICENSE)
-[![Telegram](https://img.shields.io/badge/Telegram-channel-26A5E4?style=flat-square&logo=telegram&logoColor=white)](https://t.me/FlClash)
+[![Release](https://img.shields.io/github/v/release/aqiyoung/FlClash?style=flat-square&label=release)](https://github.com/aqiyoung/FlClash/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/aqiyoung/FlClash/total?style=flat-square&logo=github)](https://github.com/aqiyoung/FlClash/releases)
+[![License](https://img.shields.io/github/license/aqiyoung/FlClash?style=flat-square)](LICENSE)
+[![Telegram](https://img.shields.io/badge/Telegram-channel-26A5E4?style=flat-square&logo=telegram&logoColor=white)](https://t.me/sanyeinfo)
 
-[官网](https://chen08209.github.io/FlClash/zh) · [下载](#下载) · [更新日志](CHANGELOG.md) · [从源码构建](#从源码构建)
+[发布页](https://github.com/aqiyoung/FlClash/releases/latest) · [下载](#下载) · [更新日志](CHANGELOG.md) · [从源码构建](#从源码构建)
 
 </div>
 
@@ -37,27 +37,21 @@
 
 ## 下载
 
-从 [GitHub Releases](https://github.com/chen08209/FlClash/releases/latest) 获取最新版本，或打开
-[官网](https://chen08209.github.io/FlClash/zh#download)，它会自动为你的设备选好安装包。
+从[本仓库的发布页](https://github.com/aqiyoung/FlClash/releases/latest)获取最新版本。
 
 | 平台 | 安装包 | 说明 |
 | --- | --- | --- |
-| Android | `arm64-v8a`、`armeabi-v7a`、`x86_64` 三种 APK | 绝大多数手机选 `arm64-v8a`。也可以通过下方的 F-Droid 仓库安装。 |
+| Android | `arm64-v8a`、`armeabi-v7a`、`x86_64` 三种 APK | 绝大多数手机选 `arm64-v8a`。 |
 | Windows 10 及以上 | 安装版（`.exe`）或便携版（`.zip`），分 x64 与 ARM64 | 骁龙等 ARM 架构笔记本选 ARM64。 |
-| macOS 12 及以上 | Apple Silicon 与 Intel 两种 DMG | 也可以通过 Homebrew 安装。 |
+| macOS 12 及以上 | Apple Silicon 与 Intel 两种 DMG | |
 | Linux | `.deb`、`.rpm` 和 AppImage，分 x64 与 ARM64 | 托盘依赖见下方说明。 |
 
 <p>
-  <a href="https://chen08209.github.io/FlClash-fdroid-repo/repo?fingerprint=789D6D32668712EF7672F9E58DEEB15FBD6DCEEC5AE7A4371EA72F2AAE8A12FD"><img alt="Get it on F-Droid" src="snapshots/get-it-on-fdroid.svg" height="56"></a>
-  <a href="https://github.com/chen08209/FlClash/releases/latest"><img alt="Get it on GitHub" src="snapshots/get-it-on-github.svg" height="56"></a>
+  <a href="https://github.com/aqiyoung/FlClash/releases/latest"><img alt="Get it on GitHub" src="snapshots/get-it-on-github.svg" height="56"></a>
 </p>
 
-**Homebrew**
-
-```bash
-brew tap chen08209/tap
-brew install --cask flclash
-```
+这些包由本仓库编译，用的是本仓库自己的签名证书。上游项目（官网、F-Droid 仓库、Homebrew tap）的包是另一套签名，
+两边混装需要先卸载一次 —— 详见 [FORK.md](https://github.com/aqiyoung/FlClash/blob/main/FORK.md)。
 
 **Linux 托盘图标**
 
@@ -96,7 +90,7 @@ adb shell am start -a com.follow.clash.action.TOGGLE
 以及通过 rustup 安装的 [Rust](https://rustup.rs/)。桌面端需要在对应系统上构建，Android 在任意系统上都能构建。
 
 ```bash
-git clone --recursive https://github.com/chen08209/FlClash.git
+git clone --recursive https://github.com/aqiyoung/FlClash.git
 cd FlClash
 flutter pub get
 dart setup.dart android   # 或 windows、macos、linux
@@ -115,13 +109,13 @@ dart setup.dart android   # 或 windows、macos、linux
 
 ## 支持
 
-给仓库点一个 Star 是支持项目最简单的方式。问题讨论和更新通知请关注 [Telegram 频道](https://t.me/FlClash)，
-Bug 与功能建议请提交到 [GitHub Issues](https://github.com/chen08209/FlClash/issues)。
+给仓库点一个 Star 是支持项目最简单的方式。问题讨论和更新通知请关注 [Telegram 频道](https://t.me/sanyeinfo)，
+Bug 与功能建议请提交到 [GitHub Issues](https://github.com/aqiyoung/FlClash/issues)。
 
-<a href="https://star-history.com/#chen08209/FlClash&Date">
+<a href="https://star-history.com/#aqiyoung/FlClash&Date">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=chen08209/FlClash&type=Date&theme=dark">
-    <img alt="Star history" src="https://api.star-history.com/svg?repos=chen08209/FlClash&type=Date" width="640">
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=aqiyoung/FlClash&type=Date&theme=dark">
+    <img alt="Star history" src="https://api.star-history.com/svg?repos=aqiyoung/FlClash&type=Date" width="640">
   </picture>
 </a>
 
