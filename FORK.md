@@ -7,7 +7,7 @@
 - **正式版**（推荐）：[最新 Release](../../releases/latest) 里 `FlClash` 开头的安装包。`/releases/latest` 永远指向正式版。
 - **测试版**：在 [Releases 列表](../../releases) 里标着 *Pre-release* 的那个，跟上游 `dev` 走，比正式版新，也可能有问题。
 
-Android 一般下 `-arm64-v8a.apk`（绝大多数手机）或 `-armeabi-v7a.apk`（老机器）；`-universal.apk` 体积大但都能装。
+Android 一般下 `-arm64-v8a.apk`（绝大多数手机）或 `-armeabi-v7a.apk`（老机器），模拟器下 `-x86_64.apk`。
 
 ## 版本号
 
@@ -41,6 +41,7 @@ Android 一般下 `-arm64-v8a.apk`（绝大多数手机）或 `-armeabi-v7a.apk`
 | 更新检查 | 指向本仓库的 Releases，而不是上游 |
 | 服务图标 | 仪表盘「服务状态」的 13 个服务图标由单色改为品牌色，图标底板固定浅色 |
 | 仪表盘 | 「状态」卡片里的出口国家由两个大写字母改成国旗 |
+| README | 下载徽章、下载按钮、官网链接、F-Droid 仓库、Homebrew tap、TG 频道都换成本仓库 / [@sanyeinfo](https://t.me/sanyeinfo)——上游那些入口装出来的是另一套签名的包 |
 
 另外两件不在代码里的事：
 
