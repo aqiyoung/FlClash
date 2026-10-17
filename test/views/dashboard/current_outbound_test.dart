@@ -176,7 +176,7 @@ void main() {
       await tester.pump();
 
       expect(find.text(_ip), findsOneWidget);
-      expect(find.text('GB'), findsOneWidget);
+      expect(find.text('\u{1F1EC}\u{1F1E7}'), findsOneWidget);
       expect(find.text('Residential'), findsOneWidget);
       expect(_chip(tester, 'Quality Good').tone, DashboardChipTone.ok);
       expect(find.text('Example Broadband'), findsOneWidget);
@@ -214,7 +214,7 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('GB'), findsOneWidget);
+      expect(find.text('\u{1F1EC}\u{1F1E7}'), findsOneWidget);
       expect(find.text('Not running'), findsOneWidget);
       expect(_chip(tester, 'Unknown type').tone, DashboardChipTone.idle);
       expect(find.byType(DashboardChip), findsNWidgets(2));
