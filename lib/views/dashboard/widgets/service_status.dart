@@ -364,8 +364,6 @@ class _ServiceCell extends StatelessWidget {
       target: service.target,
       size: height - _inset * 2,
       radius: DashboardCorner.tab - _inset,
-      color: DashboardColors.of(context).card,
-      ink: context.colorScheme.onSurfaceVariant,
       dot: service.dotOf(context),
     );
     final text = ExcludeSemantics(
@@ -623,27 +621,31 @@ class _ServiceBadge extends StatelessWidget {
     this.radius,
     this.dot,
     this.enabled = true,
-    this.color,
-    this.ink,
   });
 
   static const _glyphShare = 0.56;
+
+  /// The service glyphs carry their own brand colours, so the tile behind them
+  /// stays light whatever the theme is: GitHub's and TikTok's marks are black,
+  /// and on the surface a dark theme gives they would otherwise disappear.
+  static const _plate = Colors.white;
+
+  /// Fading the mark is what says "turned off" now that it cannot be tinted,
+  /// and it dims the brand colour rather than replacing it.
+  static const _offOpacity = 0.38;
 
   final ServiceTarget target;
   final double size;
   final double? radius;
   final Color? dot;
   final bool enabled;
-  final Color? color;
-  final Color? ink;
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = context.colorScheme;
     return CustomPaint(
       size: Size.square(size),
       painter: _BadgePainter(
-        color: color ?? context.raisedSurfaceLevel.colorOf(colorScheme),
+        color: _plate,
         radius: radius ?? AppCorner.fit(size),
         dot: dot,
         dotRadius: max(size / 10, 4),
@@ -652,17 +654,13 @@ class _ServiceBadge extends StatelessWidget {
       child: SizedBox.square(
         dimension: size,
         child: Center(
-          child: SvgPicture.asset(
-            'assets/images/services/${target.icon}.svg',
-            width: size * _glyphShare,
-            height: size * _glyphShare,
-            excludeFromSemantics: true,
-            theme: SvgTheme(
-              currentColor:
-                  ink ??
-                  (enabled
-                      ? colorScheme.onSurfaceVariant
-                      : colorScheme.onSurfaceVariant.opacity38),
+          child: Opacity(
+            opacity: enabled ? 1 : _offOpacity,
+            child: SvgPicture.asset(
+              'assets/images/services/${target.icon}.svg',
+              width: size * _glyphShare,
+              height: size * _glyphShare,
+              excludeFromSemantics: true,
             ),
           ),
         ),
