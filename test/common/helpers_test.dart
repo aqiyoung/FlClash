@@ -125,6 +125,18 @@ void main() {
       expect(compareVersions('1.0.2', '1.0.1'), greaterThan(0));
     });
 
+    test('revision difference', () {
+      expect(compareVersions('1.0.0.2', '1.0.0.1'), greaterThan(0));
+      expect(compareVersions('1.0.0.1', '1.0.0.2'), lessThan(0));
+      expect(compareVersions('1.0.0.2', '1.0.0.10'), lessThan(0));
+      expect(compareVersions('1.0.1.1', '1.0.0.9'), greaterThan(0));
+    });
+
+    test('revision only counts when both sides carry one', () {
+      expect(compareVersions('1.0.0.1', '1.0.0'), 0);
+      expect(compareVersions('1.0.0', '1.0.0.1'), 0);
+    });
+
     test('handles build number', () {
       expect(compareVersions('1.0.0+1', '1.0.0+2'), lessThan(0));
       expect(compareVersions('1.0.0+2', '1.0.0+1'), greaterThan(0));

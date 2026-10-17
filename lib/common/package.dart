@@ -30,6 +30,18 @@ int compareVersions(String version1, String version2) {
   if (patch1 != patch2) {
     return patch1.compareTo(patch2);
   }
+  // This fork's releases carry a fourth component -- the revision we iterate
+  // on top of upstream's version -- and their tags are exactly that version.
+  // Upstream builds have no fourth component, and neither do this fork's
+  // desktop builds (only Android's versionName can hold one), so a missing one
+  // is not "zero": the two conventions are comparable only once both sides
+  // carry one. Reading it as zero instead would make every desktop build see
+  // its own release as newer than itself, forever.
+  final int? revision1 = v1.length > 3 ? int.tryParse(v1[3]) : null;
+  final int? revision2 = v2.length > 3 ? int.tryParse(v2[3]) : null;
+  if (revision1 != null && revision2 != null && revision1 != revision2) {
+    return revision1.compareTo(revision2);
+  }
   final int build1 = version1.contains('+')
       ? int.parse(version1.split('+')[1])
       : 0;
