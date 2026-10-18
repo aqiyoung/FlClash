@@ -5,6 +5,7 @@ import 'package:fl_clash/common/service_probe.dart'
 import 'package:fl_clash/core/controller.dart';
 import 'package:fl_clash/core/interface.dart';
 import 'package:fl_clash/enum/enum.dart';
+import 'package:fl_clash/l10n/l10n.dart';
 import 'package:fl_clash/ui/icons/icons.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/ip_quality.dart';
@@ -16,6 +17,7 @@ import 'package:fl_clash/views/dashboard/layout.dart';
 import 'package:fl_clash/views/dashboard/widgets/card.dart';
 import 'package:fl_clash/views/dashboard/widgets/current_outbound.dart';
 import 'package:fl_clash/widgets/widgets.dart';
+
 import 'dart:async';
 
 import 'package:flutter/rendering.dart';
@@ -146,8 +148,8 @@ void _useTallView(WidgetTester tester) {
   addTearDown(tester.view.resetDevicePixelRatio);
 }
 
-Finder _countryBadge() => find.ancestor(
-  of: find.byType(ShapeBadge),
+Finder _countryBadge() => find.descendant(
+  of: find.byTooltip(AppLocalizations.current.retry),
   matching: find.byWidgetPredicate(
     (widget) => widget is InkResponse && widget.runtimeType == InkResponse,
   ),
@@ -258,9 +260,7 @@ void main() {
       expect(tester.widget<InkResponse>(_countryBadge()).onTap, isNotNull);
     });
 
-    testWidgets('checks a failed quality again from its flag', (
-      tester,
-    ) async {
+    testWidgets('checks a failed quality again from its flag', (tester) async {
       final core = _MockCore();
       when(() => core.outboundIp(any())).thenAnswer((_) async => _address());
       var calls = 0;
