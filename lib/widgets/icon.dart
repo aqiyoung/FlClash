@@ -133,8 +133,8 @@ class _ImagePlaceholder extends StatelessWidget {
 
 /// Stands for a proxy group without an icon: the first letter or digit of
 /// its name, past any leading emoji the name already shows. [GroupName.GLOBAL]
-/// is the one group whose name says nothing about where it exits, so it shows
-/// that exit's flag whenever the caller knows it.
+/// is the Core's own group, so it wears [globeMark] -- or, whenever the caller
+/// knows it, the flag of the country traffic leaves by.
 class GroupMonogram extends StatelessWidget {
   final String name;
 
@@ -146,13 +146,16 @@ class GroupMonogram extends StatelessWidget {
 
   static final _letter = RegExp(r'[\p{L}\p{N}]', unicode: true);
 
+  /// What GLOBAL shows when nothing says where it exits.
+  static const globeMark = '🌐';
+
   /// Whether [name] is the Core's own GLOBAL group.
   static bool isGlobal(String name) => name == GroupName.GLOBAL.name;
 
   String get _mark {
-    final code = exitCountryCode;
-    if (code != null && code.isNotEmpty && isGlobal(name)) {
-      return code.countryFlagEmoji;
+    if (isGlobal(name)) {
+      final code = exitCountryCode;
+      return code == null || code.isEmpty ? globeMark : code.countryFlagEmoji;
     }
     final letter = _letter.firstMatch(name)?.group(0);
     if (letter != null) {

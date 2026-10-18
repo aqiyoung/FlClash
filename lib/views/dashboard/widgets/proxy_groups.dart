@@ -44,7 +44,7 @@ Future<void> showProxiesSheet(BuildContext context, {String? groupName}) async {
 /// Drawn in the proportions of the proxies page's group header, always
 /// filled: the icon style chosen there is that page's own, and the dashboard
 /// would look bare without icons.
-class _GroupIcon extends ConsumerWidget {
+class _GroupIcon extends ConsumerStatefulWidget {
   const _GroupIcon({
     required this.group,
     required this.size,
@@ -57,11 +57,38 @@ class _GroupIcon extends ConsumerWidget {
   final double radius;
   final Color? ring;
 
+  @override
+  ConsumerState<_GroupIcon> createState() => _GroupIconState();
+}
+
+class _GroupIconState extends ConsumerState<_GroupIcon> {
   static const _inset = 0.15;
 
-  /// The same probe the status card shows, and only while the Core is up: with
-  /// no answer to borrow, GLOBAL falls back to its letter.
-  String? _exitCountryCode(WidgetRef ref) {
+  /// GLOBAL takes the exit from the probe the status card drives, so it drives
+  /// that probe itself as well: the tile has to work on a dashboard the status
+  /// card was taken off.
+  OutboundIpProbe? _probe;
+
+  @override
+  void initState() {
+    super.initState();
+    if (!GroupMonogram.isGlobal(widget.group.name)) {
+      return;
+    }
+    final probe = ref.read(outboundIpProbeProvider.notifier);
+    _probe = probe;
+    probe.watch(routedOutbound);
+  }
+
+  @override
+  void dispose() {
+    _probe?.unwatch(routedOutbound);
+    super.dispose();
+  }
+
+  /// The country the Core routes by, and only while it is up: with no answer to
+  /// borrow, GLOBAL keeps its globe.
+  String? _exitCountryCode() {
     if (!ref.watch(isStartProvider) || ref.watch(suspendProvider)) {
       return null;
     }
@@ -73,9 +100,11 @@ class _GroupIcon extends ConsumerWidget {
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final colorScheme = context.colorScheme;
-    final ring = this.ring;
+    final group = widget.group;
+    final size = widget.size;
+    final ring = widget.ring;
     final inset = size * _inset;
     return Container(
       width: size,
@@ -84,7 +113,7 @@ class _GroupIcon extends ConsumerWidget {
       clipBehavior: Clip.antiAlias,
       decoration: ShapeDecoration(
         color: DashboardColors.of(context).tone2,
-        shape: AppShape.all(radius).copyWith(
+        shape: AppShape.all(widget.radius).copyWith(
           side: ring == null
               ? BorderSide.none
               : BorderSide(
@@ -105,7 +134,7 @@ class _GroupIcon extends ConsumerWidget {
             fallback: GroupMonogram(
               group.name,
               exitCountryCode: GroupMonogram.isGlobal(group.name)
-                  ? _exitCountryCode(ref)
+                  ? _exitCountryCode()
                   : null,
             ),
           ),

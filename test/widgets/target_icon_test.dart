@@ -38,15 +38,16 @@ void main() {
     }
   });
 
-  testWidgets('the Core GLOBAL shows the exit flag it was handed, and its '
-      'letter when it was handed none', (tester) async {
+  testWidgets('the Core GLOBAL wears the exit flag it was handed, and its '
+      'globe when it was handed none', (tester) async {
     await _pump(tester, const GroupMonogram('GLOBAL', exitCountryCode: 'HK'));
 
     expect(find.text('🇭🇰'), findsOne);
 
     await _pump(tester, const GroupMonogram('GLOBAL'));
 
-    expect(find.text('G'), findsOne);
+    expect(find.text(GroupMonogram.globeMark), findsOne);
+    expect(find.text('G'), findsNothing);
   });
 
   testWidgets('any other group keeps its letter, whatever exit it is handed', (
