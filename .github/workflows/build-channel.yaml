@@ -278,6 +278,21 @@ jobs:
         if: matrix.platform == 'macos' && matrix.arch == 'amd64'
         run: plutil -replace FLTEnableImpeller -bool NO macos/Runner/Info.plist
 
+      # Upstream's step, and it has to stay: the Core embeds this bundle and
+      # FlClashHttpOverrides.trustCoreRoots hands it to Dart. The submodule only
+      # carries a 0-byte placeholder, so a build without this step ships a Core
+      # with no roots. Pinned by hash, like upstream, so a new bundle from
+      # https://curl.se/docs/caextract.html is a reviewed bump.
+      - name: Fetch CA certificates
+        shell: bash
+        env:
+          CA_BUNDLE: cacert-2026-09-25.pem
+          CA_BUNDLE_SHA256: a41b5d356aea97a529fe27e0f7316d2f9d946d75927476cf9cf1b90637d00505
+        run: |
+          bundle=core/Clash.Meta/component/ca/ca-certificates.crt
+          curl -fsSL --retry 3 -o "$bundle" "https://curl.se/ca/$CA_BUNDLE"
+          echo "$CA_BUNDLE_SHA256  $bundle" | sha256sum -c -
+
       - name: Build
         env:
           ANDROID_NDK_HOME: ${{ steps.ndk.outputs.ndk-path }}
