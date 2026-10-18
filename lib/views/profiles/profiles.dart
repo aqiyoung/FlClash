@@ -25,6 +25,13 @@ const _usageWarnShare = 0.9;
 
 String _percentOf(double share) => '${(share * 100).round()}%';
 
+/// The tint the card itself fills with, up to the used share.
+Color _usageFillColor(BuildContext context, double share) {
+  final colorScheme = context.colorScheme;
+  return (share >= _usageWarnShare ? colorScheme.error : colorScheme.primary)
+      .opacity15;
+}
+
 double get _profileItemHeight {
   final measure = globalState.measure;
   return measure.textHeight(AppTextStyle.headline) +
@@ -500,6 +507,7 @@ class ProfileItem extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isUpdating = ref.watch(isUpdatingProvider(profile.updatingKey));
     final subscriptionInfo = _subscriptionInfo;
+    final usage = subscriptionInfo?.usage;
     final isSelected = profile.id == groupValue;
     return ContextMenuRegion(
       menuItems: isUpdating ? null : _menuItems(context, ref),
@@ -510,27 +518,39 @@ class ProfileItem extends ConsumerWidget {
         onPressed: () {
           onChanged(profile.id);
         },
-        child: ListItem(
-          key: Key(profile.id.toString()),
-          minTileHeight: _profileItemHeight,
-          minVerticalPadding: listRowVerticalPadding,
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            spacing: 8,
-            children: [
-              if (profile.type == ProfileType.custom)
-                _GroupsCountChip(profileId: profile.id)
-              else
-                _buildTrailing(context, isUpdating: isUpdating),
-              if (isSelected) const SelectionBadge(size: 24),
-            ],
-          ),
-          title: _ProfileCardTitle(
-            profile: profile,
-            expire: subscriptionInfo?.expireDate,
-            subtitle: _subtitle(context),
-            share: subscriptionInfo?.usage,
-          ),
+        child: Stack(
+          children: [
+            if (usage != null)
+              Positioned.fill(
+                child: FractionallySizedBox(
+                  alignment: AlignmentDirectional.centerStart,
+                  widthFactor: usage,
+                  child: ColoredBox(color: _usageFillColor(context, usage)),
+                ),
+              ),
+            ListItem(
+              key: Key(profile.id.toString()),
+              minTileHeight: _profileItemHeight,
+              minVerticalPadding: listRowVerticalPadding,
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                spacing: 8,
+                children: [
+                  if (profile.type == ProfileType.custom)
+                    _GroupsCountChip(profileId: profile.id)
+                  else
+                    _buildTrailing(context, isUpdating: isUpdating),
+                  if (isSelected) const SelectionBadge(size: 24),
+                ],
+              ),
+              title: _ProfileCardTitle(
+                profile: profile,
+                expire: subscriptionInfo?.expireDate,
+                subtitle: _subtitle(context),
+                share: subscriptionInfo?.usage,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -571,7 +591,7 @@ class _ProfileCardTitle extends StatelessWidget {
         const SizedBox(height: _infoGap),
         if (share == null)
           subtitleText
-        else ...[
+        else
           Row(
             children: [
               Expanded(child: subtitleText),
@@ -583,30 +603,7 @@ class _ProfileCardTitle extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 6),
-          _UsageBar(share: share),
-        ],
       ],
-    );
-  }
-}
-
-/// The subscription's quota as a horizontal bar: the used part filled, the
-/// rest left as a track.
-class _UsageBar extends StatelessWidget {
-  const _UsageBar({required this.share});
-
-  final double share;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = context.colorScheme;
-    return LinearProgressIndicator(
-      minHeight: 6,
-      borderRadius: BorderRadius.circular(3),
-      value: share,
-      color: share >= _usageWarnShare ? colorScheme.error : colorScheme.primary,
-      backgroundColor: colorScheme.primary.opacity15,
     );
   }
 }

@@ -171,7 +171,7 @@ void main() {
     );
   });
 
-  testWidgets('a subscription card draws its usage as a bar with a '
+  testWidgets('a subscription card fills with its usage and shows the '
       'percentage', (tester) async {
     await pumpProfiles(tester, profiles: [urlProfile('url')]);
 
@@ -184,13 +184,19 @@ void main() {
       find.descendant(of: card, matching: find.text('75%')),
       findsOneWidget,
     );
-    final bar = tester.widget<LinearProgressIndicator>(
-      find.descendant(of: card, matching: find.byType(LinearProgressIndicator)),
+    expect(
+      find.descendant(
+        of: card,
+        matching: find.byWidgetPredicate(
+          (widget) =>
+              widget is FractionallySizedBox && widget.widthFactor == 0.75,
+        ),
+      ),
+      findsOneWidget,
     );
-    expect(bar.value, 0.75);
   });
 
-  testWidgets('a subscription without a total draws no usage bar', (
+  testWidgets('a subscription without a total leaves the card unfilled', (
     tester,
   ) async {
     await pumpProfiles(
@@ -209,7 +215,10 @@ void main() {
     expect(
       find.descendant(
         of: find.byType(ProfileItem),
-        matching: find.byType(LinearProgressIndicator),
+        matching: find.byWidgetPredicate(
+          (widget) =>
+              widget is FractionallySizedBox && widget.widthFactor != null,
+        ),
       ),
       findsNothing,
     );
