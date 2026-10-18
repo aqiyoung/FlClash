@@ -449,10 +449,10 @@ class _IpChips extends StatelessWidget {
   }
 }
 
-const _spinPeriod = Duration(milliseconds: 1500);
+const _fadePeriod = Duration(milliseconds: 1500);
 
-/// The exit's country on a clover that checks the exit again when tapped and
-/// turns while it is being checked.
+/// The exit's country on a disc that checks the exit again when tapped and
+/// fades while it is being checked.
 class _CountryBadge extends StatefulWidget {
   const _CountryBadge({
     required this.countryCode,
@@ -474,9 +474,12 @@ class _CountryBadge extends StatefulWidget {
 
 class _CountryBadgeState extends State<_CountryBadge>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _turns = AnimationController(
+  static const _fadeFloor = 0.4;
+
+  late final AnimationController _fade = AnimationController(
     vsync: this,
-    duration: _spinPeriod,
+    duration: _fadePeriod,
+    value: 1,
   );
   var _hovered = false;
   var _focused = false;
@@ -484,32 +487,30 @@ class _CountryBadgeState extends State<_CountryBadge>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _spin();
+    _pulse();
   }
 
   @override
   void didUpdateWidget(_CountryBadge oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.checking != widget.checking) {
-      _spin();
+      _pulse();
     }
   }
 
   @override
   void dispose() {
-    _turns.dispose();
+    _fade.dispose();
     super.dispose();
   }
 
-  void _spin() {
+  void _pulse() {
     if (context.disableAnimations) {
-      _turns.value = 0;
+      _fade.value = 1;
     } else if (widget.checking) {
-      _turns.repeat();
+      _fade.repeat(reverse: true, min: _fadeFloor, max: 1);
     } else {
-      // A clover looks the same every quarter turn, so it stops on the next.
-      final rest = (_turns.value * 4).ceil() / 4;
-      _turns.animateTo(rest, duration: _spinPeriod * (rest - _turns.value));
+      _fade.animateTo(1, duration: _fadePeriod * (1 - _fade.value));
     }
   }
 
@@ -541,40 +542,36 @@ class _CountryBadgeState extends State<_CountryBadge>
           splashFactory: NoSplash.splashFactory,
           child: ElasticPress(
             enabled: enabled,
-            child: AnimatedBuilder(
-              animation: _turns,
-              builder: (_, child) => ShapeBadge(
-                shape: MaterialShapes.clover4Leaf,
-                color: color,
-                size: size,
-                rotation: _turns.value * 2 * math.pi,
-                ring: _focused ? focusRingSide(colorScheme) : null,
-                child: child,
+            child: ShapeBadge(
+              shape: MaterialShapes.circle,
+              color: color,
+              size: size,
+              ring: _focused ? focusRingSide(colorScheme) : null,
+              child: FadeTransition(
+                opacity: _fade,
+                child: code == null || code.isEmpty
+                    ? GlyphIcon(
+                        AppGlyphs.proxies,
+                        size: size * 0.5,
+                        color: foreground,
+                      )
+                    : Text(
+                        code.countryFlagEmoji,
+                        maxLines: 1,
+                        // A disc's middle is open where a clover's petals cut
+                        // in, and a flag's ink, unlike a glyph's, fills its box.
+                        style:
+                            AppTextStyle.custom(
+                              context,
+                              size: size * 0.58,
+                              leading: size * 0.58,
+                              weight: FontWeight.w600,
+                            ).copyWith(
+                              color: foreground,
+                              fontFamily: FontFamily.twEmoji.value,
+                            ),
+                      ),
               ),
-              child: code == null || code.isEmpty
-                  ? GlyphIcon(
-                      AppGlyphs.proxies,
-                      size: size * 0.42,
-                      color: foreground,
-                    )
-                  : Text(
-                      code.countryFlagEmoji,
-                      maxLines: 1,
-                      // Sized against the badge it marks, not against the type
-                      // scale: at footnote size a 48 point clover swallows it.
-                      // A flag's ink fills its box where a glyph's is inset, so
-                      // it stays close to the placeholder's fraction.
-                      style:
-                          AppTextStyle.custom(
-                            context,
-                            size: size * 0.45,
-                            leading: size * 0.45,
-                            weight: FontWeight.w600,
-                          ).copyWith(
-                            color: foreground,
-                            fontFamily: FontFamily.twEmoji.value,
-                          ),
-                    ),
             ),
           ),
         ),

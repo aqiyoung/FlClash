@@ -17,7 +17,6 @@ import 'package:fl_clash/views/dashboard/widgets/card.dart';
 import 'package:fl_clash/views/dashboard/widgets/current_outbound.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'dart:async';
-import 'dart:math' as math;
 
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -147,18 +146,22 @@ void _useTallView(WidgetTester tester) {
   addTearDown(tester.view.resetDevicePixelRatio);
 }
 
-Finder _clover() => find.ancestor(
+Finder _countryBadge() => find.ancestor(
   of: find.byType(ShapeBadge),
   matching: find.byWidgetPredicate(
     (widget) => widget is InkResponse && widget.runtimeType == InkResponse,
   ),
 );
 
-double _cloverTurn(WidgetTester tester) => tester
-    .widget<ShapeBadge>(
-      find.descendant(of: _clover(), matching: find.byType(ShapeBadge)),
+double _badgeFade(WidgetTester tester) => tester
+    .widget<FadeTransition>(
+      find.descendant(
+        of: _countryBadge(),
+        matching: find.byType(FadeTransition),
+      ),
     )
-    .rotation;
+    .opacity
+    .value;
 
 DashboardChip _chip(WidgetTester tester, String label) =>
     tester.widget<DashboardChip>(
@@ -241,21 +244,21 @@ void main() {
 
       expect(find.byType(SkeletonPill), findsNWidgets(3));
       expect(find.byType(SkeletonText), findsOneWidget);
-      expect(tester.widget<InkResponse>(_clover()).onTap, isNull);
-      final turn = _cloverTurn(tester);
+      expect(tester.widget<InkResponse>(_countryBadge()).onTap, isNull);
+      final fade = _badgeFade(tester);
       await tester.pump(const Duration(milliseconds: 300));
-      expect(_cloverTurn(tester), isNot(turn));
+      expect(_badgeFade(tester), isNot(fade));
 
       quality.complete(_residential);
       await tester.pumpAndSettle();
 
       expect(find.byType(SkeletonPill), findsNothing);
       expect(find.text('Residential'), findsOneWidget);
-      expect(_cloverTurn(tester) % (math.pi / 2), closeTo(0, 1e-9));
-      expect(tester.widget<InkResponse>(_clover()).onTap, isNotNull);
+      expect(_badgeFade(tester), closeTo(1, 1e-9));
+      expect(tester.widget<InkResponse>(_countryBadge()).onTap, isNotNull);
     });
 
-    testWidgets('checks a failed quality again from its clover', (
+    testWidgets('checks a failed quality again from its flag', (
       tester,
     ) async {
       final core = _MockCore();
