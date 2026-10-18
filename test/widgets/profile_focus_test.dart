@@ -171,6 +171,51 @@ void main() {
     );
   });
 
+  testWidgets('a subscription card draws its usage as a bar with a '
+      'percentage', (tester) async {
+    await pumpProfiles(tester, profiles: [urlProfile('url')]);
+
+    final card = find.byType(ProfileItem);
+    expect(
+      find.descendant(of: card, matching: find.text('3KB / 4KB')),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(of: card, matching: find.text('75%')),
+      findsOneWidget,
+    );
+    final bar = tester.widget<LinearProgressIndicator>(
+      find.descendant(of: card, matching: find.byType(LinearProgressIndicator)),
+    );
+    expect(bar.value, 0.75);
+  });
+
+  testWidgets('a subscription without a total draws no usage bar', (
+    tester,
+  ) async {
+    await pumpProfiles(
+      tester,
+      profiles: [
+        urlProfile('url').copyWith(
+          subscriptionInfo: const SubscriptionInfo(
+            upload: 1024,
+            download: 2048,
+            total: 0,
+          ),
+        ),
+      ],
+    );
+
+    expect(
+      find.descendant(
+        of: find.byType(ProfileItem),
+        matching: find.byType(LinearProgressIndicator),
+      ),
+      findsNothing,
+    );
+    expect(find.text('75%'), findsNothing);
+  });
+
   testWidgets('a card without traffic names its source under the title and '
       'has no subscription info button', (tester) async {
     final l = currentAppLocalizations;
