@@ -286,6 +286,37 @@ jobs:
           APP_VERSION_NAME: ${{ inputs.version }}
         run: dart setup.dart ${{ matrix.platform }} --env ${{ inputs.env }} -v
 
+      # The packaging tools name their output after the pubspec version, which
+      # has to stay at upstream's three components -- pub refuses a four-part
+      # one. Rename them to the version users see, otherwise two releases of the
+      # same upstream version land in a downloads folder under one name and
+      # nothing on the file says which is which.
+      - name: Name the artifacts after our version
+        shell: bash
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          base="${VERSION%.*}"
+          shopt -s nullglob
+          renamed=0
+          for file in dist/*; do
+            name="$(basename "$file")"
+            case "$name" in
+              *"-${VERSION}-"*) ;;
+              *"-${base}-"*)
+                mv "$file" "dist/${name/-${base}-/-${VERSION}-}"
+                renamed=$((renamed + 1))
+                ;;
+              *)
+                echo "::error::${name} carries neither ${base} nor ${VERSION}; the packaging names changed"
+                exit 1
+                ;;
+            esac
+          done
+          echo "renamed ${renamed} artifact(s) to ${VERSION}:"
+          ls -l dist
+
       # Guards the whole point of this repository. Any certificate other than
       # ours is what gets an APK flagged by phone scanners, and a build that
       # silently fell back to the debug key would still succeed and still
