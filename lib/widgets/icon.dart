@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:fl_clash/common/cache.dart';
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/plugins/app.dart';
 import 'package:fl_clash/ui/icons/icons.dart';
 import 'package:fl_clash/ui/ui.dart';
@@ -131,15 +132,28 @@ class _ImagePlaceholder extends StatelessWidget {
 }
 
 /// Stands for a proxy group without an icon: the first letter or digit of
-/// its name, past any leading emoji the name already shows.
+/// its name, past any leading emoji the name already shows. [GroupName.GLOBAL]
+/// is the one group whose name says nothing about where it exits, so it shows
+/// that exit's flag whenever the caller knows it.
 class GroupMonogram extends StatelessWidget {
   final String name;
 
-  const GroupMonogram(this.name, {super.key});
+  /// The two-letter code of the country traffic leaves by, for callers that
+  /// have it at hand.
+  final String? exitCountryCode;
+
+  const GroupMonogram(this.name, {super.key, this.exitCountryCode});
 
   static final _letter = RegExp(r'[\p{L}\p{N}]', unicode: true);
 
+  /// Whether [name] is the Core's own GLOBAL group.
+  static bool isGlobal(String name) => name == GroupName.GLOBAL.name;
+
   String get _mark {
+    final code = exitCountryCode;
+    if (code != null && code.isNotEmpty && isGlobal(name)) {
+      return code.countryFlagEmoji;
+    }
     final letter = _letter.firstMatch(name)?.group(0);
     if (letter != null) {
       return letter.toUpperCase();
