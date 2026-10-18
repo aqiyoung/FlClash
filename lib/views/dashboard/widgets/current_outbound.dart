@@ -451,8 +451,8 @@ class _IpChips extends StatelessWidget {
 
 const _fadePeriod = Duration(milliseconds: 1500);
 
-/// The exit's country on a disc that checks the exit again when tapped and
-/// fades while it is being checked.
+/// The exit's country, which checks the exit again when tapped and fades while
+/// it is being checked.
 class _CountryBadge extends StatefulWidget {
   const _CountryBadge({
     required this.countryCode,
@@ -481,8 +481,6 @@ class _CountryBadgeState extends State<_CountryBadge>
     duration: _fadePeriod,
     value: 1,
   );
-  var _hovered = false;
-  var _focused = false;
 
   @override
   void didChangeDependencies() {
@@ -524,53 +522,50 @@ class _CountryBadgeState extends State<_CountryBadge>
     final size = widget.size;
     final code = widget.countryCode;
     final tooltip = context.appLocalizations.retry;
-    final color = Color.alphaBlend(
-      foreground.withValues(alpha: enabled && _hovered ? 0.08 : 0),
-      DashboardColors.of(context).tone2,
-    );
     return Tooltip(
       message: tooltip,
       child: Semantics(
         button: true,
         enabled: enabled,
         label: tooltip,
-        child: InkResponse(
-          onTap: enabled ? widget.onRefresh : null,
-          onHover: (value) => setState(() => _hovered = value),
-          onFocusChange: (value) => setState(() => _focused = value),
-          overlayColor: const WidgetStatePropertyAll(Colors.transparent),
-          splashFactory: NoSplash.splashFactory,
-          child: ElasticPress(
-            enabled: enabled,
-            child: ShapeBadge(
-              shape: MaterialShapes.circle,
-              color: color,
-              size: size,
-              ring: _focused ? focusRingSide(colorScheme) : null,
-              child: FadeTransition(
-                opacity: _fade,
-                child: code == null || code.isEmpty
-                    ? GlyphIcon(
-                        AppGlyphs.proxies,
-                        size: size * 0.5,
-                        color: foreground,
-                      )
-                    : Text(
-                        code.countryFlagEmoji,
-                        maxLines: 1,
-                        // A disc's middle is open where a clover's petals cut
-                        // in, and a flag's ink, unlike a glyph's, fills its box.
-                        style:
-                            AppTextStyle.custom(
-                              context,
-                              size: size * 0.58,
-                              leading: size * 0.58,
-                              weight: FontWeight.w600,
-                            ).copyWith(
-                              color: foreground,
-                              fontFamily: FontFamily.twEmoji.value,
-                            ),
-                      ),
+        child: FocusRing(
+          shape: AppShape.full,
+          standsOff: true,
+          child: InkResponse(
+            onTap: enabled ? widget.onRefresh : null,
+            overlayColor: const WidgetStatePropertyAll(Colors.transparent),
+            splashFactory: NoSplash.splashFactory,
+            child: ElasticPress(
+              enabled: enabled,
+              child: SizedBox.square(
+                dimension: size,
+                child: Center(
+                  child: FadeTransition(
+                    opacity: _fade,
+                    child: code == null || code.isEmpty
+                        ? GlyphIcon(
+                            AppGlyphs.proxies,
+                            size: size * 0.5,
+                            color: foreground,
+                          )
+                        : Text(
+                            code.countryFlagEmoji,
+                            maxLines: 1,
+                            // The flag is the whole mark, so it is sized like an
+                            // icon beside the address, not against the type.
+                            style:
+                                AppTextStyle.custom(
+                                  context,
+                                  size: size * 0.58,
+                                  leading: size * 0.58,
+                                  weight: FontWeight.w600,
+                                ).copyWith(
+                                  color: foreground,
+                                  fontFamily: FontFamily.twEmoji.value,
+                                ),
+                          ),
+                  ),
+                ),
               ),
             ),
           ),

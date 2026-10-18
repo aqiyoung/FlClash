@@ -368,7 +368,7 @@ class _UsageMeter extends StatelessWidget {
         SizedBox(
           height: 12,
           child: CustomPaint(
-            painter: _WavyProgressPainter(
+            painter: _ProgressPainter(
               value: usage.share,
               active: usage.share >= _nearlyUsedShare
                   ? DashboardColors.of(context).warn
@@ -382,18 +382,15 @@ class _UsageMeter extends StatelessWidget {
   }
 }
 
-/// The M3 Expressive wavy linear indicator: a wave up to [value], a gap,
-/// then a flat track ending in a stop dot.
-class _WavyProgressPainter extends CustomPainter {
-  const _WavyProgressPainter({
+/// A line up to [value], a gap, then a flat track ending in a stop dot.
+class _ProgressPainter extends CustomPainter {
+  const _ProgressPainter({
     required this.value,
     required this.active,
     required this.track,
   });
 
   static const _stroke = 4.0;
-  static const _amplitude = 3.0;
-  static const _wavelength = 12.0;
   static const _gap = 6.0;
   static const _stop = 4.0;
 
@@ -412,14 +409,11 @@ class _WavyProgressPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;
     if (value > 0) {
-      final wave = Path()..moveTo(start, mid);
-      for (var x = start; x <= split; x += 1) {
-        wave.lineTo(
-          x,
-          mid + _amplitude * math.sin((x - start) / _wavelength * 2 * math.pi),
-        );
-      }
-      canvas.drawPath(wave, paint..color = active);
+      canvas.drawLine(
+        Offset(start, mid),
+        Offset(split, mid),
+        paint..color = active,
+      );
     }
     final trackStart = value > 0 ? split + _gap + _stroke : start;
     if (trackStart < end - _stop) {
@@ -439,7 +433,7 @@ class _WavyProgressPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_WavyProgressPainter oldDelegate) =>
+  bool shouldRepaint(_ProgressPainter oldDelegate) =>
       oldDelegate.value != value ||
       oldDelegate.active != active ||
       oldDelegate.track != track;
