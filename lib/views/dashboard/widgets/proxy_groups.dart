@@ -1,6 +1,8 @@
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/common/service_probe.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
+import 'package:fl_clash/providers/outbound_ip.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/ui/icons/icons.dart';
 import 'package:fl_clash/views/dashboard/layout.dart';
@@ -42,7 +44,7 @@ Future<void> showProxiesSheet(BuildContext context, {String? groupName}) async {
 /// Drawn in the proportions of the proxies page's group header, always
 /// filled: the icon style chosen there is that page's own, and the dashboard
 /// would look bare without icons.
-class _GroupIcon extends StatelessWidget {
+class _GroupIcon extends ConsumerStatefulWidget {
   const _GroupIcon({
     required this.group,
     required this.size,
@@ -55,12 +57,54 @@ class _GroupIcon extends StatelessWidget {
   final double radius;
   final Color? ring;
 
+  @override
+  ConsumerState<_GroupIcon> createState() => _GroupIconState();
+}
+
+class _GroupIconState extends ConsumerState<_GroupIcon> {
   static const _inset = 0.15;
+
+  /// GLOBAL takes the exit from the probe the status card drives, so it drives
+  /// that probe itself as well: the tile has to work on a dashboard the status
+  /// card was taken off.
+  OutboundIpProbe? _probe;
+
+  @override
+  void initState() {
+    super.initState();
+    if (!GroupMonogram.isGlobal(widget.group.name)) {
+      return;
+    }
+    final probe = ref.read(outboundIpProbeProvider.notifier);
+    _probe = probe;
+    probe.watch(routedOutbound);
+  }
+
+  @override
+  void dispose() {
+    _probe?.unwatch(routedOutbound);
+    super.dispose();
+  }
+
+  /// The country the Core routes by, and only while it is up: with no answer to
+  /// borrow, GLOBAL keeps its globe.
+  String? _exitCountryCode() {
+    if (!ref.watch(isStartProvider) || ref.watch(suspendProvider)) {
+      return null;
+    }
+    return ref.watch(
+      outboundIpProbeProvider.select(
+        (state) => state.entryOf(routedOutbound).value?.countryCode,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = context.colorScheme;
-    final ring = this.ring;
+    final group = widget.group;
+    final size = widget.size;
+    final ring = widget.ring;
     final inset = size * _inset;
     return Container(
       width: size,
@@ -69,7 +113,7 @@ class _GroupIcon extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       decoration: ShapeDecoration(
         color: DashboardColors.of(context).tone2,
-        shape: AppShape.all(radius).copyWith(
+        shape: AppShape.all(widget.radius).copyWith(
           side: ring == null
               ? BorderSide.none
               : BorderSide(
@@ -87,7 +131,12 @@ class _GroupIcon extends StatelessWidget {
           ),
           child: CommonTargetIcon(
             src: group.icon,
-            fallback: GroupMonogram(group.name),
+            fallback: GroupMonogram(
+              group.name,
+              exitCountryCode: GroupMonogram.isGlobal(group.name)
+                  ? _exitCountryCode()
+                  : null,
+            ),
           ),
         ),
       ),
