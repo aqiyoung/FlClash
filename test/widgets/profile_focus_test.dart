@@ -151,7 +151,14 @@ void main() {
     final container = await pumpProfiles(tester, profiles: [url, file]);
 
     expect(find.byTooltip(currentAppLocalizations.edit), findsNothing);
-    expect(find.text('3KB / 4KB'), findsOneWidget);
+    expect(
+      find.text('${currentAppLocalizations.usedShort} 3KB  ·  75%'),
+      findsOneWidget,
+    );
+    expect(
+      find.text('${currentAppLocalizations.totalTraffic} 4KB'),
+      findsOneWidget,
+    );
     expect(find.text('5m ago'), findsOneWidget);
 
     container.read(updatingKeysProvider.notifier).start(url.updatingKey);
@@ -171,22 +178,12 @@ void main() {
     );
   });
 
-  testWidgets('a subscription card fills with its usage and shows the '
-      'percentage', (tester) async {
+  testWidgets('a subscription card fills with its used share', (tester) async {
     await pumpProfiles(tester, profiles: [urlProfile('url')]);
 
-    final card = find.byType(ProfileItem);
-    expect(
-      find.descendant(of: card, matching: find.text('3KB / 4KB')),
-      findsOneWidget,
-    );
-    expect(
-      find.descendant(of: card, matching: find.text('75%')),
-      findsOneWidget,
-    );
     expect(
       find.descendant(
-        of: card,
+        of: find.byType(ProfileItem),
         matching: find.byWidgetPredicate(
           (widget) =>
               widget is FractionallySizedBox && widget.widthFactor == 0.75,
@@ -199,6 +196,7 @@ void main() {
   testWidgets('a subscription without a total leaves the card unfilled', (
     tester,
   ) async {
+    final l = currentAppLocalizations;
     await pumpProfiles(
       tester,
       profiles: [
@@ -212,9 +210,10 @@ void main() {
       ],
     );
 
+    final card = find.byType(ProfileItem);
     expect(
       find.descendant(
-        of: find.byType(ProfileItem),
+        of: card,
         matching: find.byWidgetPredicate(
           (widget) =>
               widget is FractionallySizedBox && widget.widthFactor != null,
@@ -222,7 +221,14 @@ void main() {
       ),
       findsNothing,
     );
-    expect(find.text('75%'), findsNothing);
+    expect(
+      find.descendant(of: card, matching: find.textContaining('75%')),
+      findsNothing,
+    );
+    expect(
+      find.descendant(of: card, matching: find.textContaining(l.totalTraffic)),
+      findsNothing,
+    );
   });
 
   testWidgets('a card without traffic names its source under the title and '
