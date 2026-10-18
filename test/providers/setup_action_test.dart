@@ -1008,7 +1008,7 @@ void main() {
       originalLastConfigMd5 = globalState.lastConfigMd5;
       globalState.packageInfo = PackageInfo(
         appName: 'FlClash',
-        packageName: 'com.follow.clash',
+        packageName: 'com.threely.clash',
         version: '0.0.0',
         buildNumber: '0',
       );

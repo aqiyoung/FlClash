@@ -151,7 +151,14 @@ void main() {
     final container = await pumpProfiles(tester, profiles: [url, file]);
 
     expect(find.byTooltip(currentAppLocalizations.edit), findsNothing);
-    expect(find.text('3KB / 4KB'), findsOneWidget);
+    expect(
+      find.text('${currentAppLocalizations.usedShort} 3KB  ·  75%'),
+      findsOneWidget,
+    );
+    expect(
+      find.text('${currentAppLocalizations.totalTraffic} 4KB'),
+      findsOneWidget,
+    );
     expect(find.text('5m ago'), findsOneWidget);
 
     container.read(updatingKeysProvider.notifier).start(url.updatingKey);
@@ -168,6 +175,59 @@ void main() {
         matching: find.byType(CommonCircleLoading),
       ),
       findsOneWidget,
+    );
+  });
+
+  testWidgets('a subscription card fills with its used share', (tester) async {
+    await pumpProfiles(tester, profiles: [urlProfile('url')]);
+
+    expect(
+      find.descendant(
+        of: find.byType(ProfileItem),
+        matching: find.byWidgetPredicate(
+          (widget) =>
+              widget is FractionallySizedBox && widget.widthFactor == 0.75,
+        ),
+      ),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets('a subscription without a total leaves the card unfilled', (
+    tester,
+  ) async {
+    final l = currentAppLocalizations;
+    await pumpProfiles(
+      tester,
+      profiles: [
+        urlProfile('url').copyWith(
+          subscriptionInfo: const SubscriptionInfo(
+            upload: 1024,
+            download: 2048,
+            total: 0,
+          ),
+        ),
+      ],
+    );
+
+    final card = find.byType(ProfileItem);
+    expect(
+      find.descendant(
+        of: card,
+        matching: find.byWidgetPredicate(
+          (widget) =>
+              widget is FractionallySizedBox && widget.widthFactor != null,
+        ),
+      ),
+      findsNothing,
+    );
+    expect(
+      find.descendant(of: card, matching: find.textContaining('75%')),
+      findsNothing,
+    );
+    expect(
+      find.descendant(of: card, matching: find.textContaining(l.totalTraffic)),
+      findsNothing,
     );
   });
 

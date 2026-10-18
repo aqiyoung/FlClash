@@ -127,26 +127,33 @@ class LiquidGlassStyle {
           );
   }
 
+  /// This fork's read of iOS 27's tab bar: the tint keeps none of the
+  /// thickening that made the bar a grey slab, and the rim parts its colors
+  /// faintly and darkens along the sides as iOS's does (`FORK.md`).
   factory LiquidGlassStyle.pill(ColorScheme colorScheme) {
     final dark = colorScheme.brightness == Brightness.dark;
     return dark
         ? LiquidGlassStyle(
-            tint: colorScheme.surfaceContainerHighest.withValues(alpha: 0.48),
-            contrast: -0.4,
+            tint: colorScheme.surfaceContainerHighest.withValues(alpha: 0.42),
             blur: 0,
             haze: 0.72,
             hazeBlur: 15.6,
             saturation: 1.925,
-            rim: 0.35,
+            rim: 0.45,
+            rimAdded: 0.3,
+            dispersion: 2,
           )
         : const LiquidGlassStyle(
-            tint: Color(0x93F4F4F4),
-            contrast: 0.4,
+            tint: Color(0x7AF4F4F4),
             blur: 0,
             haze: 0.72,
             hazeBlur: 15.6,
             saturation: 2.1,
+            rim: 0.45,
+            rimAdded: 0.3,
+            dispersion: 2,
             hairline: 0.35,
+            hairlineSide: 0.75,
           );
   }
 
@@ -195,14 +202,14 @@ class LiquidGlassStyle {
     return LiquidGlassStyle(
       tint: Colors.transparent,
       blur: 0,
-      refraction: -4.3,
-      bevel: 5.5,
+      refraction: -6,
+      bevel: 7,
       saturation: 1,
       brightness: dark ? 1.33 : 1,
-      rim: dark ? 0.3 : 0.6,
+      rim: dark ? 0.38 : 0.7,
       rimWidth: 1.1,
       endShade: 0.045,
-      dispersion: 6.5,
+      dispersion: 8.2,
       rimBlur: 1.5,
       hairline: 0.42,
     );
@@ -213,12 +220,12 @@ class LiquidGlassStyle {
     return LiquidGlassStyle(
       tint: Colors.transparent,
       blur: 0,
-      refraction: 14,
-      bevel: 11.2,
+      refraction: 17,
+      bevel: 13,
       saturation: 1,
       brightness: dark ? 1.33 : 1,
       rim: 0,
-      dispersion: 3.6,
+      dispersion: 4.4,
       rimBlur: 2.5,
     );
   }

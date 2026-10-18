@@ -19,6 +19,22 @@ import 'preview.dart';
 
 const _infoGap = 4.0;
 
+/// A subscription's used quota, its total, and the share between them.
+typedef _Usage = ({int used, int total, double share});
+
+/// Past this share the usage bar warns, the same threshold the dashboard's
+/// profile card uses.
+const _usageWarnShare = 0.9;
+
+String _percentOf(double share) => '${(share * 100).round()}%';
+
+/// The tint the card itself fills with, up to the used share.
+Color _usageFillColor(BuildContext context, double share) {
+  final colorScheme = context.colorScheme;
+  return (share >= _usageWarnShare ? colorScheme.error : colorScheme.primary)
+      .opacity15;
+}
+
 double get _profileItemHeight {
   final measure = globalState.measure;
   return measure.textHeight(AppTextStyle.headline) +
@@ -320,12 +336,18 @@ class ProfileItem extends ConsumerWidget {
   SubscriptionInfo? get _subscriptionInfo =>
       profile.type == ProfileType.url ? profile.subscriptionInfo : null;
 
-  String _subtitle(BuildContext context) {
+  /// The traffic to draw on the card, or null when the subscription reports no
+  /// quota to measure against.
+  _Usage? get _usage {
     final info = _subscriptionInfo;
-    if (info != null && info.usage != null) {
-      final used = info.upload + info.download;
-      return '${used.traffic.show} / ${info.total.traffic.show}';
+    final share = info?.usage;
+    if (info == null || share == null) {
+      return null;
     }
+    return (used: info.upload + info.download, total: info.total, share: share);
+  }
+
+  String _subtitle(BuildContext context) {
     final appLocalizations = context.appLocalizations;
     return switch (profile.type) {
       ProfileType.url => appLocalizations.remote,
@@ -482,6 +504,7 @@ class ProfileItem extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isUpdating = ref.watch(isUpdatingProvider(profile.updatingKey));
     final subscriptionInfo = _subscriptionInfo;
+    final usage = _usage;
     final isSelected = profile.id == groupValue;
     return ContextMenuRegion(
       menuItems: isUpdating ? null : _menuItems(context, ref),
@@ -492,26 +515,41 @@ class ProfileItem extends ConsumerWidget {
         onPressed: () {
           onChanged(profile.id);
         },
-        child: ListItem(
-          key: Key(profile.id.toString()),
-          minTileHeight: _profileItemHeight,
-          minVerticalPadding: listRowVerticalPadding,
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            spacing: 8,
-            children: [
-              if (profile.type == ProfileType.custom)
-                _GroupsCountChip(profileId: profile.id)
-              else
-                _buildTrailing(context, isUpdating: isUpdating),
-              if (isSelected) const SelectionBadge(size: 24),
-            ],
-          ),
-          title: _ProfileCardTitle(
-            profile: profile,
-            expire: subscriptionInfo?.expireDate,
-            subtitle: _subtitle(context),
-          ),
+        child: Stack(
+          children: [
+            if (usage != null)
+              Positioned.fill(
+                child: FractionallySizedBox(
+                  alignment: AlignmentDirectional.centerStart,
+                  widthFactor: usage.share,
+                  child: ColoredBox(
+                    color: _usageFillColor(context, usage.share),
+                  ),
+                ),
+              ),
+            ListItem(
+              key: Key(profile.id.toString()),
+              minTileHeight: _profileItemHeight,
+              minVerticalPadding: listRowVerticalPadding,
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                spacing: 8,
+                children: [
+                  if (profile.type == ProfileType.custom)
+                    _GroupsCountChip(profileId: profile.id)
+                  else
+                    _buildTrailing(context, isUpdating: isUpdating),
+                  if (isSelected) const SelectionBadge(size: 24),
+                ],
+              ),
+              title: _ProfileCardTitle(
+                profile: profile,
+                expire: subscriptionInfo?.expireDate,
+                subtitle: _subtitle(context),
+                usage: usage,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -523,14 +561,18 @@ class _ProfileCardTitle extends StatelessWidget {
     required this.profile,
     required this.expire,
     required this.subtitle,
+    this.usage,
   });
 
   final Profile profile;
   final DateTime? expire;
   final String subtitle;
+  final _Usage? usage;
 
   @override
   Widget build(BuildContext context) {
+    final appLocalizations = context.appLocalizations;
+    final usage = this.usage;
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -541,12 +583,34 @@ class _ProfileCardTitle extends StatelessWidget {
           style: AppTextStyle.headline.of(context),
         ),
         const SizedBox(height: _infoGap),
-        Text(
-          subtitle,
-          style: AppTextStyle.footnote.of(context).toLighter,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
+        if (usage == null)
+          Text(
+            subtitle,
+            style: AppTextStyle.footnote.of(context).toLighter,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          )
+        else ...[
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  '${appLocalizations.usedShort} '
+                  '${usage.used.traffic.show}  ·  ${_percentOf(usage.share)}',
+                  style: AppTextStyle.footnote.of(context).toLighter.toTabular,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '${appLocalizations.totalTraffic} ${usage.total.traffic.show}',
+                style: AppTextStyle.footnote.of(context).toLighter.toTabular,
+                maxLines: 1,
+              ),
+            ],
+          ),
+        ],
       ],
     );
   }

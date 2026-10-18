@@ -1330,9 +1330,10 @@ class _Lens extends StatelessWidget {
   final Rect rect;
   final double lift;
 
-  /// On glass the lens rests as a platter in the secondary hue, sunk in dark
-  /// mode as iOS's tab bar marks its selection, and clears as it lifts into
-  /// the [_GlassLens].
+  /// On glass the lens rests as a platter of the bar's own neutral, sunk in
+  /// dark mode as iOS's tab bar marks its selection, and clears as it lifts
+  /// into the [_GlassLens]. iOS takes that platter as a color matrix of the
+  /// bar, with no hue of its own, so it keeps none of the theme's.
   final bool glass;
 
   @override
@@ -1340,7 +1341,7 @@ class _Lens extends StatelessWidget {
     final colorScheme = context.colorScheme;
     final lifted = lift.clamp(0.0, 1.0);
     final tone = colorScheme.brightness == Brightness.dark ? 4.0 : 90.0;
-    final hct = Hct.fromInt(colorScheme.secondary.toARGB32())..tone = tone;
+    final hct = Hct.fromInt(colorScheme.onSurface.toARGB32())..tone = tone;
     final platter = Color(hct.toInt()).withValues(alpha: 0.85);
     return PositionedDirectional(
       start: rect.left,
