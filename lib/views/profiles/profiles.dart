@@ -19,6 +19,12 @@ import 'preview.dart';
 
 const _infoGap = 4.0;
 
+/// Past this share the usage bar warns, the same threshold the dashboard's
+/// profile card uses.
+const _usageWarnShare = 0.9;
+
+String _percentOf(double share) => '${(share * 100).round()}%';
+
 double get _profileItemHeight {
   final measure = globalState.measure;
   return measure.textHeight(AppTextStyle.headline) +
@@ -523,6 +529,7 @@ class ProfileItem extends ConsumerWidget {
             profile: profile,
             expire: subscriptionInfo?.expireDate,
             subtitle: _subtitle(context),
+            share: subscriptionInfo?.usage,
           ),
         ),
       ),
@@ -535,14 +542,23 @@ class _ProfileCardTitle extends StatelessWidget {
     required this.profile,
     required this.expire,
     required this.subtitle,
+    this.share,
   });
 
   final Profile profile;
   final DateTime? expire;
   final String subtitle;
+  final double? share;
 
   @override
   Widget build(BuildContext context) {
+    final share = this.share;
+    final subtitleText = Text(
+      subtitle,
+      style: AppTextStyle.footnote.of(context).toLighter,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+    );
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -553,13 +569,44 @@ class _ProfileCardTitle extends StatelessWidget {
           style: AppTextStyle.headline.of(context),
         ),
         const SizedBox(height: _infoGap),
-        Text(
-          subtitle,
-          style: AppTextStyle.footnote.of(context).toLighter,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
+        if (share == null)
+          subtitleText
+        else ...[
+          Row(
+            children: [
+              Expanded(child: subtitleText),
+              const SizedBox(width: 8),
+              Text(
+                _percentOf(share),
+                style: AppTextStyle.footnote.of(context).toLight.toTabular,
+                maxLines: 1,
+              ),
+            ],
+          ),
+          const SizedBox(height: 6),
+          _UsageBar(share: share),
+        ],
       ],
+    );
+  }
+}
+
+/// The subscription's quota as a horizontal bar: the used part filled, the
+/// rest left as a track.
+class _UsageBar extends StatelessWidget {
+  const _UsageBar({required this.share});
+
+  final double share;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = context.colorScheme;
+    return LinearProgressIndicator(
+      minHeight: 6,
+      borderRadius: BorderRadius.circular(3),
+      value: share,
+      color: share >= _usageWarnShare ? colorScheme.error : colorScheme.primary,
+      backgroundColor: colorScheme.primary.opacity15,
     );
   }
 }
