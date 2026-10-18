@@ -45,6 +45,7 @@ Android 一般下 `-arm64-v8a.apk`（绝大多数手机）或 `-armeabi-v7a.apk`
 | 服务图标 | 仪表盘「服务状态」的 13 个服务图标由单色改为品牌色，图标底板固定浅色 |
 | 仪表盘 | 「状态」卡片里的出口国家由两个大写字母改成国旗 |
 | README | 下载徽章、下载按钮、官网链接、F-Droid 仓库、Homebrew tap、TG 频道都换成本仓库 / [@sanyeinfo](https://t.me/sanyeinfo)——上游那些入口装出来的是另一套签名的包 |
+| dock 玻璃 | 主题设置里开「液态玻璃」后，dock 的观感更贴 iOS 27：tint 不再被 `contrast` 加厚（更透）、镜片折射与色散加深、顶底高光与两侧暗线更明显、选中底板由副色改成中性色（在 `lib/ui/liquid_glass.dart` 与 `lib/ui/navigation_dock.dart`，每次同步上游时留意这两处冲突） |
 
 另外两件不在代码里的事：
 

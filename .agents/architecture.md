@@ -718,19 +718,19 @@ lens over it, as iOS's does. `lib/ui/liquid_glass.dart` holds the rest:
   squeezed and mirrored. The materials are iOS 27's as codenameone/CodenameOne#5906 fitted them (`pill` for the dock,
   `regular` for buttons): the backdrop passes through as `offset + scale * saturated backdrop`, the tint at
   `1 - scale` carrying the offset; a dark line takes the outermost pixels because UIKit draws it just outside the
-  bounds, on the dock as faint all around as iOS draws it along the top and bottom, since the darker sides iOS draws
-  read as brackets on a pale page; a highlight lights the top and bottom, fading over 1.3 dp and, as iOS 27's tab bar
-  fades it around its rounded ends, with the square of the normal's upward part; the lifted lens keeps a narrower band.
-  Buttons (`regular`, `tinted`) take the rim of iOS 27's glass and bar buttons, measured in the simulator: the line
-  darkens toward the sides with the cube of the normal's sideways part, from nothing along a dark button's top and
-  bottom, and the highlight fades over 1.2 dp with a sixth of it in a tail to 4.5 dp, dims round the ends far faster
-  than the tab bar's, and is partly added as light, so it lifts a pale button as iOS does.
-  The line and the highlight keep to the superellipse the pane is clipped to, which the shader traces after the
-  engine's `round_superellipse_param.cc`: the circles the optics bend by lie up to half a dp outside it where a long
-  side runs into its end, and a line on them breaks there. A test holds the traced curve to the engine's path.
-  In dark mode the tint is
-  the scheme's `surfaceContainerHighest` at iOS's alpha: iOS's mid grey lifts a dark page into a grey haze. The tint
-  thickens over content much darker than it, or with a negative `contrast` much lighter.
+  bounds, and the dock draws it as iOS's tab bar does, faint along the top and bottom and darker along the sides,
+  though those sides read as brackets on a pale page; a highlight lights the top and bottom, fading over 1.3 dp, part
+  of it added as light, and, as iOS 27's tab bar fades it around its rounded ends, with the square of the normal's
+  upward part; the lifted lens keeps a narrower band. Buttons (`regular`, `tinted`) take the rim of iOS 27's glass and
+  bar buttons, measured in the simulator: the line darkens toward the sides with the cube of the normal's sideways
+  part, from nothing along a dark button's top and bottom, and the highlight fades over 1.2 dp with a sixth of it in a
+  tail to 4.5 dp, dims round the ends far faster than the tab bar's, and is partly added as light, so it lifts a pale
+  button as iOS does. The line and the highlight keep to the superellipse the pane is clipped to, which the shader
+  traces after the engine's `round_superellipse_param.cc`: the circles the optics bend by lie up to half a dp outside
+  it where a long side runs into its end, and a line on them breaks there. A test holds the traced curve to the
+  engine's path. In dark mode the tint is the scheme's `surfaceContainerHighest`, near iOS's alpha: iOS's mid grey
+  lifts a dark page into a grey haze. The tint thickens over content much darker than it, or with a negative
+  `contrast` much lighter.
 - The `pill`'s frost, line and shadow follow iOS 27's tab bar at rest, measured in the simulator over solid fills and a
   black and white split: 28% of the backdrop shows sharp and 72% through a blur of 15.6 dp, so a stripe under the bar
   spreads over its neighbours; iOS mixes the two brighter toward white, as if it blurred in linear light, which the
@@ -738,9 +738,11 @@ lens over it, as iOS's does. `lib/ui/liquid_glass.dart` holds the rest:
   1.3% black blurred 3.8 dp and dropped 6.5 dp, shading only below and by 3/255 at most, in both modes; the solid
   dock keeps its wider shadow. The sharp part needs no blur pass of its own, so on the SwiftShader emulator the haze
   added half a render pass a frame scrolling Tools, about four on the dashboard, where it no longer shares the start
-  button's blur, and no time beyond the noise of three alternating runs. Its colors are deliberately not iOS's: iOS's
-  bar takes no `contrast`, its selection platter is a color matrix of the bar and its icons are vibrant, where the
-  dock keeps the theme's.
+  button's blur, and no time beyond the noise of three alternating runs. The bar's rim parts its colors faintly, as a
+  clear pane there reads across it. Its colors are deliberately not iOS's: iOS's selection platter is a color matrix of
+  the bar and its icons are vibrant, where the dock keeps the theme's; the dock also drops the `contrast` that stood in
+  for iOS's own, holds its tint thinner than iOS keeps it, and takes the platter's neutral from `onSurface` at iOS's
+  tone.
 - The dock and its lens follow UIKit's tab bar as codenameone/CodenameOne#5906 measured it frame by frame: 86 dp a
   destination, a resting lens 8 dp wider, a lift of 16 dp that magnifies what lies inside the lens by 16%, and springs
   taken from the capture; the lens's stretch and squash are a fit to its deformation tables. The lift stays up until it
@@ -749,12 +751,13 @@ lens over it, as iOS's does. `lib/ui/liquid_glass.dart` holds the rest:
   them, so it bends only the bar; what lies inside it is copied, tinted and magnified, into an offscreen layer where
   a second clear pane warps it toward the rim on its own, as liquid_prism read UIKit's displacement inputs on iOS 27.
   The lens follows what iOS 27 shows of it over ramp and line backdrops in the simulator: it reads outward along its
-  normal all around, by nothing at the rim and 4.3 dp a 5.5 dp bevel in, easing off toward its middle, so a band
-  rings it with what lies right under its rim, drawn out; red and blue part by up to 6.5 dp along its top and bottom
-  and about 3.9 dp around its ends, across the band's outer 7 dp. In dark mode both panes brighten what they show by
-  a third, as iOS does, and the lens casts a soft shadow 8 dp down. A press lights the bar through `LiquidGlass.glow`:
-  a wash over the whole pane, brightest at the finger, that spreads out as it fades. A `pressed` pane, as a glass
-  button's or a `TonalButtonGroup`'s is, hears the pointer on what it wraps and lights from the finger the same way.
+  normal all around, by nothing at the rim and 6 dp a 7 dp bevel in, easing off toward its middle, so a band rings it
+  with what lies right under its rim, drawn out; red and blue part by up to 8.2 dp along its top and bottom and about
+  4.9 dp around its ends, across the band's outer 7 dp, and the copy inside warps by 17 dp over a 13 dp bevel, part by
+  4.4. In dark mode both panes brighten what they show by a third, as iOS does, and the lens casts a soft shadow 8 dp
+  down. A press lights the bar through `LiquidGlass.glow`: a wash over the whole pane, brightest at the finger, that
+  spreads out as it fades. A `pressed` pane, as a glass button's or a `TonalButtonGroup`'s is, hears the pointer on what
+  it wraps and lights from the finger the same way.
 
 ## Popup Motion
 
