@@ -1,6 +1,8 @@
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/common/service_probe.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
+import 'package:fl_clash/providers/outbound_ip.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/ui/icons/icons.dart';
 import 'package:fl_clash/views/dashboard/layout.dart';
@@ -42,7 +44,7 @@ Future<void> showProxiesSheet(BuildContext context, {String? groupName}) async {
 /// Drawn in the proportions of the proxies page's group header, always
 /// filled: the icon style chosen there is that page's own, and the dashboard
 /// would look bare without icons.
-class _GroupIcon extends StatelessWidget {
+class _GroupIcon extends ConsumerWidget {
   const _GroupIcon({
     required this.group,
     required this.size,
@@ -57,8 +59,21 @@ class _GroupIcon extends StatelessWidget {
 
   static const _inset = 0.15;
 
+  /// The same probe the status card shows, and only while the Core is up: with
+  /// no answer to borrow, GLOBAL falls back to its letter.
+  String? _exitCountryCode(WidgetRef ref) {
+    if (!ref.watch(isStartProvider) || ref.watch(suspendProvider)) {
+      return null;
+    }
+    return ref.watch(
+      outboundIpProbeProvider.select(
+        (state) => state.entryOf(routedOutbound).value?.countryCode,
+      ),
+    );
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final colorScheme = context.colorScheme;
     final ring = this.ring;
     final inset = size * _inset;
@@ -87,7 +102,12 @@ class _GroupIcon extends StatelessWidget {
           ),
           child: CommonTargetIcon(
             src: group.icon,
-            fallback: GroupMonogram(group.name),
+            fallback: GroupMonogram(
+              group.name,
+              exitCountryCode: GroupMonogram.isGlobal(group.name)
+                  ? _exitCountryCode(ref)
+                  : null,
+            ),
           ),
         ),
       ),

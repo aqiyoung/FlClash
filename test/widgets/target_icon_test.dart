@@ -38,6 +38,25 @@ void main() {
     }
   });
 
+  testWidgets('the Core GLOBAL shows the exit flag it was handed, and its '
+      'letter when it was handed none', (tester) async {
+    await _pump(tester, const GroupMonogram('GLOBAL', exitCountryCode: 'HK'));
+
+    expect(find.text('🇭🇰'), findsOne);
+
+    await _pump(tester, const GroupMonogram('GLOBAL'));
+
+    expect(find.text('G'), findsOne);
+  });
+
+  testWidgets('any other group keeps its letter, whatever exit it is handed', (
+    tester,
+  ) async {
+    await _pump(tester, const GroupMonogram('自动选择', exitCountryCode: 'HK'));
+
+    expect(find.text('自'), findsOne);
+  });
+
   testWidgets('a missing image shows a placeholder, as does an empty name', (
     tester,
   ) async {
