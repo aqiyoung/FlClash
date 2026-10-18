@@ -7,8 +7,8 @@ name: build
 #
 # The signing keystore is injected from repository secrets; without it
 # upstream's Gradle falls back to the debug key and appends a `.dev` suffix, so
-# every APK here is signed with our own certificate and keeps the
-# `com.follow.clash` package name.
+# every APK here is signed with our own certificate and carries our own
+# `com.threely.clash` package name.
 
 on:
   workflow_call:
@@ -341,6 +341,10 @@ jobs:
         if: matrix.platform == 'android'
         env:
           VERSION: ${{ inputs.version }}
+          # Upstream's applicationId is the one phone managers flag, so ours has
+          # to be somebody else's -- and a merge that quietly restores upstream's
+          # while keeping our signature would still build and still upload.
+          APPLICATION_ID: com.threely.clash
           # SHA-256 of the certificate in the KEYSTORE secret, lower case, no
           # separators. Rotating the keystore means updating this line, which is
           # the point: a swap cannot happen without saying so here.
@@ -352,8 +356,10 @@ jobs:
             echo "== $(basename "$apk")"
             "$build_tools/aapt2" dump badging "$apk" | sed -n '1p'
             "$build_tools/apksigner" verify --print-certs "$apk" | sed -n '1,4p'
-            if "$build_tools/aapt2" dump badging "$apk" | grep -q "com\.follow\.clash\.dev"; then
-              echo "::error::$(basename "$apk") still carries the debug applicationId suffix"
+            # The exact id, not merely "no .dev suffix": this also catches a
+            # merge that restored upstream's package name without saying so.
+            if ! "$build_tools/aapt2" dump badging "$apk" | grep -q "package: name='${APPLICATION_ID}'"; then
+              echo "::error::$(basename "$apk") is not packaged as ${APPLICATION_ID}"
               exit 1
             fi
             # The digest is matched without its label so that a change in
