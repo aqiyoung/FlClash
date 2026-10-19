@@ -60,6 +60,31 @@ void main() {
     await tester.pump();
   });
 
+  testWidgets('ListItem.toggle reads as one node carrying its state', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    addTearDown(semantics.dispose);
+
+    await tester.pumpWidget(
+      TestApp(
+        overrides: [_viewSizeOverride],
+        child: Scaffold(
+          body: ListItem.toggle(
+            title: const Text('Enabled'),
+            value: true,
+            onChanged: (_) {},
+          ),
+        ),
+      ),
+    );
+
+    final node = tester.getSemantics(find.text('Enabled')).getSemanticsData();
+
+    expect(node.label, 'Enabled');
+    expect(node.flagsCollection.isToggled, ui.Tristate.isTrue);
+  });
+
   testWidgets('ListItem takes the grouped card inside a V3 section', (
     tester,
   ) async {
