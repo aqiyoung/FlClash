@@ -1553,7 +1553,9 @@ class _EditCustomProxyViewState extends ConsumerState<_EditCustomProxyView> {
                     if (!_isNew)
                       FormRow(
                         title: appLocalizations.delete,
-                        titleStyle: TextStyle(color: context.colorScheme.error),
+                        titleStyle: TextStyle(
+                          color: context.colorScheme.destructive,
+                        ),
                         onPressed: _handleDelete,
                       ),
                   ],
