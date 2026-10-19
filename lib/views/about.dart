@@ -171,7 +171,7 @@ class _AboutHero extends StatelessWidget {
             alignment: WrapAlignment.center,
             children: [
               _Pill(
-                label: 'v${globalState.packageInfo.version}',
+                label: 'v${globalState.packageInfo.displayVersion}',
                 color: colorScheme.primary,
                 foregroundColor: colorScheme.onPrimary,
               ),

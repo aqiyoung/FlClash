@@ -124,8 +124,11 @@ List<String> createFlutterBuildArgs({
   return flutterBuildArgs;
 }
 
-Map<String, String> createBuildEnvironment(String env) {
-  return {'APP_ENV': env};
+Map<String, String> createBuildEnvironment(String env, {String? appVersion}) {
+  return {
+    'APP_ENV': env,
+    if (appVersion != null && appVersion.isNotEmpty) 'APP_VERSION': appVersion,
+  };
 }
 
 /// Packages whose build hook `pubspec.yaml` turns into a no-op.
@@ -164,7 +167,14 @@ Future<int> _package(
   required bool verbose,
 }) async {
   final file = File(p.join(rootDir, 'env.json'));
-  await file.writeAsString(jsonEncode(createBuildEnvironment(env)));
+  await file.writeAsString(
+    jsonEncode(
+      createBuildEnvironment(
+        env,
+        appVersion: Platform.environment['APP_VERSION_NAME'],
+      ),
+    ),
+  );
 
   final flutterBuildArgs = createFlutterBuildArgs(
     platform: platform,
