@@ -52,9 +52,18 @@ extension BuildContextExtension on BuildContext {
   TextStyle get listTitleStyle =>
       AppTextStyle.body.of(this).copyWith(color: colorScheme.onSurface);
 
-  TextStyle get listSubtitleStyle => AppTextStyle.subheadline
-      .of(this)
-      .copyWith(color: colorScheme.onSurfaceVariant);
+  /// Chinese and Japanese set every glyph on a full square, so the same point
+  /// size reads heavier than Latin and crowds the title above it; the subtitle
+  /// takes a step down there so a row keeps the same weight.
+  bool get usesHanDensity {
+    final languageCode = Localizations.maybeLocaleOf(this)?.languageCode;
+    return languageCode == 'zh' || languageCode == 'ja';
+  }
+
+  TextStyle get listSubtitleStyle =>
+      (usesHanDensity ? AppTextStyle.footnote : AppTextStyle.subheadline)
+          .of(this)
+          .copyWith(color: colorScheme.onSurfaceVariant);
 
   TextStyle get listCaptionStyle => AppTextStyle.footnote
       .of(this)
