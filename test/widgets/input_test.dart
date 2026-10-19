@@ -64,7 +64,6 @@ void main() {
     tester,
   ) async {
     final semantics = tester.ensureSemantics();
-    addTearDown(semantics.dispose);
 
     await tester.pumpWidget(
       TestApp(
@@ -83,6 +82,7 @@ void main() {
 
     expect(node.label, 'Enabled');
     expect(node.flagsCollection.isToggled, ui.Tristate.isTrue);
+    semantics.dispose();
   });
 
   testWidgets('ListItem takes the grouped card inside a V3 section', (
