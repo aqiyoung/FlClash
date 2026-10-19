@@ -567,7 +567,7 @@ class _AddOrEditRuleViewState extends ConsumerState<_AddOrEditRuleView> {
               if (rule.id != -1)
                 _buildItem(
                   title: appLocalizations.delete,
-                  titleStyle: TextStyle(color: context.colorScheme.error),
+                  titleStyle: TextStyle(color: context.colorScheme.destructive),
                   onPressed: () {
                     _handleDelete(profileId);
                   },

@@ -412,31 +412,37 @@ class ListItem<T> extends StatelessWidget {
           },
         );
       case final _CheckboxAction checkboxDelegate:
-        return _buildListTile(
-          context,
-          position: position,
-          onTap: checkboxDelegate.onChanged == null
-              ? null
-              : () {
-                  checkboxDelegate.onChanged!(!checkboxDelegate.value);
-                },
-          trailing: CommonCheckBox(
-            value: checkboxDelegate.value,
-            onChanged: checkboxDelegate.onChanged,
+        return MergeSemantics(
+          child: _buildListTile(
+            context,
+            position: position,
+            onTap: checkboxDelegate.onChanged == null
+                ? null
+                : () {
+                    checkboxDelegate.onChanged!(!checkboxDelegate.value);
+                  },
+            trailing: CommonCheckBox(
+              value: checkboxDelegate.value,
+              onChanged: checkboxDelegate.onChanged,
+            ),
           ),
         );
       case final _ToggleAction toggleAction:
-        return _buildListTile(
-          context,
-          position: position,
-          onTap: toggleAction.onChanged == null
-              ? null
-              : () {
-                  toggleAction.onChanged!(!toggleAction.value);
-                },
-          trailing: Switch(
-            value: toggleAction.value,
-            onChanged: toggleAction.onChanged,
+        // The title and the switch name one setting; read as separate nodes a
+        // screen reader makes the user swipe twice and loses which row it is.
+        return MergeSemantics(
+          child: _buildListTile(
+            context,
+            position: position,
+            onTap: toggleAction.onChanged == null
+                ? null
+                : () {
+                    toggleAction.onChanged!(!toggleAction.value);
+                  },
+            trailing: Switch(
+              value: toggleAction.value,
+              onChanged: toggleAction.onChanged,
+            ),
           ),
         );
       case _DefaultAction():

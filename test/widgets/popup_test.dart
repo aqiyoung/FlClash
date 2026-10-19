@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:fl_clash/ui/color.dart';
 import 'package:fl_clash/ui/icons/icons.dart';
 import 'package:fl_clash/ui/liquid_glass.dart';
 import 'package:fl_clash/ui/navigation_dock.dart';
@@ -1523,7 +1524,7 @@ void main() {
     expect(await widthOf(5), moreOrLessEquals(full, epsilon: 0.5));
   });
 
-  testWidgets('a danger item keeps the error color off its background', (
+  testWidgets('a danger item keeps the destructive color off its background', (
     tester,
   ) async {
     final open = await pumpMenu(tester, [
@@ -1544,11 +1545,11 @@ void main() {
 
     expect(
       tester.widget<Text>(find.text('delete')).style?.color,
-      colorScheme.error,
+      colorScheme.destructive,
     );
     expect(
       tester.widget<GlyphIcon>(find.byGlyph(AppGlyphs.delete)).color,
-      colorScheme.error,
+      colorScheme.destructive,
     );
     expect(
       find.ancestor(of: find.text('delete'), matching: find.byType(Ink)),
@@ -1563,7 +1564,7 @@ void main() {
             ),
           )
           .hoverColor,
-      colorScheme.error.withValues(alpha: 0.1),
+      colorScheme.destructive.withValues(alpha: 0.1),
     );
     expect(
       tester.widget<Text>(find.text('plain')).style?.color,

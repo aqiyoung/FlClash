@@ -1384,7 +1384,9 @@ class _EditProxyGroupViewState extends ConsumerState<EditProxyGroupView> {
                     if (!_isNew)
                       _buildItem(
                         title: appLocalizations.delete,
-                        titleStyle: TextStyle(color: context.colorScheme.error),
+                        titleStyle: TextStyle(
+                          color: context.colorScheme.destructive,
+                        ),
                         onPressed: () {
                           _handleDelete(profileId);
                         },
