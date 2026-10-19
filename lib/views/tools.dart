@@ -15,6 +15,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'config/advanced.dart';
 import 'config/custom_resources.dart';
+import 'config/settings_search.dart';
 import 'developer.dart';
 import 'disclaimer.dart';
 import 'theme.dart';
@@ -52,6 +53,7 @@ class _ToolViewState extends ConsumerState<ToolsView> {
     return generateSection(
       title: appLocalizations.settings,
       items: [
+        const _SettingsSearchItem(),
         const _LocaleItem(),
         const _ThemeItem(),
         const _BackupItem(),
@@ -160,6 +162,19 @@ class _BackupItem extends StatelessWidget {
       leading: const GlyphIcon(AppGlyphs.cloudSync),
       title: Text(context.appLocalizations.backupAndRestore),
       widget: const BackupAndRestore(),
+    );
+  }
+}
+
+class _SettingsSearchItem extends StatelessWidget {
+  const _SettingsSearchItem();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListItem.open(
+      leading: const GlyphIcon(AppGlyphs.search),
+      title: Text(context.appLocalizations.search),
+      widget: const SettingsSearchView(),
     );
   }
 }
