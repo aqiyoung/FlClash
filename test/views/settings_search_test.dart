@@ -34,11 +34,28 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: const TestApp(child: Scaffold(body: SettingsSearchView())),
+        child: const TestApp(child: SettingsSearchView()),
       ),
     );
     await tester.pumpAndSettle();
   }
+
+  testWidgets('the page carries a bar titled like the row that opened it', (
+    tester,
+  ) async {
+    await pumpSearch(tester);
+    final appLocalizations = tester
+        .element(find.byType(SettingsSearchView))
+        .appLocalizations;
+
+    expect(
+      find.descendant(
+        of: find.byType(AppBar),
+        matching: find.text(appLocalizations.search),
+      ),
+      findsOneWidget,
+    );
+  });
 
   testWidgets('typing a row name leaves only that row', (tester) async {
     await pumpSearch(tester);

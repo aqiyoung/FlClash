@@ -26,31 +26,34 @@ class _SettingsSearchViewState extends State<SettingsSearchView> {
         )
         .toList();
 
-    return Column(
-      children: [
-        Padding(
-          padding: EdgeInsets.fromLTRB(16, context.contentTopPadding, 16, 8),
-          child: SearchField(
-            onChanged: (value) => setState(() => _query = SearchQuery(value)),
+    return BaseScaffold(
+      title: appLocalizations.search,
+      body: Column(
+        children: [
+          Padding(
+            padding: EdgeInsets.fromLTRB(16, context.contentTopPadding, 16, 8),
+            child: SearchField(
+              onChanged: (value) => setState(() => _query = SearchQuery(value)),
+            ),
           ),
-        ),
-        Expanded(
-          child: entries.isEmpty
-              ? Center(child: Text(appLocalizations.none))
-              : ListView.builder(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  itemCount: entries.length,
-                  itemBuilder: (context, index) {
-                    final entry = entries[index];
-                    return ListItem.open(
-                      title: Text(entry.title(appLocalizations)),
-                      subtitle: Text(entry.page(appLocalizations)),
-                      widget: entry.view(context),
-                    );
-                  },
-                ),
-        ),
-      ],
+          Expanded(
+            child: entries.isEmpty
+                ? Center(child: Text(appLocalizations.none))
+                : ListView.builder(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    itemCount: entries.length,
+                    itemBuilder: (context, index) {
+                      final entry = entries[index];
+                      return ListItem.open(
+                        title: Text(entry.title(appLocalizations)),
+                        subtitle: Text(entry.page(appLocalizations)),
+                        widget: entry.view(context),
+                      );
+                    },
+                  ),
+          ),
+        ],
+      ),
     );
   }
 }
