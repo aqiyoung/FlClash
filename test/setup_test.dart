@@ -25,6 +25,19 @@ void main() {
       expect(setup.createBuildEnvironment('dev'), {'APP_ENV': 'dev'});
     });
 
+    test('carries our four-component version into the build', () {
+      expect(setup.createBuildEnvironment('dev', appVersion: '0.9.1.15'), {
+        'APP_ENV': 'dev',
+        'APP_VERSION': '0.9.1.15',
+      });
+    });
+
+    test('leaves the version out when the build does not pass one', () {
+      expect(setup.createBuildEnvironment('dev', appVersion: ''), {
+        'APP_ENV': 'dev',
+      });
+    });
+
     test('omits verbose from flutter build args by default', () {
       final args = setup.createFlutterBuildArgs(
         platform: 'android',

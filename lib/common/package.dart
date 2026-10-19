@@ -5,6 +5,11 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'common.dart';
 
 extension PackageInfoExtension on PackageInfo {
+  /// The version users see and updates are compared against. Android reports
+  /// the four-component versionName itself; the desktop packages only carry
+  /// upstream's three, so the injected [buildVersion] fills in the revision.
+  String get displayVersion => buildVersion.isNotEmpty ? buildVersion : version;
+
   String get ua => [
     '$appName/v$version',
     'clash-verge',
