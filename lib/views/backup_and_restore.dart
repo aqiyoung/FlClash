@@ -481,7 +481,7 @@ class _WebDAVFormState extends ConsumerState<WebDAVForm> {
             items: [
               FormRow(
                 title: appLocalizations.delete,
-                titleStyle: TextStyle(color: context.colorScheme.error),
+                titleStyle: TextStyle(color: context.colorScheme.destructive),
                 onPressed: _delete,
               ),
             ],

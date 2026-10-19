@@ -2070,7 +2070,9 @@ class _CommonPopupMenuState extends State<CommonPopupMenu>
   }) {
     final colorScheme = context.colorScheme;
     final enabled = onTap != null;
-    final color = item.danger ? colorScheme.error : colorScheme.onSurface;
+    // A danger item is a destructive action, so it takes the same red an
+    // alert's destructive button does rather than the form error's.
+    final color = item.danger ? colorScheme.destructive : colorScheme.onSurface;
     final foregroundColor = enabled ? color : color.opacity30;
     Widget? arrow;
     if (item.subItems.isNotEmpty) {
@@ -2096,7 +2098,7 @@ class _CommonPopupMenuState extends State<CommonPopupMenu>
       onTap: onTap,
       splashFactory: NoSplash.splashFactory,
       highlightColor: Colors.transparent,
-      hoverColor: item.danger ? colorScheme.error.opacity10 : null,
+      hoverColor: item.danger ? colorScheme.destructive.opacity10 : null,
       child: DecoratedBox(
         decoration: ShapeDecoration(
           color: pressed ? Theme.of(context).highlightColor : null,
