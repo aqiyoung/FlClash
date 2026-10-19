@@ -2,6 +2,8 @@
 
 这是 [chen08209/FlClash](https://github.com/chen08209/FlClash) 的一个个人 fork。上游代码原样保留，我们在上面做了少量定制，并用 GitHub Actions 全平台构建、自签名，发布到本仓库的 Releases（同时推送到 TG 频道 [@sanyeinfo](https://t.me/sanyeinfo)）。
 
+本仓库只发布**客户端本体**：不含任何代理服务器、订阅链接、账号或流量，也没有任何收费项目。装好之后用什么配置，由使用者自己填。
+
 **装哪个**
 
 - **正式版**（推荐）：[最新 Release](../../releases/latest) 里 `FlClash` 开头的安装包。`/releases/latest` 永远指向正式版。
@@ -41,7 +43,7 @@ Android 一般下 `-arm64-v8a.apk`（绝大多数手机）或 `-armeabi-v7a.apk`
 | 关于页 | 去掉上游的 Telegram 频道入口（那个频道不是本仓库运营的） |
 | 更新检查 | 指向本仓库的 Releases，而不是上游；版本比较额外认我们自己的第四位 |
 | 版本名 | 四段版本号由构建注入：Android 走 `versionName`，桌面端走 `APP_VERSION` dart-define（`pubspec.yaml` 仍是三段） |
-| 包名 | Android 的 `applicationId` 改成 `com.threely.clash`（2026-10-18 起）：国内手机管家把上游那个包名标成了灰产误报，换一个不在名单里的 |
+| 包名 | Android 的 `applicationId` 改成 `com.threely.clash`（2026-10-18 起）。国内手机管家对上游那个包名有灰产误报记录，本仓库用独立包名，便于区分本仓库产物与上游官方包；两者签名本就不同，需要分别安装 |
 | 服务图标 | 仪表盘「服务状态」的 13 个服务图标由单色改为品牌色，图标底板固定浅色 |
 | 仪表盘 | 「状态」卡片里的出口国家由两个大写字母改成国旗；国旗底下原来的四叶草去掉、只留国旗，检查出口时由旋转改为渐隐 |
 | 用量进度 | 仪表盘「配置」卡片的用量进度由上游的 M3 波浪线改成直线（改 `lib/views/dashboard/widgets/profiles.dart`） |

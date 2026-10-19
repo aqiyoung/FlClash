@@ -39,6 +39,8 @@
 
 从[本仓库的发布页](https://github.com/aqiyoung/FlClash/releases/latest)获取最新版本。
 
+这些安装包只是客户端本体：不含任何代理服务器、订阅链接、账号或流量，也没有任何收费项目。
+
 | 平台 | 安装包 | 说明 |
 | --- | --- | --- |
 | Android | `arm64-v8a`、`armeabi-v7a`、`x86_64` 三种 APK | 绝大多数手机选 `arm64-v8a`。 |
