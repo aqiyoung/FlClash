@@ -33,6 +33,11 @@ const watchExecution = false;
 
 const safeModeBuild = bool.fromEnvironment('SAFE_MODE');
 
+// The four-component version, injected by the build. pubspec.yaml cannot carry
+// it (pub refuses a four-part version) and the desktop packages only report
+// upstream's three, so this is the only place the revision survives off Android.
+const buildVersion = String.fromEnvironment('APP_VERSION');
+
 const disclaimerVersion = 1;
 
 String _randomPipeId() {

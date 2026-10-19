@@ -19,7 +19,7 @@ Android 一般下 `-arm64-v8a.apk`（绝大多数手机）或 `-armeabi-v7a.apk`
 - 前三段跟上游一致（取自上游 `pubspec.yaml`）。
 - 第四位是我们自己的迭代号：**一路往上数、不随上游版本重置**。每次发版（正式版或测试版）都 +1，把 beta 晋升成正式版时也拿一个新号——这样 beta 用户也会收到正式版的更新提示。
 - **Release tag 就是这四段版本**（如 `v0.9.1.13`）：App 拿自己的版本名去比 tag，相等就不提示，第四位变大了才提示。所以"上游没动、只是我们重建"现在也能推送给用户。（2026-10-18 之前发的包版本名只有三段，它们不会因为第四位提示更新，需要手动来下载页看一眼。）
-- 桌面端（Linux / Windows / macOS）显示的还是上游那三段：pub 不接受四段版本号，`pubspec.yaml` 里只能写三段，四段版本名只在 Android 上生效。
+- 桌面端（Linux / Windows / macOS）显示的也是四段：pub 不接受四段版本号，`pubspec.yaml` 里只能写三段，所以四段版本名在构建时以 `APP_VERSION` 注入（`setup.dart` 读 CI 的 `APP_VERSION_NAME`，写进 `env.json` 的 dart-define）。`PackageInfo.displayVersion` 优先用它，为空时回落到 `package_info_plus` 的三段。桌面端的「检查更新」也走这条，所以第四位变大同样能提示。
 - 每次构建另外带一个 `<YYYYMMDD><当天序号>` 的**构建号**，写进 `pubspec.yaml`（构建时注入、不提交），它就是 APK 的 `versionCode`，保证新包一定比手机里那个"更新"，否则 Android 会拒绝覆盖安装。构建号记在 Release 说明里。
 
 ## 两个渠道
@@ -40,7 +40,7 @@ Android 一般下 `-arm64-v8a.apk`（绝大多数手机）或 `-armeabi-v7a.apk`
 | 免责声明 | 保留全部条款文案，把手机上"照着把声明敲一遍"改成勾选确认 |
 | 关于页 | 去掉上游的 Telegram 频道入口（那个频道不是本仓库运营的） |
 | 更新检查 | 指向本仓库的 Releases，而不是上游；版本比较额外认我们自己的第四位 |
-| 版本名 | Android 的 `versionName` 多一位我们自己的迭代号（由构建注入，`pubspec.yaml` 仍是三段） |
+| 版本名 | 四段版本号由构建注入：Android 走 `versionName`，桌面端走 `APP_VERSION` dart-define（`pubspec.yaml` 仍是三段） |
 | 包名 | Android 的 `applicationId` 改成 `com.threely.clash`（2026-10-18 起）：国内手机管家把上游那个包名标成了灰产误报，换一个不在名单里的 |
 | 服务图标 | 仪表盘「服务状态」的 13 个服务图标由单色改为品牌色，图标底板固定浅色 |
 | 仪表盘 | 「状态」卡片里的出口国家由两个大写字母改成国旗；国旗底下原来的四叶草去掉、只留国旗，检查出口时由旋转改为渐隐 |
