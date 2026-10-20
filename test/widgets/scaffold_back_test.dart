@@ -404,7 +404,6 @@ void main() {
     expect(container.read(appSettingProvider).dashboardWidgets, [
       DashboardWidget.outboundMode,
       DashboardWidget.networkTakeover,
-      DashboardWidget.intranetIp,
     ]);
   });
 }
