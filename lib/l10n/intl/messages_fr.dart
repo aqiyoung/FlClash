@@ -1379,6 +1379,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "password": MessageLookupByLibrary.simpleMessage("Mot de passe"),
     "paste": MessageLookupByLibrary.simpleMessage("Coller"),
+    "pasteDesc": MessageLookupByLibrary.simpleMessage(
+      "Coller un lien d\'abonnement depuis le presse-papiers",
+    ),
     "peers": MessageLookupByLibrary.simpleMessage("Pairs"),
     "pickFromAlbum": MessageLookupByLibrary.simpleMessage(
       "Choisir dans l’album",

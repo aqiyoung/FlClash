@@ -24,6 +24,7 @@ import androidx.core.view.OnApplyWindowInsetsListener
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.follow.clash.R
+import com.follow.clash.SharedText
 import com.follow.clash.common.Components
 import com.follow.clash.common.GlobalState
 import com.follow.clash.common.PendingCallback
@@ -147,6 +148,10 @@ class AppPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAware 
             "moveTaskToBack" -> {
                 activity?.moveTaskToBack(true)
                 result.success(true)
+            }
+
+            "takeSharedText" -> {
+                result.success(SharedText.take())
             }
 
             "updateExcludeFromRecents" -> {

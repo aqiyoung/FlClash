@@ -8080,6 +8080,16 @@ class AppLocalizations {
   String get type {
     return Intl.message('Type', name: 'type', desc: '', args: []);
   }
+
+  /// `Paste a subscription link from the clipboard`
+  String get pasteDesc {
+    return Intl.message(
+      'Paste a subscription link from the clipboard',
+      name: 'pasteDesc',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<AppLocalizations> {

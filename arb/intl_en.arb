@@ -968,5 +968,6 @@
   "temporary": "Temporary files",
   "diagnostics": "Diagnostics",
   "clearCache": "Clear cache",
-  "type": "Type"
+  "type": "Type",
+  "pasteDesc": "Paste a subscription link from the clipboard"
 }

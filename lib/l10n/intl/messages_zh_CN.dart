@@ -997,6 +997,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "password": MessageLookupByLibrary.simpleMessage("密码"),
     "paste": MessageLookupByLibrary.simpleMessage("粘贴"),
+    "pasteDesc": MessageLookupByLibrary.simpleMessage("从剪贴板粘贴订阅链接"),
     "peers": MessageLookupByLibrary.simpleMessage("初始节点"),
     "pickFromAlbum": MessageLookupByLibrary.simpleMessage("从相册选择"),
     "pinWindow": MessageLookupByLibrary.simpleMessage("窗口置顶"),

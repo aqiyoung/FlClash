@@ -59,7 +59,8 @@ class Application extends ConsumerStatefulWidget {
   ConsumerState<Application> createState() => ApplicationState();
 }
 
-class ApplicationState extends ConsumerState<Application> {
+class ApplicationState extends ConsumerState<Application>
+    with WidgetsBindingObserver {
   Timer? _autoUpdateProfilesTaskTimer;
   bool _preHasVpn = false;
   // Windows can only watch SIGINT and SIGHUP.
@@ -70,6 +71,7 @@ class ApplicationState extends ConsumerState<Application> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     SystemNavigator.setFrameworkHandlesBack(true);
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) async {
       if (globalState.navigatorKey.currentContext != null) {
@@ -79,6 +81,7 @@ class ApplicationState extends ConsumerState<Application> {
       }
       _autoUpdateProfilesTask();
       _initLink();
+      unawaited(_checkSharedText());
       if (!safeModeBuild) {
         unawaited(app?.initShortcuts());
       }
@@ -86,32 +89,50 @@ class ApplicationState extends ConsumerState<Application> {
   }
 
   void _initLink() {
-    linkManager.initAppLinksListen((url) async {
-      unawaited(window?.show());
-      final message = currentAppLocalizations.createProfileFromUrlTip(url);
-      final parts = message.split(url);
-      final res = await dialogs.showMessage(
-        title: currentAppLocalizations.addProfile,
-        message: TextSpan(
-          children: [
-            TextSpan(text: parts.first),
-            TextSpan(
-              text: url,
-              style: TextStyle(
-                color: context.colorScheme.primary,
-                decoration: TextDecoration.underline,
-                decorationColor: context.colorScheme.primary,
-              ),
+    linkManager.initAppLinksListen(_confirmAddProfile);
+  }
+
+  /// A link that arrived from outside the app, whether through a deep link or
+  /// the share sheet, is still the reader's to accept.
+  Future<void> _confirmAddProfile(String url) async {
+    unawaited(window?.show());
+    final message = currentAppLocalizations.createProfileFromUrlTip(url);
+    final parts = message.split(url);
+    final res = await dialogs.showMessage(
+      title: currentAppLocalizations.addProfile,
+      message: TextSpan(
+        children: [
+          TextSpan(text: parts.first),
+          TextSpan(
+            text: url,
+            style: TextStyle(
+              color: context.colorScheme.primary,
+              decoration: TextDecoration.underline,
+              decorationColor: context.colorScheme.primary,
             ),
-            if (parts.length > 1) TextSpan(text: parts.last),
-          ],
-        ),
-      );
-      if (res != true) return;
-      unawaited(
-        ref.read(profilesActionProvider.notifier).addProfileFromLink(url),
-      );
-    });
+          ),
+          if (parts.length > 1) TextSpan(text: parts.last),
+        ],
+      ),
+    );
+    if (res != true) return;
+    unawaited(
+      ref.read(profilesActionProvider.notifier).addProfileFromLink(url),
+    );
+  }
+
+  /// Android holds a shared link until we ask for it, so the check runs again
+  /// whenever the app comes back to the foreground.
+  Future<void> _checkSharedText() async {
+    if (!system.isAndroid) {
+      return;
+    }
+    final text = await app?.takeSharedText();
+    final url = profileUrlFromQrCodes([text]);
+    if (url == null) {
+      return;
+    }
+    await _confirmAddProfile(url);
   }
 
   void _autoUpdateProfilesTask() {
@@ -191,7 +212,15 @@ class ApplicationState extends ConsumerState<Application> {
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(_checkSharedText());
+    }
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     linkManager.destroy();
     _autoUpdateProfilesTaskTimer?.cancel();
     super.dispose();

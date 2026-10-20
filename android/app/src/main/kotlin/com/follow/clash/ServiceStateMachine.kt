@@ -1,5 +1,6 @@
 package com.follow.clash
 
+import com.follow.clash.common.GlobalState
 import com.follow.clash.common.RunIntentArbiter
 import com.follow.clash.models.SharedState
 import com.follow.clash.service.models.NotificationParams
@@ -322,6 +323,7 @@ internal class ServiceStateMachine(private val host: ServiceStateHost) {
             isRunRequested -> RunState.STARTED
             else -> RunState.STOPPING
         }
+        runCatching { WidgetProvider.updateAll(GlobalState.application) }
     }
 
     private suspend fun prepareVpn(options: VpnOptions): Boolean {
