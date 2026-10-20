@@ -45,13 +45,29 @@ class WidgetProvider : AppWidgetProvider() {
                     if (running) R.string.widget_running else R.string.widget_stopped,
                 ),
             )
-            views.setTextViewText(
-                R.id.widget_toggle,
+            views.setTextColor(
+                R.id.widget_status,
+                context.resources.getColor(
+                    if (running) R.color.widget_running else R.color.widget_idle,
+                ),
+            )
+            views.setInt(
+                R.id.widget_dot,
+                "setBackgroundResource",
+                if (running) R.drawable.widget_dot_on else R.drawable.widget_dot_off,
+            )
+            views.setInt(
+                R.id.widget_switch,
+                "setBackgroundResource",
+                if (running) R.drawable.widget_switch_on else R.drawable.widget_switch_off,
+            )
+            views.setContentDescription(
+                R.id.widget_switch,
                 context.getString(
                     if (running) R.string.widget_stop else R.string.widget_start,
                 ),
             )
-            views.setOnClickPendingIntent(R.id.widget_toggle, toggleIntent(context))
+            views.setOnClickPendingIntent(R.id.widget_switch, toggleIntent(context))
             views.setOnClickPendingIntent(R.id.widget_root, openIntent(context))
             manager.updateAppWidget(id, views)
         }

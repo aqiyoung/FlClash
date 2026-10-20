@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="shortcut_background">#6666FB</color>
+    <color name="widget_running">#4ADE80</color>
+    <color name="widget_idle">#99FFFFFF</color>
 </resources>
