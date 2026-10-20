@@ -128,11 +128,7 @@ String dashboardTraffic(num bytes) {
 
 /// The dashboard's text roles; every figure reads in tabular digits.
 abstract final class DashboardText {
-  static TextStyle cardTitle(BuildContext context) => AppTextStyle.footnote
-      .of(context, emphasized: true)
-      .copyWith(color: context.colorScheme.onSurfaceVariant);
-
-  static TextStyle mobileCardTitle(BuildContext context) =>
+  static TextStyle cardTitle(BuildContext context) =>
       AppTextStyle.subheadline.of(context, emphasized: true);
 
   static TextStyle label(BuildContext context, {Color? color}) => AppTextStyle

@@ -173,8 +173,8 @@ class SpeedCard extends ConsumerWidget {
                   show: speed,
                   unit: _speedUnit(speed),
                   style: compact
-                      ? AppTextStyle.largeTitle
-                      : AppTextStyle.display,
+                      ? AppTextStyle.title1
+                      : AppTextStyle.largeTitle,
                   unitStyle: AppTextStyle.subheadline,
                 ),
                 const SizedBox(height: 2),
