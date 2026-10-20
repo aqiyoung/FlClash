@@ -41,6 +41,10 @@ jobs:
     name: Android arm64-v8a
     runs-on: ubuntu-latest
     timeout-minutes: 120
+    # Job level, not step level: a step's `if` cannot see its own `env`.
+    env:
+      TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+      TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -311,3 +315,42 @@ jobs:
             --title "FlClash ${VERSION}（测试包）" \
             --notes-file probe-notes.md \
             --prerelease
+
+      # Same shape as the release announcement: a plain sendMessage carrying
+      # links, because the APK is far over the cloud Bot API's 50 MB upload cap.
+      - name: Announce on Telegram
+        if: env.TELEGRAM_BOT_TOKEN != '' && env.TELEGRAM_CHAT_ID != ''
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          VERSION_CODE: ${{ steps.verify.outputs.version_code }}
+          REF: ${{ inputs.ref }}
+          TAG: probe-${{ github.run_number }}
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          # gh-proxy.com in front of github.com: the assets live on GitHub,
+          # which is unreachable for a large part of the audience.
+          prefix="https://gh-proxy.com/https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/"
+
+          {
+            echo "🧪 FlClash ${VERSION}（测试包）构建成功"
+            echo
+            for f in dist/*; do
+              name="$(basename "$f")"
+              [ "$name" = SHA256SUMS ] && continue
+              echo "• ${name}"
+              echo "  ${prefix}${name}"
+            done
+            echo
+            echo "分支 \`${REF}\` ｜ versionCode \`${VERSION_CODE}\` ｜ Android arm64-v8a 单架构"
+            echo "全部文件：https://github.com/${GITHUB_REPOSITORY}/releases/tag/${TAG}"
+            echo "构建日志：${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            echo
+            echo "（测试包，不是正式发布：签名与正式版相同，可直接覆盖安装；装回正式版要先卸载）"
+          } > /tmp/msg.txt
+
+          cat /tmp/msg.txt
+          curl -fsS -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=${TELEGRAM_CHAT_ID}" \
+            --data-urlencode "text@/tmp/msg.txt" \
+            || echo "::error::Telegram 推送失败 — 检查 TELEGRAM_BOT_TOKEN 是否有效、TELEGRAM_CHAT_ID 是否是 bot 能发消息的会话或群"
