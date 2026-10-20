@@ -43,17 +43,22 @@ class _SettingsSearchViewState extends State<SettingsSearchView> {
           Expanded(
             child: entries.isEmpty
                 ? Center(child: Text(appLocalizations.none))
-                : ListView.builder(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    itemCount: entries.length,
-                    itemBuilder: (context, index) {
-                      final entry = entries[index];
-                      return ListItem.open(
-                        title: Text(entry.title(appLocalizations)),
-                        subtitle: Text(entry.page(appLocalizations)),
-                        widget: entry.view(context),
-                      );
-                    },
+                : ListView(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                    ).copyWith(bottom: 16),
+                    children: [
+                      generateSection(
+                        items: [
+                          for (final entry in entries)
+                            ListItem.open(
+                              title: Text(entry.title(appLocalizations)),
+                              subtitle: Text(entry.page(appLocalizations)),
+                              widget: entry.view(context),
+                            ),
+                        ],
+                      ),
+                    ],
                   ),
           ),
         ],
