@@ -32,8 +32,12 @@ class _SettingsSearchViewState extends State<SettingsSearchView> {
         children: [
           Padding(
             padding: EdgeInsets.fromLTRB(16, context.contentTopPadding, 16, 8),
-            child: SearchField(
-              onChanged: (value) => setState(() => _query = SearchQuery(value)),
+            child: InputDecorationTheme(
+              data: searchPillTheme(context),
+              child: SearchField(
+                onChanged: (value) =>
+                    setState(() => _query = SearchQuery(value)),
+              ),
             ),
           ),
           Expanded(
