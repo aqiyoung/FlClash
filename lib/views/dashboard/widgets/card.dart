@@ -111,9 +111,7 @@ class DashboardCardHeader extends StatelessWidget {
     final scale = DashboardDensityScope.scaleOf(context);
     final colorScheme = context.colorScheme;
     final iconColor = colorScheme.onSurfaceVariant;
-    final style = mobile
-        ? DashboardText.mobileCardTitle(context)
-        : DashboardText.cardTitle(context);
+    final style = DashboardText.cardTitle(context);
     final end = [
       ...trailing,
       if (chevron)
