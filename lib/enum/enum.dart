@@ -473,7 +473,7 @@ enum DashboardWidget {
   profiles,
   proxyGroups,
   connectionStats,
-  intranetIp(platforms: desktopPlatforms),
+  intranetIp,
   memoryInfo;
 
   final List<SupportPlatform> platforms;
