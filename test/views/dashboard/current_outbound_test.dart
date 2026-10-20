@@ -221,8 +221,8 @@ void main() {
 
       expect(find.text('\u{1F1EC}\u{1F1E7}'), findsOneWidget);
       expect(find.text('Not running'), findsOneWidget);
-      expect(_chip(tester, 'Unknown type').tone, DashboardChipTone.idle);
-      expect(find.byType(DashboardChip), findsNWidgets(2));
+      expect(find.text('Unknown type'), findsOneWidget);
+      expect(find.byType(DashboardChip), findsOneWidget);
       expect(find.text('Example Broadband'), findsNothing);
     });
 
