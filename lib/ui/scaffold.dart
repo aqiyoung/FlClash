@@ -6,7 +6,6 @@ import 'package:fl_clash/ui/context.dart';
 import 'package:fl_clash/ui/icons/icons.dart';
 import 'package:fl_clash/ui/keyboard.dart';
 import 'package:fl_clash/ui/l10n.dart';
-import 'package:fl_clash/ui/measure.dart';
 import 'package:fl_clash/ui/metrics.dart';
 import 'package:fl_clash/ui/models.dart';
 import 'package:fl_clash/ui/pop_scope.dart';
@@ -301,24 +300,8 @@ class CommonScaffoldState extends State<CommonScaffold> {
   Widget _buildDockedSearch(AppBarSearchState searchState) {
     final colorScheme = context.colorScheme;
     final glass = LiquidGlassScope.of(context);
-    final pill = AppShape.input.copyWith(borderRadius: AppRadius.full);
-    final fieldPadding =
-        (BottomInsetScope.dockedSearchHeight -
-            MeasureScope.of(context).textHeight(AppTextStyle.body)) /
-        2;
     final field = InputDecorationTheme(
-      data: InputDecorationTheme.of(context).copyWith(
-        filled: !glass,
-        fillColor: SurfaceLevel.floatingOf(colorScheme).colorOf(colorScheme),
-        border: pill.copyWith(borderSide: BorderSide.none),
-        focusedBorder: pill.copyWith(
-          borderSide: BorderSide(color: colorScheme.primary, width: 2),
-        ),
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: 12,
-          vertical: fieldPadding,
-        ),
-      ),
+      data: searchPillTheme(context, filled: !glass),
       child: SearchField(
         controller: _textController,
         focusNode: _searchFocusNode,

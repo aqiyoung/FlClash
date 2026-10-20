@@ -939,5 +939,12 @@
   "customImportDroppedSubRules": "{count, plural, =1{1 SUB-RULE rule was dropped, since custom profiles do not support sub-rules} other{{label} SUB-RULE rules were dropped, since custom profiles do not support sub-rules}}",
   "autoInclude": "Auto-include",
   "allReferencedProxies": "All referenced proxies",
-  "allReferencedProxyProviders": "All referenced proxy providers"
+  "allReferencedProxyProviders": "All referenced proxy providers",
+  "storage": "Storage",
+  "database": "Database",
+  "temporary": "Temporary files",
+  "diagnostics": "Diagnostics",
+  "clearCache": "Clear cache",
+  "type": "Type",
+  "pasteDesc": "Paste a subscription link from the clipboard"
 }

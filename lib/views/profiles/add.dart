@@ -8,6 +8,7 @@ import 'package:fl_clash/ui/icons/icons.dart';
 import 'package:fl_clash/views/profiles/custom/custom.dart';
 import 'package:fl_clash/features/form/form.dart';
 import 'package:fl_clash/widgets/widgets.dart';
+import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -97,6 +98,22 @@ class AddProfileView extends ConsumerWidget {
     }
   }
 
+  Future<void> _toPaste(WidgetRef ref) async {
+    final appLocalizations = context.appLocalizations;
+    final data = await Clipboard.getData(Clipboard.kTextPlain);
+    final url = profileUrlFromQrCodes([data?.text]);
+    if (url == null) {
+      await dialogs.showMessage(
+        message: TextSpan(text: appLocalizations.invalidLinkTip),
+        confirmText: appLocalizations.confirm,
+      );
+      return;
+    }
+    unawaited(
+      ref.read(profilesActionProvider.notifier).addProfileFromLink(url),
+    );
+  }
+
   Future<void> _toAddCustom(BuildContext context, WidgetRef ref) async {
     final profilesAction = ref.read(profilesActionProvider.notifier);
     final label = context.appLocalizations.unnamed;
@@ -142,6 +159,12 @@ class AddProfileView extends ConsumerWidget {
           title: Text(appLocalizations.link),
           subtitle: Text(appLocalizations.linkDesc),
           onTap: () => _toAdd(ref),
+        ),
+        ListItem(
+          leading: const GlyphIcon(AppGlyphs.paste),
+          title: Text(appLocalizations.paste),
+          subtitle: Text(appLocalizations.pasteDesc),
+          onTap: () => _toPaste(ref),
         ),
         ListItem(
           leading: const GlyphIcon(AppGlyphs.customize),

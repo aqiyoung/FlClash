@@ -225,7 +225,7 @@ class _OutboundMetrics {
       ipTop: 10,
       cellGap: 28,
       badgeSize: 48,
-      ip: AppTextStyle.title1,
+      ip: AppTextStyle.largeTitle,
       buttonSize: 104,
       buttonSlot: 120,
       decorationSize: 290,
@@ -238,7 +238,7 @@ class _OutboundMetrics {
       ipTop: 8,
       cellGap: 22,
       badgeSize: 40,
-      ip: AppTextStyle.title2,
+      ip: AppTextStyle.title1,
       buttonSize: 84,
       buttonSlot: 100,
       decorationSize: 250,
@@ -418,9 +418,14 @@ class _IpChips extends StatelessWidget {
         child: Wrap(
           spacing: 6,
           runSpacing: height,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: switch (quality) {
             final quality? => [
-              DashboardChip(label: quality.type.label(context), large: large),
+              Text(
+                quality.type.label(context),
+                maxLines: 1,
+                style: DashboardText.label(context),
+              ),
               DashboardChip(
                 label:
                     '${context.appLocalizations.ipQualityShort} ${quality.level.label(context)}',
@@ -437,9 +442,10 @@ class _IpChips extends StatelessWidget {
                 SkeletonPill(width: width, height: height),
             ],
             null => [
-              DashboardChip(
-                label: context.appLocalizations.ipTypeUnknown,
-                large: large,
+              Text(
+                context.appLocalizations.ipTypeUnknown,
+                maxLines: 1,
+                style: DashboardText.label(context),
               ),
             ],
           },

@@ -6,6 +6,7 @@ import 'package:fl_clash/providers/app.dart';
 import 'package:fl_clash/providers/database.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/views/profiles/add.dart';
+import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -88,6 +89,88 @@ void main() {
     expect(find.text(l10n.file), findsOne);
     expect(find.text(l10n.link), findsOne);
     expect(find.text(l10n.customProfile), findsOne);
+    expect(tester.takeException(), null);
+  });
+
+  testWidgets('the paste entry takes the link the clipboard holds', (
+    tester,
+  ) async {
+    final action = _RecordingProfilesAction();
+    final container = _containerFor(tester, profilesAction: action);
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (call) async => call.method == 'Clipboard.getData'
+          ? {'text': 'https://example.com/from-clipboard'}
+          : null,
+    );
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        null,
+      ),
+    );
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: TestApp(
+          child: Scaffold(
+            body: Builder(
+              builder: (context) =>
+                  AddProfileView(context: context, origin: context),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text(currentAppLocalizations.paste));
+    await tester.pumpAndSettle();
+
+    expect(action.singles, ['https://example.com/from-clipboard']);
+    expect(tester.takeException(), null);
+  });
+
+  testWidgets('the paste entry says so when the clipboard holds no link', (
+    tester,
+  ) async {
+    final action = _RecordingProfilesAction();
+    final container = _containerFor(tester, profilesAction: action);
+    tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+      SystemChannels.platform,
+      (call) async => call.method == 'Clipboard.getData'
+          ? {'text': 'just some words'}
+          : null,
+    );
+    addTearDown(
+      () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
+        SystemChannels.platform,
+        null,
+      ),
+    );
+
+    await tester.pumpWidget(
+      UncontrolledProviderScope(
+        container: container,
+        child: TestApp(
+          child: Scaffold(
+            body: Builder(
+              builder: (context) =>
+                  AddProfileView(context: context, origin: context),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final l10n = currentAppLocalizations;
+    await tester.tap(find.text(l10n.paste));
+    await tester.pumpAndSettle();
+
+    expect(find.text(l10n.invalidLinkTip), findsOne);
+    expect(action.singles, isEmpty);
     expect(tester.takeException(), null);
   });
 

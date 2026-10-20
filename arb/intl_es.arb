@@ -939,5 +939,12 @@
   "customImportDroppedSubRules": "{count, plural, =1{Se descartó 1 regla SUB-RULE, porque los perfiles personalizados no admiten subreglas} other{Se descartaron {label} reglas SUB-RULE, porque los perfiles personalizados no admiten subreglas}}",
   "autoInclude": "Incluir automáticamente",
   "allReferencedProxies": "Todos los proxies referenciados",
-  "allReferencedProxyProviders": "Todos los proveedores de proxies referenciados"
+  "allReferencedProxyProviders": "Todos los proveedores de proxies referenciados",
+  "storage": "Almacenamiento",
+  "database": "Base de datos",
+  "temporary": "Archivos temporales",
+  "diagnostics": "Diagnóstico",
+  "clearCache": "Borrar caché",
+  "type": "Tipo",
+  "pasteDesc": "Pegar un enlace de suscripción del portapapeles"
 }

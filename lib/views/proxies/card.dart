@@ -2,6 +2,7 @@ import 'package:fl_clash/common/common.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:fl_clash/providers/providers.dart';
+import 'package:fl_clash/views/proxies/detail.dart';
 import 'package:fl_clash/state.dart';
 import 'package:fl_clash/ui/icons/icons.dart';
 import 'package:fl_clash/widgets/widgets.dart';
@@ -130,40 +131,46 @@ class ProxyCard extends ConsumerWidget {
             ref.watch(
               proxyNameProvider(groupName).select((name) => name == proxy.name),
             );
-        return CommonCard(
-          radius: AppCorner.lg,
-          enterActionsOnRight: true,
-          key: key,
-          onPressed: () {
-            selectGroupProxy(
-              ref,
-              groupName: groupName,
-              groupType: groupType,
-              proxyName: proxy.name,
-            );
-          },
-          isSelected: inUse,
-          child: Container(
-            alignment: Alignment.centerLeft,
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  spacing: 4,
-                  children: [
-                    Expanded(child: proxyNameText),
-                    if (pinned)
-                      SelectionBadge.preferred(inUse: inUse)
-                    else if (inUse)
-                      const SelectionBadge(),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                details,
-              ],
+        return GestureDetector(
+          onLongPress: () => showExtend(
+            context,
+            builder: (_) => ProxyDetailSheet(proxy: proxy, testUrl: testUrl),
+          ),
+          child: CommonCard(
+            radius: AppCorner.lg,
+            enterActionsOnRight: true,
+            key: key,
+            onPressed: () {
+              selectGroupProxy(
+                ref,
+                groupName: groupName,
+                groupType: groupType,
+                proxyName: proxy.name,
+              );
+            },
+            isSelected: inUse,
+            child: Container(
+              alignment: Alignment.centerLeft,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    spacing: 4,
+                    children: [
+                      Expanded(child: proxyNameText),
+                      if (pinned)
+                        SelectionBadge.preferred(inUse: inUse)
+                      else if (inUse)
+                        const SelectionBadge(),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  details,
+                ],
+              ),
             ),
           ),
         );

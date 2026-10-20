@@ -1,11 +1,44 @@
 import 'package:fl_clash/common/input_limits.dart';
 import 'package:fl_clash/ui/icons/icons.dart';
+import 'package:fl_clash/ui/inherited.dart';
 import 'package:fl_clash/ui/l10n.dart';
+import 'package:fl_clash/ui/measure.dart';
+import 'package:fl_clash/ui/shape.dart';
+import 'package:fl_clash/ui/surface.dart';
 import 'package:fl_clash/ui/typography.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// Below this many items a sheet is short enough to scan without a search.
 const sheetSearchMinItemCount = 10;
+
+/// The shape every search field in the app wears: a filled pill as tall as the
+/// dock's, so a page's search and the dock's read as the same control.
+///
+/// [filled] is false where the field sits on liquid glass, which brings its own
+/// surface.
+InputDecorationThemeData searchPillTheme(
+  BuildContext context, {
+  bool filled = true,
+}) {
+  final colorScheme = Theme.of(context).colorScheme;
+  final pill = AppShape.input.copyWith(borderRadius: AppRadius.full);
+  final fieldPadding =
+      (BottomInsetScope.dockedSearchHeight -
+          MeasureScope.of(context).textHeight(AppTextStyle.body)) /
+      2;
+  return InputDecorationTheme.of(context).copyWith(
+    filled: filled,
+    fillColor: SurfaceLevel.floatingOf(colorScheme).colorOf(colorScheme),
+    border: pill.copyWith(borderSide: BorderSide.none),
+    focusedBorder: pill.copyWith(
+      borderSide: BorderSide(color: colorScheme.primary, width: 2),
+    ),
+    contentPadding: EdgeInsets.symmetric(
+      horizontal: 12,
+      vertical: fieldPadding,
+    ),
+  );
+}
 
 class SearchField extends StatefulWidget {
   final ValueChanged<String> onChanged;

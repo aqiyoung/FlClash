@@ -7,7 +7,9 @@ import 'package:fl_clash/ui/icons/icons.dart';
 import 'package:fl_clash/views/about.dart';
 import 'package:fl_clash/views/access.dart';
 import 'package:fl_clash/views/backup_and_restore.dart';
+import 'package:fl_clash/views/config/diagnostics.dart';
 import 'package:fl_clash/views/config/general.dart';
+import 'package:fl_clash/views/config/storage.dart';
 import 'package:fl_clash/views/hotkey.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
@@ -15,6 +17,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'config/advanced.dart';
 import 'config/custom_resources.dart';
+import 'config/settings_search.dart';
 import 'developer.dart';
 import 'disclaimer.dart';
 import 'theme.dart';
@@ -52,9 +55,12 @@ class _ToolViewState extends ConsumerState<ToolsView> {
     return generateSection(
       title: appLocalizations.settings,
       items: [
+        const _SettingsSearchItem(),
         const _LocaleItem(),
         const _ThemeItem(),
         const _BackupItem(),
+        const _StorageItem(),
+        const _DiagnosticsItem(),
         if (system.isDesktop) const _HotkeyItem(),
         if (system.isAndroid) const _AccessItem(),
         const _AdvancedConfigItem(),
@@ -151,6 +157,32 @@ class _ThemeItem extends StatelessWidget {
   }
 }
 
+class _StorageItem extends StatelessWidget {
+  const _StorageItem();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListItem.open(
+      leading: const GlyphIcon(AppGlyphs.dataUsage),
+      title: Text(context.appLocalizations.storage),
+      widget: const StorageView(),
+    );
+  }
+}
+
+class _DiagnosticsItem extends StatelessWidget {
+  const _DiagnosticsItem();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListItem.open(
+      leading: const GlyphIcon(AppGlyphs.status),
+      title: Text(context.appLocalizations.diagnostics),
+      widget: const DiagnosticsView(),
+    );
+  }
+}
+
 class _BackupItem extends StatelessWidget {
   const _BackupItem();
 
@@ -160,6 +192,19 @@ class _BackupItem extends StatelessWidget {
       leading: const GlyphIcon(AppGlyphs.cloudSync),
       title: Text(context.appLocalizations.backupAndRestore),
       widget: const BackupAndRestore(),
+    );
+  }
+}
+
+class _SettingsSearchItem extends StatelessWidget {
+  const _SettingsSearchItem();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListItem.open(
+      leading: const GlyphIcon(AppGlyphs.search),
+      title: Text(context.appLocalizations.search),
+      widget: const SettingsSearchView(),
     );
   }
 }

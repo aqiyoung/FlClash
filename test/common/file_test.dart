@@ -76,4 +76,29 @@ void main() {
       expect(file.readAsStringSync(), 'mode: rule');
     });
   });
+
+  group('pathSize', () {
+    test('counts a file', () async {
+      final path = join(root.path, 'config.yaml');
+      File(path).writeAsStringSync('mixed-port: 7890');
+
+      expect(await pathSize(path), 16);
+    });
+
+    test('adds up everything under a directory', () async {
+      final path = join(root.path, 'profiles');
+      File(join(path, '1.yaml'))
+        ..createSync(recursive: true)
+        ..writeAsStringSync('a' * 10);
+      File(join(path, 'nested', '2.yaml'))
+        ..createSync(recursive: true)
+        ..writeAsStringSync('b' * 30);
+
+      expect(await pathSize(path), 40);
+    });
+
+    test('a path that is not there is nothing to count', () async {
+      expect(await pathSize(join(root.path, 'missing')), 0);
+    });
+  });
 }

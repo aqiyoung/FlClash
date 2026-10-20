@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="widget_description">无需打开应用即可启动或停止 VPN</string>
+    <string name="widget_running">已连接</string>
+    <string name="widget_stopped">未连接</string>
+    <string name="widget_start">启动</string>
+    <string name="widget_stop">停止</string>
+</resources>
