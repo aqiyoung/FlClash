@@ -57,6 +57,16 @@ void main() {
     );
   });
 
+  testWidgets('the field wears the app\'s search pill', (tester) async {
+    await pumpSearch(tester);
+    final theme = InputDecorationTheme.of(
+      tester.element(find.byType(TextField).first),
+    );
+
+    expect(theme.filled, isTrue);
+    expect(theme.border?.borderSide, BorderSide.none);
+  });
+
   testWidgets('typing a row name leaves only that row', (tester) async {
     await pumpSearch(tester);
     final appLocalizations = tester
