@@ -418,9 +418,14 @@ class _IpChips extends StatelessWidget {
         child: Wrap(
           spacing: 6,
           runSpacing: height,
+          crossAxisAlignment: WrapCrossAlignment.center,
           children: switch (quality) {
             final quality? => [
-              DashboardChip(label: quality.type.label(context), large: large),
+              Text(
+                quality.type.label(context),
+                maxLines: 1,
+                style: DashboardText.label(context),
+              ),
               DashboardChip(
                 label:
                     '${context.appLocalizations.ipQualityShort} ${quality.level.label(context)}',
