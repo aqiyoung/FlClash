@@ -171,6 +171,7 @@ jobs:
             git checkout --quiet refs/remotes/origin/ci -- \
               .github/workflows/ci.yaml \
               .github/workflows/build-channel.yaml \
+              .github/workflows/probe.yaml \
               .github/workflows/publish-release.yaml
             git add -A
             if git diff --quiet --cached HEAD; then
