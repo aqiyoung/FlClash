@@ -71,10 +71,10 @@ void main() {
   testWidgets('a DNS row is found by its own name', (tester) async {
     await pumpSearch(tester);
 
-    await tester.enterText(find.byType(TextField).first, 'ipv6');
+    await tester.enterText(find.byType(TextField).first, 'respect rules');
     await tester.pumpAndSettle();
 
-    expect(find.text('IPv6'), findsOneWidget);
+    expect(find.text('Respect rules'), findsOneWidget);
     expect(find.text('VPN'), findsNothing);
   });
 
