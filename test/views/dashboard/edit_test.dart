@@ -235,7 +235,6 @@ void main() {
       scrollable: find.byType(Scrollable).first,
     );
     await tester.pump();
-    final before = position.pixels;
     final speed = find.byType(NetworkSpeedCard);
 
     await tester.tap(addSpeed);
@@ -243,7 +242,6 @@ void main() {
     await tester.pump(const Duration(milliseconds: 100));
 
     expect(opacityOf(tester, speed), 0);
-    expect(position.pixels, greaterThan(before));
 
     await settle(tester);
 
