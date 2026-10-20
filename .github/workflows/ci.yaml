@@ -196,12 +196,12 @@ jobs:
           # Two numbers per release.
           #
           # The one users see is upstream's three components plus a fourth of our
-          # own, counting every release we ever make: it never restarts with an
-          # upstream version bump, and a promoted beta takes a fresh number so
-          # that beta users are offered the stable build as well. Only Android
-          # can display it (see the build workflow), and the release tag is
-          # exactly it -- so the app's own update check, which compares the
-          # latest tag against its own versionName, compares like with like.
+          # own, counting the releases of the line it belongs to: a new version
+          # line starts at .0, and a promoted beta takes a fresh number so that
+          # beta users are offered the stable build as well. Only Android can
+          # display it (see the build workflow), and the release tag is exactly
+          # it -- so the app's own update check, which compares the latest tag
+          # against its own versionName, compares like with like.
           #
           # The versionCode -- what Android uses to decide whether one build may
           # install over another -- comes from a build number of <date><sequence
@@ -226,22 +226,30 @@ jobs:
             --jq '[.[] | .name, .body] | .[]' 2>/dev/null || true)
           highest_stamp=$(printf '%s\n' "$titles" \
             | sed -n "s/.*${today}\([0-9][0-9]*\).*/\1/p" | sort -n | tail -1)
-          highest_revision=$(git tag --list 'v*' \
-            | sed -n 's/^v[0-9][0-9]*\.[0-9][0-9]*\.[0-9][0-9]*\.\([0-9][0-9]*\)$/\1/p' \
-            | sort -n | tail -1)
           # 10#: past the eighth build of a day the stamp carries a leading zero,
           # and bash would read a bare 09 as an invalid octal number.
           stamp=$(( 10#${highest_stamp:-0} + 1 ))
-          revision=$(( 10#${highest_revision:-0} + 1 ))
+          taken=""
           for ch in $channels; do
             br=$(branch_of "$ch")
             git rev-parse --verify --quiet "refs/heads/$br" >/dev/null || continue
             base_version=$(git show "$br:pubspec.yaml" | sed -n 's/^version: *\([^+]*\).*/\1/p' | tr -d '\r')
+            # The fourth component counts the releases of this line, so a new
+            # line starts at .0 instead of inheriting the last line's count.
+            # Past the highest tag of the line, so a tag that went missing never
+            # hands the same number out twice.
+            highest_revision=$(git tag --list "v${base_version}.*" \
+              | sed -n "s/^v${base_version//./\\.}\.\([0-9][0-9]*\)$/\1/p" \
+              | sort -n | tail -1)
+            revision=$(( 10#${highest_revision:-0} + 1 ))
+            while [[ " $taken " == *" ${base_version}.${revision} "* ]]; do
+              revision=$(( revision + 1 ))
+            done
+            taken="$taken ${base_version}.${revision}"
             seq=$(printf '%02d' "$stamp")
             echo "version_$ch=${base_version}.${revision}" >> "$GITHUB_OUTPUT"
             echo "build_number_$ch=${today}${seq}" >> "$GITHUB_OUTPUT"
             echo "$ch ($br): next version ${base_version}.${revision}, build number ${today}${seq}"
-            revision=$(( revision + 1 ))
             stamp=$(( stamp + 1 ))
           done
 
