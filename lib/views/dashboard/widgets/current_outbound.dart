@@ -442,9 +442,10 @@ class _IpChips extends StatelessWidget {
                 SkeletonPill(width: width, height: height),
             ],
             null => [
-              DashboardChip(
-                label: context.appLocalizations.ipTypeUnknown,
-                large: large,
+              Text(
+                context.appLocalizations.ipTypeUnknown,
+                maxLines: 1,
+                style: DashboardText.label(context),
               ),
             ],
           },
