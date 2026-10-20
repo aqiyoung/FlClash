@@ -241,7 +241,11 @@ jobs:
             highest_revision=$(git tag --list "v${base_version}.*" \
               | sed -n "s/^v${base_version//./\\.}\.\([0-9][0-9]*\)$/\1/p" \
               | sort -n | tail -1)
-            revision=$(( 10#${highest_revision:-0} + 1 ))
+            if [[ -n "$highest_revision" ]]; then
+              revision=$(( 10#${highest_revision} + 1 ))
+            else
+              revision=0
+            fi
             while [[ " $taken " == *" ${base_version}.${revision} "* ]]; do
               revision=$(( revision + 1 ))
             done
