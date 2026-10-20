@@ -1,0 +1,301 @@
+name: probe
+
+# One platform, no tests: the fast loop for putting a change on a phone. The
+# release is a prerelease under a `probe-` tag, so the version counter in
+# ci.yaml -- which reads `v*` tags and release titles -- never counts it, and
+# the in-app update check, which looks at the latest release, never offers one.
+#
+# Anything meant to reach users goes through ci.yaml instead.
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: Branch or commit to build
+        type: string
+        default: beta
+      env:
+        description: Value passed to `dart setup.dart --env`
+        type: choice
+        options:
+          - pre
+          - dev
+          - stable
+        default: pre
+
+# A probe is expendable: a newer one supersedes the one still building.
+concurrency:
+  group: probe-${{ inputs.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+env:
+  FLUTTER_VERSION: '3.47.6'
+  GO_VERSION: '1.27.1'
+  NDK_VERSION: r28c
+
+jobs:
+  probe:
+    name: Android arm64-v8a
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+          submodules: recursive
+
+      # The probe has to install over whatever is on the phone, and a real
+      # release has to install over the probe afterwards, so its versionCode
+      # sits above the date-shaped numbers ci.yaml hands out (2,0xx,xxxxxx) but
+      # below Android's 2,100,000,000 ceiling. The fourth component is kept far
+      # above the real line for the same reason.
+      - name: Choose a probe version
+        id: version
+        env:
+          RUN_NUMBER: ${{ github.run_number }}
+        run: |
+          set -euo pipefail
+          base="$(sed -n 's/^version: *\([^+ ]*\).*/\1/p' pubspec.yaml | head -1 | tr -d '\r')"
+          if ! printf '%s' "$base" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::expected a three-component version in pubspec.yaml, got '$base'"
+            exit 1
+          fi
+          version="${base}.$((900000 + RUN_NUMBER))"
+          build_number=$((2000000000 + RUN_NUMBER))
+          awk -v v="${base}+${build_number}" '/^version:/{ print "version: " v; next } { print }' \
+            pubspec.yaml > pubspec.yaml.new
+          mv pubspec.yaml.new pubspec.yaml
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "build_number=${build_number}" >> "$GITHUB_OUTPUT"
+          echo "building ${version} (versionCode ${build_number}) from ${base}"
+
+      - name: Set up Android release signing
+        env:
+          KEYSTORE_B64: ${{ secrets.KEYSTORE }}
+          STORE_PW: ${{ secrets.STORE_PASSWORD }}
+          KEY_PW: ${{ secrets.KEY_PASSWORD }}
+          KEYSTORE_PW: ${{ secrets.KEYSTORE_PASS }}
+          ALIAS: ${{ secrets.KEY_ALIAS }}
+        run: |
+          set -euo pipefail
+          pw="${STORE_PW:-${KEY_PW:-${KEYSTORE_PW:-}}}"
+          alias="${ALIAS:-flclash}"
+
+          if [ -z "${KEYSTORE_B64:-}" ]; then
+            echo "::error::KEYSTORE secret is missing; refusing to publish a debug-signed APK"
+            exit 1
+          fi
+          if [ -z "$pw" ]; then
+            echo "::error::STORE_PASSWORD secret is missing"
+            exit 1
+          fi
+
+          echo "$KEYSTORE_B64" | base64 -d > /tmp/keystore.p12
+          keytool -importkeystore \
+            -srckeystore /tmp/keystore.p12 -srcstoretype PKCS12 -srcstorepass "$pw" \
+            -destkeystore android/app/keystore.jks -deststoretype JKS \
+            -deststorepass "$pw" -destkeypass "$pw" -noprompt
+
+          {
+            echo "storePassword=$pw"
+            echo "keyAlias=$alias"
+            echo "keyPassword=$pw"
+          } >> android/local.properties
+
+          # `assembleRelease` is finalizedBy the Crashlytics native symbol
+          # upload, which belongs to upstream's Firebase project. Drop the
+          # finalizer so the release build cannot fail on it.
+          python3 - <<'PY'
+          p = "android/app/build.gradle.kts"
+          s = open(p, encoding="utf-8").read()
+          marker = 'finalizedBy("uploadCrashlyticsSymbolFileRelease")'
+          if marker not in s:
+              print("Crashlytics finalizer absent, nothing to remove")
+          else:
+              idx = s.index(marker)
+              open_idx = s.rfind('if (hasReleaseSigning) {', 0, idx)
+              i = s.index('{', open_idx)
+              depth = 0
+              while i < len(s):
+                  if s[i] == '{':
+                      depth += 1
+                  elif s[i] == '}':
+                      depth -= 1
+                      if depth == 0:
+                          end = i
+                          break
+                  i += 1
+              open(p, "w", encoding="utf-8").write(s[:open_idx] + s[end + 1:])
+              print("Removed the Crashlytics finalizer block")
+          PY
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: core/go.sum
+
+      - name: Set up Rust cache
+        uses: Swatinem/rust-cache@v2
+        with:
+          key: probe-android-arm64
+          workspaces: services/helper
+          cache-directories: .dart_tool/hooks_runner
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: master
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+
+      - name: Set up NDK
+        uses: nttld/setup-ndk@v1
+        id: ndk
+        with:
+          ndk-version: ${{ env.NDK_VERSION }}
+          add-to-path: true
+          link-to-sdk: true
+
+      - name: Get Flutter dependencies
+        run: |
+          flutter --version
+          flutter pub get
+
+      # Same bundle as the release build: the Core embeds it and
+      # FlClashHttpOverrides.trustCoreRoots hands it to Dart, and the submodule
+      # only carries a 0-byte placeholder.
+      - name: Fetch CA certificates
+        env:
+          CA_BUNDLE: cacert-2026-09-25.pem
+          CA_BUNDLE_SHA256: a41b5d356aea97a529fe27e0f7316d2f9d946d75927476cf9cf1b90637d00505
+        run: |
+          bundle=core/Clash.Meta/component/ca/ca-certificates.crt
+          curl -fsSL --retry 3 -o "$bundle" "https://curl.se/ca/$CA_BUNDLE"
+          echo "$CA_BUNDLE_SHA256  $bundle" | sha256sum -c -
+
+      - name: Build
+        env:
+          ANDROID_NDK_HOME: ${{ steps.ndk.outputs.ndk-path }}
+          APP_VERSION_NAME: ${{ steps.version.outputs.version }}
+        run: dart setup.dart android --env ${{ inputs.env }} --arch arm64 -v
+
+      - name: Name the artifact after our version
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          base="${VERSION%.*}"
+          shopt -s nullglob
+          for file in dist/*; do
+            name="$(basename "$file")"
+            case "$name" in
+              *"-${VERSION}-"*) ;;
+              *"-${base}-"*)
+                mv "$file" "dist/${name/-${base}-/-${VERSION}-}"
+                ;;
+              *)
+                echo "::error::${name} carries neither ${base} nor ${VERSION}"
+                exit 1
+                ;;
+            esac
+          done
+          ls -l dist
+
+      # `--arch arm64` has to actually limit the APK, not merely prefer arm64: a
+      # package carrying the x86 libraries is not the thing being tested.
+      - name: Verify the probe
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          APPLICATION_ID: com.threely.clash
+          CERT_SHA256: 048968c1728e0e2e27e704d6b30174276579baa2fa288f4f1ba375b702c7e431
+        run: |
+          set -euo pipefail
+          build_tools="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)"
+          shopt -s nullglob
+          apks=(dist/*.apk)
+          if [ ${#apks[@]} -ne 1 ]; then
+            echo "::error::expected one APK, found ${#apks[@]}"
+            exit 1
+          fi
+          apk="${apks[0]}"
+          echo "== $(basename "$apk")"
+          "$build_tools/aapt2" dump badging "$apk" | sed -n '1p'
+          "$build_tools/apksigner" verify --print-certs "$apk" | sed -n '1,4p'
+
+          if ! "$build_tools/aapt2" dump badging "$apk" | grep -q "package: name='${APPLICATION_ID}'"; then
+            echo "::error::$(basename "$apk") is not packaged as ${APPLICATION_ID}"
+            exit 1
+          fi
+          if ! "$build_tools/apksigner" verify --print-certs "$apk" | tr -d ':' | grep -qi "$CERT_SHA256"; then
+            echo "::error::$(basename "$apk") is not signed with our certificate (expected SHA-256 $CERT_SHA256)"
+            exit 1
+          fi
+          if ! "$build_tools/aapt2" dump badging "$apk" | grep -q "versionName='$VERSION'"; then
+            echo "::error::$(basename "$apk") does not carry ${VERSION} as its versionName"
+            exit 1
+          fi
+          if unzip -l "$apk" | grep -qE 'lib/(armeabi-v7a|x86|x86_64)/'; then
+            echo "::error::$(basename "$apk") still carries a non-arm64 ABI"
+            exit 1
+          fi
+          unzip -l "$apk" | grep -q 'lib/arm64-v8a/' || {
+            echo "::error::$(basename "$apk") has no arm64-v8a libraries"
+            exit 1
+          }
+
+      - name: Upload the probe
+        uses: actions/upload-artifact@v4
+        with:
+          name: probe-android-arm64
+          path: ./dist
+          if-no-files-found: error
+
+      - name: Publish the probe
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+          BUILD_NUMBER: ${{ steps.version.outputs.build_number }}
+          REF: ${{ inputs.ref }}
+          RUN_NUMBER: ${{ github.run_number }}
+        run: |
+          set -euo pipefail
+          tag="probe-${RUN_NUMBER}"
+          commit="$(git rev-parse --short HEAD)"
+          (cd dist && sha256sum ./* > SHA256SUMS)
+
+          cat > probe-notes.md <<EOF
+          FlClash ${VERSION} 测试包，只含 Android arm64-v8a。
+          EOF
+          {
+            echo
+            echo "- 分支：\`${REF}\`"
+            echo "- 版本：\`${VERSION}\`"
+            echo "- 构建号（versionCode）：\`${BUILD_NUMBER}\`"
+            echo "- 提交：[\`${commit}\`](https://github.com/${GITHUB_REPOSITORY}/commit/${commit})"
+            echo "- 构建日志：${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            echo
+            echo "签名与本仓库正式版相同，可以覆盖安装（版本号更高）；这不是正式发布。"
+          } >> probe-notes.md
+
+          # A retried run reuses its number, so the tag may already exist.
+          gh release delete "$tag" --repo "$GITHUB_REPOSITORY" --yes --cleanup-tag 2>/dev/null || true
+          gh release create "$tag" dist/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$REF" \
+            --title "FlClash ${VERSION}（测试包）" \
+            --notes-file probe-notes.md \
+            --prerelease
