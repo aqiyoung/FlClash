@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/state.dart';
@@ -224,12 +226,19 @@ void main() {
     ]);
     await pumpEditor(tester, size: const Size(412, 700));
     final position = positionOf(tester);
-    position.jumpTo(position.maxScrollExtent - 330);
+    position.jumpTo(math.max(0, position.maxScrollExtent - 330));
+    await tester.pump();
+    final addSpeed = find.byTooltip('Add Network speed');
+    await tester.scrollUntilVisible(
+      addSpeed,
+      120,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.pump();
     final before = position.pixels;
     final speed = find.byType(NetworkSpeedCard);
 
-    await tester.tap(find.byTooltip('Add Network speed'));
+    await tester.tap(addSpeed);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
 
