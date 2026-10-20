@@ -972,5 +972,6 @@
   "temporary": "Fichiers temporaires",
   "diagnostics": "Diagnostics",
   "clearCache": "Vider le cache",
-  "type": "Type"
+  "type": "Type",
+  "pasteDesc": "Coller un lien d'abonnement depuis le presse-papiers"
 }

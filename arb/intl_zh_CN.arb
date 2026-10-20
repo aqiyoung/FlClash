@@ -972,5 +972,6 @@
   "temporary": "临时文件",
   "diagnostics": "诊断",
   "clearCache": "清除缓存",
-  "type": "类型"
+  "type": "类型",
+  "pasteDesc": "从剪贴板粘贴订阅链接"
 }

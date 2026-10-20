@@ -44,6 +44,16 @@ class App {
     return methodChannel.invokeMethod<bool>('moveTaskToBack');
   }
 
+  /// The link another app handed over through the share sheet, if one is
+  /// waiting. Only Android has that hand-off; elsewhere the answer is null.
+  Future<String?> takeSharedText() async {
+    try {
+      return await methodChannel.invokeMethod<String>('takeSharedText');
+    } on MissingPluginException {
+      return null;
+    }
+  }
+
   Future<List<Package>> getPackages() async {
     final packagesString = await methodChannel.invokeMethod<String>(
       'getPackages',

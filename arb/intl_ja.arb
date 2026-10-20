@@ -972,5 +972,6 @@
   "temporary": "一時ファイル",
   "diagnostics": "診断",
   "clearCache": "キャッシュを削除",
-  "type": "タイプ"
+  "type": "タイプ",
+  "pasteDesc": "クリップボードから購読リンクを貼り付け"
 }

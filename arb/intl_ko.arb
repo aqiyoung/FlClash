@@ -972,5 +972,6 @@
   "temporary": "임시 파일",
   "diagnostics": "진단",
   "clearCache": "캐시 지우기",
-  "type": "유형"
+  "type": "유형",
+  "pasteDesc": "클립보드에서 구독 링크 붙여넣기"
 }
