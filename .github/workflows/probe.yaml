@@ -48,11 +48,14 @@ jobs:
           ref: ${{ inputs.ref }}
           submodules: recursive
 
-      # The probe has to install over whatever is on the phone, and a real
-      # release has to install over the probe afterwards, so its versionCode
-      # sits above the date-shaped numbers ci.yaml hands out (2,0xx,xxxxxx) but
-      # below Android's 2,100,000,000 ceiling. The fourth component is kept far
-      # above the real line for the same reason.
+      # A probe lands on a phone that already runs a release, so its versionCode
+      # sits above the date-shaped numbers ci.yaml hands out (2,02x,xxxxxx) and
+      # still below Android's 2,100,000,000 ceiling. Going back to a release
+      # then costs one uninstall, which is the price of a throwaway build.
+      #
+      # split-per-abi adds the ABI's own offset on top of this base (arm64-v8a
+      # is +2000), so the value here is not what the APK ends up carrying; the
+      # verify step reads the real one back out.
       - name: Choose a probe version
         id: version
         env:
@@ -65,13 +68,12 @@ jobs:
             exit 1
           fi
           version="${base}.$((900000 + RUN_NUMBER))"
-          build_number=$((2000000000 + RUN_NUMBER))
+          build_number=$((2090000000 + RUN_NUMBER))
           awk -v v="${base}+${build_number}" '/^version:/{ print "version: " v; next } { print }' \
             pubspec.yaml > pubspec.yaml.new
           mv pubspec.yaml.new pubspec.yaml
           echo "version=${version}" >> "$GITHUB_OUTPUT"
-          echo "build_number=${build_number}" >> "$GITHUB_OUTPUT"
-          echo "building ${version} (versionCode ${build_number}) from ${base}"
+          echo "building ${version} from ${base}, base versionCode ${build_number}"
 
       - name: Set up Android release signing
         env:
@@ -218,6 +220,7 @@ jobs:
       # `--arch arm64` has to actually limit the APK, not merely prefer arm64: a
       # package carrying the x86 libraries is not the thing being tested.
       - name: Verify the probe
+        id: verify
         env:
           VERSION: ${{ steps.version.outputs.version }}
           APPLICATION_ID: com.threely.clash
@@ -235,6 +238,15 @@ jobs:
           echo "== $(basename "$apk")"
           "$build_tools/aapt2" dump badging "$apk" | sed -n '1p'
           "$build_tools/apksigner" verify --print-certs "$apk" | sed -n '1,4p'
+
+          version_code="$("$build_tools/aapt2" dump badging "$apk" \
+            | sed -n "s/.*versionCode='\([0-9]*\)'.*/\1/p" | head -1)"
+          if [ -z "$version_code" ]; then
+            echo "::error::could not read the APK's versionCode"
+            exit 1
+          fi
+          echo "version_code=${version_code}" >> "$GITHUB_OUTPUT"
+          echo "the APK carries versionCode ${version_code}"
 
           if ! "$build_tools/aapt2" dump badging "$apk" | grep -q "package: name='${APPLICATION_ID}'"; then
             echo "::error::$(basename "$apk") is not packaged as ${APPLICATION_ID}"
@@ -268,7 +280,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.version.outputs.version }}
-          BUILD_NUMBER: ${{ steps.version.outputs.build_number }}
+          VERSION_CODE: ${{ steps.verify.outputs.version_code }}
           REF: ${{ inputs.ref }}
           RUN_NUMBER: ${{ github.run_number }}
         run: |
@@ -284,11 +296,11 @@ jobs:
             echo
             echo "- 分支：\`${REF}\`"
             echo "- 版本：\`${VERSION}\`"
-            echo "- 构建号（versionCode）：\`${BUILD_NUMBER}\`"
+            echo "- 构建号（versionCode）：\`${VERSION_CODE}\`"
             echo "- 提交：[\`${commit}\`](https://github.com/${GITHUB_REPOSITORY}/commit/${commit})"
             echo "- 构建日志：${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
             echo
-            echo "签名与本仓库正式版相同，可以覆盖安装（版本号更高）；这不是正式发布。"
+            echo "签名与本仓库正式版相同，版本号高于正式版，可以直接覆盖安装；装回正式版需要先卸载一次。这不是正式发布。"
           } >> probe-notes.md
 
           # A retried run reuses its number, so the tag may already exist.
