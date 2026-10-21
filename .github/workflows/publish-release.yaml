@@ -65,8 +65,8 @@ jobs:
           fi
 
           # The tag is the version itself, for both channels: the app's update
-          # check compares the latest release's tag against its own versionName,
-          # and this is the versionName Android carries (see the build workflow).
+          # check compares the latest release's tag against the version the app
+          # reports (APP_VERSION, see the build workflow).
           # The build number -- which is the versionCode, not part of the version
           # we show -- goes in the notes, where the next run reads it back from.
           tag="v${VERSION}"

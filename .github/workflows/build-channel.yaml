@@ -117,9 +117,8 @@ jobs:
       # which is what turns into Android's versionCode; that number has to stay
       # monotone or Android refuses to install one build over another. The fourth
       # component -- the revision we iterate -- cannot go in there (pub refuses a
-      # four-part version, and the desktop packaging configs want three), so
-      # Android gets it as its versionName through the environment instead. Only
-      # Android can show four components.
+      # four-part version, and the desktop packaging configs want three), so it
+      # reaches the app through APP_VERSION and stays out of versionName.
       - name: Inject our version
         shell: bash
         env:
@@ -144,7 +143,7 @@ jobs:
             pubspec.yaml > pubspec.yaml.new
           mv pubspec.yaml.new pubspec.yaml
           echo "we build as:  $(grep '^version:' pubspec.yaml)"
-          echo "android takes ${VERSION} as its versionName"
+          echo "android versionName: ${base}; the app reports ${VERSION}"
 
       - name: Set up Rust (Windows arm64)
         if: matrix.os == 'windows-11-arm'
@@ -296,8 +295,9 @@ jobs:
       - name: Build
         env:
           ANDROID_NDK_HOME: ${{ steps.ndk.outputs.ndk-path }}
-          # Android's versionName, four components; build.gradle.kts picks it up.
-          # Harmless for the other platforms, which take the pubspec's three.
+          # The version the app reports in-app; Android's versionName keeps only
+          # its first three components. Harmless for the other platforms, which
+          # take the pubspec's three.
           APP_VERSION_NAME: ${{ inputs.version }}
         run: dart setup.dart ${{ matrix.platform }} --env ${{ inputs.env }} -v
 
@@ -341,9 +341,9 @@ jobs:
         if: matrix.platform == 'android'
         env:
           VERSION: ${{ inputs.version }}
-          # Upstream's applicationId is the one phone managers flag, so ours has
-          # to be somebody else's -- and a merge that quietly restores upstream's
-          # while keeping our signature would still build and still upload.
+          # This fork ships under its own id, not upstream's com.follow.clash --
+          # and a merge that quietly restored upstream's while keeping our
+          # signature would still build and still upload.
           APPLICATION_ID: com.threely.clash
           # SHA-256 of the certificate in the KEYSTORE secret, lower case, no
           # separators. Rotating the keystore means updating this line, which is
@@ -352,6 +352,7 @@ jobs:
         run: |
           set -euo pipefail
           build_tools="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)"
+          base_version="${VERSION%.*}"
           for apk in dist/*.apk; do
             echo "== $(basename "$apk")"
             "$build_tools/aapt2" dump badging "$apk" | sed -n '1p'
@@ -369,8 +370,8 @@ jobs:
               echo "::error::$(basename "$apk") is not signed with our certificate (expected SHA-256 $CERT_SHA256)"
               exit 1
             fi
-            if ! "$build_tools/aapt2" dump badging "$apk" | grep -q "versionName='$VERSION'"; then
-              echo "::error::$(basename "$apk") does not carry ${VERSION} as its versionName"
+            if ! "$build_tools/aapt2" dump badging "$apk" | grep -q "versionName='${base_version}'"; then
+              echo "::error::$(basename "$apk") does not carry ${base_version} as its versionName"
               exit 1
             fi
           done

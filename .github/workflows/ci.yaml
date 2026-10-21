@@ -199,10 +199,10 @@ jobs:
           # The one users see is upstream's three components plus a fourth of our
           # own, counting the releases of the line it belongs to: a new version
           # line starts at .0, and a promoted beta takes a fresh number so that
-          # beta users are offered the stable build as well. Only Android can
-          # display it (see the build workflow), and the release tag is exactly
-          # it -- so the app's own update check, which compares the latest tag
-          # against its own versionName, compares like with like.
+          # beta users are offered the stable build as well. The app carries it
+          # as APP_VERSION (see the build workflow), and the release tag is
+          # exactly it -- so the update check, which compares the latest tag
+          # against that version, compares like with like.
           #
           # The versionCode -- what Android uses to decide whether one build may
           # install over another -- comes from a build number of <date><sequence
