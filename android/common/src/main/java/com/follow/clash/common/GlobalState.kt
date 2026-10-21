@@ -31,7 +31,7 @@ object GlobalState : CoroutineScope by CoroutineScope(SupervisorJob() + Dispatch
     }
 
     fun log(text: String) {
-        Log.d("FlClash", text)
+        Log.d("Skyward", text)
     }
 
     fun lastExitInfo(): Map<String, Any?>? {

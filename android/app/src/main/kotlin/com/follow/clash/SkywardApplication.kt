@@ -4,7 +4,7 @@ import android.app.Application
 import android.content.Context
 import com.follow.clash.common.GlobalState
 
-class FlClashApplication : Application() {
+class SkywardApplication : Application() {
     override fun attachBaseContext(base: Context?) {
         super.attachBaseContext(base)
         GlobalState.init(this)

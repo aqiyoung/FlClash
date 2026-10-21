@@ -40,7 +40,7 @@ class LinuxProtocolRegistrationPlan {
     required this.applicationsDir,
   });
 
-  String get desktopId => 'flclash-url-handler.desktop';
+  String get desktopId => 'skyward-url-handler.desktop';
 
   String get desktopPath => '$applicationsDir/$desktopId';
 
@@ -52,7 +52,7 @@ class LinuxProtocolRegistrationPlan {
   String get desktopEntry => [
     '[Desktop Entry]',
     'Type=Application',
-    'Name=FlClash',
+    'Name=Skyward',
     'NoDisplay=true',
     'Exec=$exec',
     'MimeType=${mimeTypes.join(';')};',
