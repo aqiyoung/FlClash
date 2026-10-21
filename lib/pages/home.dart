@@ -93,8 +93,13 @@ class _HomeShell extends ConsumerWidget {
                         child: NotificationListener<ScrollNotification>(
                           onNotification: (notification) {
                             final notifier = ref.read(scrollingProvider.notifier);
+                            // Only a drag of the finger counts: a page that
+                            // restores its position on its own would take the
+                            // labels away while the reader switches tabs.
                             if (notification is ScrollStartNotification) {
-                              notifier.set(true);
+                              if (notification.dragDetails != null) {
+                                notifier.set(true);
+                              }
                             } else if (notification is ScrollEndNotification) {
                               notifier.set(false);
                             }

@@ -335,6 +335,10 @@ class NavigationDock extends StatelessWidget {
         scale;
   }
 
+  /// The bar without its labels: the icon and the room it needs to breathe.
+  static double compactHeightOf(BuildContext context, [double scale = 1]) =>
+      (_iconSize + _barPadding * 4) * scale;
+
   static double _bottomMarginOf(BuildContext context, double scale) =>
       math.max(_edgeMargin * scale, MediaQuery.paddingOf(context).bottom);
 
@@ -345,6 +349,9 @@ class NavigationDock extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final height = heightOf(context, scale);
+    // Without its labels the bar shrinks to the icon alone, but the room it
+    // keeps in the page stays the same, so the content under it never moves.
+    final barHeight = showLabel ? height : compactHeightOf(context, scale);
     final dock = Padding(
       padding: EdgeInsets.fromLTRB(
         _edgeMargin * scale,
@@ -353,32 +360,40 @@ class NavigationDock extends StatelessWidget {
         _bottomMarginOf(context, scale),
       ),
       child: _HitSlop(
-        child: SizedBox(
-          height: height,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Flexible(
-                child: _HitSlop(
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      maxWidth: destinations.length >= _fullWidthCount
-                          ? double.infinity
-                          : destinations.length * _maxItemExtent * scale +
-                                _barPadding * 4 * scale,
-                    ),
-                    child: FloatingNavigationBar(
-                      destinations: destinations,
-                      selectedIndex: selectedIndex,
-                      onSelected: onSelected,
-                      scale: scale,
-                      showLabel: showLabel,
+        child: Align(
+          alignment: Alignment.bottomCenter,
+          child: AnimatedSize(
+            duration: const Duration(milliseconds: 220),
+            curve: Curves.easeOutCubic,
+            alignment: Alignment.bottomCenter,
+            child: SizedBox(
+              height: barHeight,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Flexible(
+                    child: _HitSlop(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          maxWidth: destinations.length >= _fullWidthCount
+                              ? double.infinity
+                              : destinations.length * _maxItemExtent * scale +
+                                    _barPadding * 4 * scale,
+                        ),
+                        child: FloatingNavigationBar(
+                          destinations: destinations,
+                          selectedIndex: selectedIndex,
+                          onSelected: onSelected,
+                          scale: scale,
+                          showLabel: showLabel,
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
