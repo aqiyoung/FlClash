@@ -142,6 +142,47 @@ class CommonAction extends _$CommonAction {
     ];
   }
 
+  /// The package that fits the device goes to the system download manager,
+  /// which keeps it in the Downloads folder and shows its own progress. The
+  /// desktop has no such manager, so the release page opens there.
+  Future<void> _downloadRelease(Map<String, dynamic> release) async {
+    final downloader = systemDownloader;
+    final abi = downloader == null ? null : await downloader.supportedAbi();
+    final asset = abi == null ? null : _apkAssetOf(release, abi);
+    if (downloader == null || asset == null) {
+      await launchUrl(
+        Uri.parse('https://github.com/$repository/releases/latest'),
+      );
+      return;
+    }
+    await downloader.download(url: asset.url, fileName: asset.name);
+  }
+
+  ({String url, String name})? _apkAssetOf(
+    Map<String, dynamic> release,
+    String abi,
+  ) {
+    final assets = release['assets'];
+    if (assets is! List) {
+      return null;
+    }
+    for (final asset in assets) {
+      if (asset is! Map) {
+        continue;
+      }
+      final name = asset['name'];
+      final url = asset['browser_download_url'];
+      if (name is! String || url is! String) {
+        continue;
+      }
+      if (!name.endsWith('.apk') || !name.contains(abi)) {
+        continue;
+      }
+      return (url: url, name: name);
+    }
+    return null;
+  }
+
   Future<void> checkUpdateResultHandle({
     Map<String, dynamic>? data,
     bool isUser = false,
@@ -159,11 +200,7 @@ class CommonAction extends _$CommonAction {
         cancelText: isUser ? null : currentAppLocalizations.noLongerRemind,
       );
       if (res == true) {
-        unawaited(
-          launchUrl(
-            Uri.parse('https://github.com/$repository/releases/latest'),
-          ),
-        );
+        unawaited(_downloadRelease(data));
       } else if (!isUser && res == false) {
         ref
             .read(appSettingProvider.notifier)
