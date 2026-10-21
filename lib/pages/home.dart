@@ -6,6 +6,7 @@ import 'package:fl_clash/providers/providers.dart';
 import 'package:fl_clash/ui/icons/icons.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/rendering.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -72,8 +73,8 @@ class _HomeShell extends ConsumerWidget {
     final hideLabelOnScroll = ref.watch(
       themeSettingProvider.select((state) => state.dockHideLabelOnScroll),
     );
-    final scrolling = ref.watch(scrollingProvider);
-    final showLabel = !(hideLabelOnScroll && scrolling);
+    final scrolling = ref.watch(dockScrollProvider);
+    final showLabel = !(hideLabelOnScroll && scrolling.compact);
     return Material(
       color: SurfaceLevel.page.colorOf(context.colorScheme),
       child: Column(
@@ -92,16 +93,17 @@ class _HomeShell extends ConsumerWidget {
                         isMobile: isMobile,
                         child: NotificationListener<ScrollNotification>(
                           onNotification: (notification) {
-                            final notifier = ref.read(scrollingProvider.notifier);
-                            // Only a drag of the finger counts: a page that
-                            // restores its position on its own would take the
-                            // labels away while the reader switches tabs.
-                            if (notification is ScrollStartNotification) {
-                              if (notification.dragDetails != null) {
-                                notifier.set(true);
+                            final notifier = ref.read(dockScrollProvider.notifier);
+                            // Only a finger counts: a list that restores its
+                            // position on its own would take the labels away
+                            // while the reader switches pages.
+                            if (notification is UserScrollNotification) {
+                              if (notification.direction != ScrollDirection.idle) {
+                                notifier.start();
+                                notifier.update(notification.direction);
                               }
                             } else if (notification is ScrollEndNotification) {
-                              notifier.set(false);
+                              notifier.end();
                             }
                             return false;
                           },

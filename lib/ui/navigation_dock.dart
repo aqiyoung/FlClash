@@ -351,7 +351,7 @@ class NavigationDock extends StatelessWidget {
     final height = heightOf(context, scale);
     // Without its labels the bar shrinks to the icon alone, but the room it
     // keeps in the page stays the same, so the content under it never moves.
-    final barHeight = showLabel ? height : compactHeightOf(context, scale);
+    final compactHeight = compactHeightOf(context, scale);
     final dock = Padding(
       padding: EdgeInsets.fromLTRB(
         _edgeMargin * scale,
@@ -362,12 +362,12 @@ class NavigationDock extends StatelessWidget {
       child: _HitSlop(
         child: Align(
           alignment: Alignment.bottomCenter,
-          child: AnimatedSize(
+          child: TweenAnimationBuilder<double>(
+            tween: Tween<double>(end: showLabel ? 0 : 1),
             duration: const Duration(milliseconds: 220),
             curve: Curves.easeOutCubic,
-            alignment: Alignment.bottomCenter,
-            child: SizedBox(
-              height: barHeight,
+            builder: (context, compactness, _) => SizedBox(
+              height: height + (compactHeight - height) * compactness,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -386,7 +386,6 @@ class NavigationDock extends StatelessWidget {
                           selectedIndex: selectedIndex,
                           onSelected: onSelected,
                           scale: scale,
-                          showLabel: showLabel,
                         ),
                       ),
                     ),
@@ -786,14 +785,12 @@ class FloatingNavigationBar extends StatefulWidget {
     required this.selectedIndex,
     required this.onSelected,
     this.scale = 1,
-    this.showLabel = true,
   });
 
   final List<NavigationDockDestination> destinations;
   final int selectedIndex;
   final ValueChanged<int> onSelected;
   final double scale;
-  final bool showLabel;
 
   @override
   State<FloatingNavigationBar> createState() => _FloatingNavigationBarState();
@@ -1216,6 +1213,22 @@ class _FloatingNavigationBarState extends State<FloatingNavigationBar>
                       widget.destinations.length,
                       widget.scale,
                     );
+                    // The bar's height carries how compact it is, so the
+                    // labels follow the same motion as the bar itself.
+                    final labelSize = _labelSize * widget.scale;
+                    final fullHeight =
+                        (_barHeight +
+                                MediaQuery.textScalerOf(
+                                  context,
+                                ).scale(labelSize) -
+                                labelSize) *
+                            widget.scale;
+                    final compactHeight =
+                        (_iconSize + _barPadding * 4) * widget.scale;
+                    final compactness =
+                        ((fullHeight - constraints.maxHeight) /
+                                (fullHeight - compactHeight))
+                            .clamp(0.0, 1.0);
                     final room = layout.pitch - _labelInset * 2 * widget.scale;
                     final labelScale = widest <= room
                         ? 1.0
@@ -1252,7 +1265,7 @@ class _FloatingNavigationBarState extends State<FloatingNavigationBar>
                                 labelOverflows:
                                     labels[index].width * labelScale > room,
                                 scale: widget.scale,
-                                showLabel: widget.showLabel,
+                                compactness: compactness,
                                 onActivate: () => widget.onSelected(index),
                               ),
                             ),
@@ -1545,7 +1558,7 @@ class _FloatingBarItem extends StatefulWidget {
     required this.labelHeight,
     required this.labelOverflows,
     required this.scale,
-    required this.showLabel,
+    required this.compactness,
     required this.onActivate,
   });
 
@@ -1565,7 +1578,9 @@ class _FloatingBarItem extends StatefulWidget {
   final double labelHeight;
   final bool labelOverflows;
   final double scale;
-  final bool showLabel;
+
+  /// How far the bar has shrunk: 0 shows every label, 1 shows the icons alone.
+  final double compactness;
   final VoidCallback onActivate;
 
   @override
@@ -1622,23 +1637,17 @@ class _FloatingBarItemState extends State<_FloatingBarItem> {
               fill: 1,
             ),
             SizedBox(height: _labelGap * widget.scale),
-            AnimatedSize(
-              duration: const Duration(milliseconds: 200),
-              curve: Curves.easeOutCubic,
-              alignment: Alignment.topCenter,
-              child: SizedBox(
-                height: widget.showLabel ? widget.labelHeight : 0,
-                child: Center(
-                  child: AnimatedOpacity(
-                    opacity: widget.showLabel ? 1 : 0,
-                    duration: const Duration(milliseconds: 160),
-                    child: Text(
-                      widget.destination.label,
-                      maxLines: 1,
-                      softWrap: false,
-                      overflow: TextOverflow.ellipsis,
-                      style: widget.labelStyle?.copyWith(color: color),
-                    ),
+            SizedBox(
+              height: widget.labelHeight * (1 - widget.compactness),
+              child: Center(
+                child: Opacity(
+                  opacity: 1 - widget.compactness,
+                  child: Text(
+                    widget.destination.label,
+                    maxLines: 1,
+                    softWrap: false,
+                    overflow: TextOverflow.ellipsis,
+                    style: widget.labelStyle?.copyWith(color: color),
                   ),
                 ),
               ),
