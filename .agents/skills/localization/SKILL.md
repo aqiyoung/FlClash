@@ -1,6 +1,6 @@
 ---
 name: localization
-description: Use when changing FlClash UI text, scanning for hardcoded Chinese strings, updating ARB localization, or fixing generated locale output in this repository.
+description: Use when changing Skyward UI text, scanning for hardcoded Chinese strings, updating ARB localization, or fixing generated locale output in this repository.
 ---
 
 # Localization

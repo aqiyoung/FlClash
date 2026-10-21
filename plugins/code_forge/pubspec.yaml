@@ -1,5 +1,5 @@
 name: code_forge
-description: "The code editor of FlClash, derived from code_forge 10.14.0."
+description: "The code editor of Skyward, derived from code_forge 10.14.0."
 version: 10.14.0
 homepage: https://github.com/heckmon/code_forge
 publish_to: none

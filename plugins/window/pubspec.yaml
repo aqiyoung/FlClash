@@ -1,5 +1,5 @@
 name: window
-description: Desktop window control for FlClash on Linux, macOS and Windows.
+description: Desktop window control for Skyward on Linux, macOS and Windows.
 version: 0.0.1
 
 environment:

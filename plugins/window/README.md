@@ -1,7 +1,7 @@
 # window
 
-Desktop window control for FlClash on Linux, macOS and Windows. Written for
-FlClash; it replaced the `window_manager` fork, and its platform code derives
+Desktop window control for Skyward on Linux, macOS and Windows. Written for
+Skyward; it replaced the `window_manager` fork, and its platform code derives
 from that plugin (see `LICENSE`).
 
 ## Dart API
