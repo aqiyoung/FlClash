@@ -33,7 +33,7 @@ class ServiceConfigTest {
     fun `notification params default to the app name and stop label`() {
         val defaults = NotificationParams()
 
-        assertEquals("Trinity", defaults.title)
+        assertEquals("Skyward", defaults.title)
         assertEquals("STOP", defaults.stopText)
         assertEquals(false, defaults.onlyStatisticsProxy)
         assertEquals(true, defaults.showStopAction)

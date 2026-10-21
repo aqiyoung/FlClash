@@ -5,7 +5,12 @@
         android:viewportWidth="240"
         android:viewportHeight="240"
         tools:ignore="VectorRaster">
-  <path android:pathData="M120.000,134.520 C87.000,116.700 90.960,92.940 120.000,70.500 C149.040,92.940 153.000,116.700 120.000,134.520 Z" android:fillColor="#FFFFFF"/>
-  <path android:pathData="M121.715,137.490 C153.647,117.821 172.244,133.131 177.158,169.500 C143.204,183.429 120.647,174.979 121.715,137.490 Z" android:fillColor="#FFFFFF"/>
-  <path android:pathData="M118.285,137.490 C119.353,174.979 96.796,183.429 62.842,169.500 C67.756,133.131 86.353,117.821 118.285,137.490 Z" android:fillColor="#FFFFFF"/>
+  <path
+      android:pathData="M92,368 C152,368 190,310 218,238 C244,172 272,126 316,112"
+      android:strokeColor="#FFFFFF"
+      android:strokeWidth="25.760"
+      android:strokeLineCap="round" />
+  <path
+      android:pathData="M183.480,35.820 a22.080,22.080 0 1,0 0,44.160 a22.080,22.080 0 1,0 0,-44.160 z"
+      android:fillColor="#FFFFFF" />
 </vector>

@@ -2,11 +2,11 @@
     xmlns:tools="http://schemas.android.com/tools">
     <application
         android:icon="@mipmap/ic_launcher"
-        android:label="Trinity Debug"
+        android:label="Skyward Debug"
         tools:replace="android:label">
         <service
             android:name=".TileService"
-            android:label="Trinity Debug"
+            android:label="Skyward Debug"
             tools:replace="android:label" />
     </application>
 </manifest>

@@ -10,20 +10,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 @immutable
-class Contributor {
-  final String avatar;
-  final String name;
-
-  const Contributor({required this.avatar, required this.name});
-}
-
 class AboutView extends ConsumerWidget {
   const AboutView({super.key});
-
-  static const _contributors = [
-    Contributor(avatar: 'assets/images/avatar/june2.jpg', name: 'June2'),
-    Contributor(avatar: 'assets/images/avatar/arue.jpg', name: 'Arue'),
-  ];
 
   Future<void> _checkUpdate(BuildContext context, WidgetRef ref) async {
     if (ref.read(loadingProvider(LoadingTag.checkUpdate))) return;
@@ -100,19 +88,6 @@ class AboutView extends ConsumerWidget {
                 url: 'https://github.com/chen08209/Clash.Meta/tree/FlClash',
                 label: 'github.com/chen08209/Clash.Meta',
               ),
-            ],
-          ),
-          generateSection(
-            title: appLocalizations.otherContributors,
-            items: [
-              for (final contributor in _contributors)
-                ListItem(
-                  leading: CircleAvatar(
-                    foregroundImage: AssetImage(contributor.avatar),
-                  ),
-                  title: Text(contributor.name),
-                  subtitle: Text(appLocalizations.appIconDesign),
-                ),
             ],
           ),
         ],
