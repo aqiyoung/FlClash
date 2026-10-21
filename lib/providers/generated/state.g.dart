@@ -9,6 +9,377 @@ part of '../state.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
+@ProviderFor(navigationItemsState)
+final navigationItemsStateProvider = NavigationItemsStateProvider._();
+
+final class NavigationItemsStateProvider
+    extends
+        $FunctionalProvider<
+          NavigationItemsState,
+          NavigationItemsState,
+          NavigationItemsState
+        >
+    with $Provider<NavigationItemsState> {
+  NavigationItemsStateProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'navigationItemsStateProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$navigationItemsStateHash();
+
+  @$internal
+  @override
+  $ProviderElement<NavigationItemsState> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  NavigationItemsState create(Ref ref) {
+    return navigationItemsState(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(NavigationItemsState value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<NavigationItemsState>(value),
+    );
+  }
+}
+
+String _$navigationItemsStateHash() =>
+    r'3c633d4f3e5f2e80b7cfd166a46397f9a207bb1e';
+
+@ProviderFor(currentNavigationItemsState)
+final currentNavigationItemsStateProvider =
+    CurrentNavigationItemsStateProvider._();
+
+final class CurrentNavigationItemsStateProvider
+    extends
+        $FunctionalProvider<
+          NavigationItemsState,
+          NavigationItemsState,
+          NavigationItemsState
+        >
+    with $Provider<NavigationItemsState> {
+  CurrentNavigationItemsStateProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'currentNavigationItemsStateProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$currentNavigationItemsStateHash();
+
+  @$internal
+  @override
+  $ProviderElement<NavigationItemsState> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  NavigationItemsState create(Ref ref) {
+    return currentNavigationItemsState(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(NavigationItemsState value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<NavigationItemsState>(value),
+    );
+  }
+}
+
+String _$currentNavigationItemsStateHash() =>
+    r'06fbdc194f4527b945695fe3b72b16e0585fa440';
+
+@ProviderFor(shownPageLabel)
+final shownPageLabelProvider = ShownPageLabelProvider._();
+
+final class ShownPageLabelProvider
+    extends $FunctionalProvider<PageLabel, PageLabel, PageLabel>
+    with $Provider<PageLabel> {
+  ShownPageLabelProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'shownPageLabelProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$shownPageLabelHash();
+
+  @$internal
+  @override
+  $ProviderElement<PageLabel> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  PageLabel create(Ref ref) {
+    return shownPageLabel(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(PageLabel value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<PageLabel>(value),
+    );
+  }
+}
+
+String _$shownPageLabelHash() => r'1378d52f1b4cb8fc3291b3e76f2ce2c4e23bfe0e';
+
+@ProviderFor(navigationState)
+final navigationStateProvider = NavigationStateProvider._();
+
+final class NavigationStateProvider
+    extends
+        $FunctionalProvider<NavigationState, NavigationState, NavigationState>
+    with $Provider<NavigationState> {
+  NavigationStateProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'navigationStateProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$navigationStateHash();
+
+  @$internal
+  @override
+  $ProviderElement<NavigationState> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  NavigationState create(Ref ref) {
+    return navigationState(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(NavigationState value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<NavigationState>(value),
+    );
+  }
+}
+
+String _$navigationStateHash() => r'9c9beae404c98419430f83922c5d9aa1dbe3a64a';
+
+@ProviderFor(dashboardState)
+final dashboardStateProvider = DashboardStateProvider._();
+
+final class DashboardStateProvider
+    extends $FunctionalProvider<DashboardState, DashboardState, DashboardState>
+    with $Provider<DashboardState> {
+  DashboardStateProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'dashboardStateProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$dashboardStateHash();
+
+  @$internal
+  @override
+  $ProviderElement<DashboardState> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  DashboardState create(Ref ref) {
+    return dashboardState(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(DashboardState value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<DashboardState>(value),
+    );
+  }
+}
+
+String _$dashboardStateHash() => r'33838f85f2b6a0ab601891aa2f26adc8870302b6';
+
+@ProviderFor(moreToolsSelectorState)
+final moreToolsSelectorStateProvider = MoreToolsSelectorStateProvider._();
+
+final class MoreToolsSelectorStateProvider
+    extends
+        $FunctionalProvider<
+          MoreToolsSelectorState,
+          MoreToolsSelectorState,
+          MoreToolsSelectorState
+        >
+    with $Provider<MoreToolsSelectorState> {
+  MoreToolsSelectorStateProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'moreToolsSelectorStateProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$moreToolsSelectorStateHash();
+
+  @$internal
+  @override
+  $ProviderElement<MoreToolsSelectorState> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  MoreToolsSelectorState create(Ref ref) {
+    return moreToolsSelectorState(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(MoreToolsSelectorState value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<MoreToolsSelectorState>(value),
+    );
+  }
+}
+
+String _$moreToolsSelectorStateHash() =>
+    r'c47987547d0e59da10ec4bbd9c8cf1416f8477f3';
+
+@ProviderFor(overlayTopOffset)
+final overlayTopOffsetProvider = OverlayTopOffsetProvider._();
+
+final class OverlayTopOffsetProvider
+    extends $FunctionalProvider<double, double, double>
+    with $Provider<double> {
+  OverlayTopOffsetProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'overlayTopOffsetProvider',
+        isAutoDispose: true,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$overlayTopOffsetHash();
+
+  @$internal
+  @override
+  $ProviderElement<double> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  double create(Ref ref) {
+    return overlayTopOffset(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(double value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<double>(value),
+    );
+  }
+}
+
+String _$overlayTopOffsetHash() => r'44c3b3c9f8f3af5e10ba91e0f2514f52f3c6ddac';
+
+/// Whether the page under the dock is scrolling right now. The dock reads it
+/// to drop its labels while the reader moves.
+
+@ProviderFor(Scrolling)
+final scrollingProvider = ScrollingProvider._();
+
+/// Whether the page under the dock is scrolling right now. The dock reads it
+/// to drop its labels while the reader moves.
+final class ScrollingProvider extends $NotifierProvider<Scrolling, bool> {
+  /// Whether the page under the dock is scrolling right now. The dock reads it
+  /// to drop its labels while the reader moves.
+  ScrollingProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'scrollingProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$scrollingHash();
+
+  @$internal
+  @override
+  Scrolling create() => Scrolling();
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(bool value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<bool>(value),
+    );
+  }
+}
+
+String _$scrollingHash() => r'002f91418597548c75ba02f95c5bc8d4d3793461';
+
+/// Whether the page under the dock is scrolling right now. The dock reads it
+/// to drop its labels while the reader moves.
+
+abstract class _$Scrolling extends $Notifier<bool> {
+  bool build();
+  @$mustCallSuper
+  @override
+  WhenComplete runBuild() {
+    final ref = this.ref as $Ref<bool, bool>;
+    final element =
+        ref.element
+            as $ClassProviderElement<
+              AnyNotifier<bool, bool>,
+              bool,
+              Object?,
+              Object?
+            >;
+    return element.handleCreate(ref, build);
+  }
+}
+
 @ProviderFor(updateParams)
 final updateParamsProvider = UpdateParamsProvider._();
 
@@ -2780,316 +3151,6 @@ final class NeedUpdateGroupsProvider
 }
 
 String _$needUpdateGroupsHash() => r'90b7cb35c96bda157cf436e32f251e58721ef757';
-
-@ProviderFor(navigationItemsState)
-final navigationItemsStateProvider = NavigationItemsStateProvider._();
-
-final class NavigationItemsStateProvider
-    extends
-        $FunctionalProvider<
-          NavigationItemsState,
-          NavigationItemsState,
-          NavigationItemsState
-        >
-    with $Provider<NavigationItemsState> {
-  NavigationItemsStateProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'navigationItemsStateProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$navigationItemsStateHash();
-
-  @$internal
-  @override
-  $ProviderElement<NavigationItemsState> $createElement(
-    $ProviderPointer pointer,
-  ) => $ProviderElement(pointer);
-
-  @override
-  NavigationItemsState create(Ref ref) {
-    return navigationItemsState(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(NavigationItemsState value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<NavigationItemsState>(value),
-    );
-  }
-}
-
-String _$navigationItemsStateHash() =>
-    r'3c633d4f3e5f2e80b7cfd166a46397f9a207bb1e';
-
-@ProviderFor(currentNavigationItemsState)
-final currentNavigationItemsStateProvider =
-    CurrentNavigationItemsStateProvider._();
-
-final class CurrentNavigationItemsStateProvider
-    extends
-        $FunctionalProvider<
-          NavigationItemsState,
-          NavigationItemsState,
-          NavigationItemsState
-        >
-    with $Provider<NavigationItemsState> {
-  CurrentNavigationItemsStateProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'currentNavigationItemsStateProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$currentNavigationItemsStateHash();
-
-  @$internal
-  @override
-  $ProviderElement<NavigationItemsState> $createElement(
-    $ProviderPointer pointer,
-  ) => $ProviderElement(pointer);
-
-  @override
-  NavigationItemsState create(Ref ref) {
-    return currentNavigationItemsState(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(NavigationItemsState value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<NavigationItemsState>(value),
-    );
-  }
-}
-
-String _$currentNavigationItemsStateHash() =>
-    r'06fbdc194f4527b945695fe3b72b16e0585fa440';
-
-@ProviderFor(shownPageLabel)
-final shownPageLabelProvider = ShownPageLabelProvider._();
-
-final class ShownPageLabelProvider
-    extends $FunctionalProvider<PageLabel, PageLabel, PageLabel>
-    with $Provider<PageLabel> {
-  ShownPageLabelProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'shownPageLabelProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$shownPageLabelHash();
-
-  @$internal
-  @override
-  $ProviderElement<PageLabel> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
-
-  @override
-  PageLabel create(Ref ref) {
-    return shownPageLabel(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(PageLabel value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<PageLabel>(value),
-    );
-  }
-}
-
-String _$shownPageLabelHash() => r'1378d52f1b4cb8fc3291b3e76f2ce2c4e23bfe0e';
-
-@ProviderFor(navigationState)
-final navigationStateProvider = NavigationStateProvider._();
-
-final class NavigationStateProvider
-    extends
-        $FunctionalProvider<NavigationState, NavigationState, NavigationState>
-    with $Provider<NavigationState> {
-  NavigationStateProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'navigationStateProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$navigationStateHash();
-
-  @$internal
-  @override
-  $ProviderElement<NavigationState> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
-
-  @override
-  NavigationState create(Ref ref) {
-    return navigationState(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(NavigationState value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<NavigationState>(value),
-    );
-  }
-}
-
-String _$navigationStateHash() => r'9c9beae404c98419430f83922c5d9aa1dbe3a64a';
-
-@ProviderFor(dashboardState)
-final dashboardStateProvider = DashboardStateProvider._();
-
-final class DashboardStateProvider
-    extends $FunctionalProvider<DashboardState, DashboardState, DashboardState>
-    with $Provider<DashboardState> {
-  DashboardStateProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'dashboardStateProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$dashboardStateHash();
-
-  @$internal
-  @override
-  $ProviderElement<DashboardState> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
-
-  @override
-  DashboardState create(Ref ref) {
-    return dashboardState(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(DashboardState value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<DashboardState>(value),
-    );
-  }
-}
-
-String _$dashboardStateHash() => r'33838f85f2b6a0ab601891aa2f26adc8870302b6';
-
-@ProviderFor(moreToolsSelectorState)
-final moreToolsSelectorStateProvider = MoreToolsSelectorStateProvider._();
-
-final class MoreToolsSelectorStateProvider
-    extends
-        $FunctionalProvider<
-          MoreToolsSelectorState,
-          MoreToolsSelectorState,
-          MoreToolsSelectorState
-        >
-    with $Provider<MoreToolsSelectorState> {
-  MoreToolsSelectorStateProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'moreToolsSelectorStateProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$moreToolsSelectorStateHash();
-
-  @$internal
-  @override
-  $ProviderElement<MoreToolsSelectorState> $createElement(
-    $ProviderPointer pointer,
-  ) => $ProviderElement(pointer);
-
-  @override
-  MoreToolsSelectorState create(Ref ref) {
-    return moreToolsSelectorState(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(MoreToolsSelectorState value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<MoreToolsSelectorState>(value),
-    );
-  }
-}
-
-String _$moreToolsSelectorStateHash() =>
-    r'c47987547d0e59da10ec4bbd9c8cf1416f8477f3';
-
-@ProviderFor(overlayTopOffset)
-final overlayTopOffsetProvider = OverlayTopOffsetProvider._();
-
-final class OverlayTopOffsetProvider
-    extends $FunctionalProvider<double, double, double>
-    with $Provider<double> {
-  OverlayTopOffsetProvider._()
-    : super(
-        from: null,
-        argument: null,
-        retry: null,
-        name: r'overlayTopOffsetProvider',
-        isAutoDispose: true,
-        dependencies: null,
-        $allTransitiveDependencies: null,
-      );
-
-  @override
-  String debugGetCreateSourceHash() => _$overlayTopOffsetHash();
-
-  @$internal
-  @override
-  $ProviderElement<double> $createElement($ProviderPointer pointer) =>
-      $ProviderElement(pointer);
-
-  @override
-  double create(Ref ref) {
-    return overlayTopOffset(ref);
-  }
-
-  /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(double value) {
-    return $ProviderOverride(
-      origin: this,
-      providerOverride: $SyncValueProvider<double>(value),
-    );
-  }
-}
-
-String _$overlayTopOffsetHash() => r'44c3b3c9f8f3af5e10ba91e0f2514f52f3c6ddac';
 
 @ProviderFor(profilesState)
 final profilesStateProvider = ProfilesStateProvider._();

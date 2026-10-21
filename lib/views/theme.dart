@@ -34,6 +34,9 @@ class ThemeView extends StatelessWidget {
           SizedBox(height: 16),
           _NavigationBarItem(),
           SizedBox(height: 16),
+          _DockScaleItem(),
+          _DockLabelItem(),
+          SizedBox(height: 16),
           _TabAnimationItem(),
           SizedBox(height: 16),
           _LiquidGlassItem(),
@@ -663,6 +666,122 @@ class _NavigationBarItem extends ConsumerWidget {
         ref
             .read(appSettingProvider.notifier)
             .update((state) => state.copyWith(floatingNavigationBar: value));
+      },
+    );
+  }
+}
+
+class _DockScaleItem extends ConsumerStatefulWidget {
+  const _DockScaleItem();
+
+  static const _minScale = 0.8;
+  static const _maxScale = 1.2;
+  static const _step = 0.05;
+
+  @override
+  ConsumerState<_DockScaleItem> createState() => _DockScaleItemState();
+}
+
+class _DockScaleItemState extends ConsumerState<_DockScaleItem> {
+  double? _draft;
+
+  void _update(double scale) {
+    setState(() => _draft = null);
+    ref
+        .read(themeSettingProvider.notifier)
+        .update((state) => state.copyWith(dockScale: scale));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final appLocalizations = context.appLocalizations;
+    final colorScheme = context.colorScheme;
+    final dockScale = ref.watch(
+      themeSettingProvider.select((state) => state.dockScale),
+    );
+    final scale = _draft ?? dockScale;
+    final percent = '${(scale * 100).round()}%';
+    final divisions =
+        ((_DockScaleItem._maxScale - _DockScaleItem._minScale) /
+                _DockScaleItem._step)
+            .round();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        InfoHeader(
+          info: Info(
+            label: appLocalizations.dockScale,
+            glyph: AppGlyphs.textSize,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+            decoration: ShapeDecoration(
+              color: context.raisedSurfaceLevel.colorOf(colorScheme),
+              shape: AppShape.lg,
+            ),
+            child: Row(
+              spacing: 12,
+              children: [
+                Expanded(
+                  child: SliderTheme(
+                    data: SliderDefaultsM3(context),
+                    child: Slider(
+                      padding: EdgeInsets.zero,
+                      min: _DockScaleItem._minScale,
+                      max: _DockScaleItem._maxScale,
+                      divisions: divisions,
+                      value: scale,
+                      label: percent,
+                      onChanged: (value) => setState(() => _draft = value),
+                      onChangeEnd: _update,
+                    ),
+                  ),
+                ),
+                Text(
+                  percent,
+                  style: AppTextStyle.subheadline
+                      .of(context, emphasized: true)
+                      .copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                        fontFeatures: const [FontFeature.tabularFigures()],
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _DockLabelItem extends ConsumerWidget {
+  const _DockLabelItem();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final appLocalizations = context.appLocalizations;
+    final hideLabelOnScroll = ref.watch(
+      themeSettingProvider.select((state) => state.dockHideLabelOnScroll),
+    );
+    return ListItem.toggle(
+      leading: const GlyphIcon(AppGlyphs.motion),
+      horizontalTitleGap: 12,
+      title: Text(
+        appLocalizations.hideLabelOnScroll,
+        style: AppTextStyle.subheadline
+            .of(context, emphasized: true)
+            .copyWith(color: context.colorScheme.onSurfaceVariant),
+      ),
+      subtitle: Text(appLocalizations.hideLabelOnScrollDesc),
+      value: hideLabelOnScroll,
+      onChanged: (value) {
+        ref
+            .read(themeSettingProvider.notifier)
+            .update((state) => state.copyWith(dockHideLabelOnScroll: value));
       },
     );
   }

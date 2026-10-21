@@ -367,6 +367,8 @@ _ThemeProps _$ThemePropsFromJson(Map<String, dynamic> json) => _ThemeProps(
         _readLiquidGlass(json, 'liquidGlass'),
       ) ??
       LiquidGlassMode.none,
+  dockScale: (json['dockScale'] as num?)?.toDouble() ?? 1.0,
+  dockHideLabelOnScroll: json['dockHideLabelOnScroll'] as bool? ?? false,
   textScale: json['textScale'] == null
       ? const TextScale()
       : TextScale.fromJson(json['textScale'] as Map<String, dynamic>),
@@ -382,6 +384,8 @@ Map<String, dynamic> _$ThemePropsToJson(_ThemeProps instance) =>
       'pureBlack': instance.pureBlack,
       'sidebarBlur': instance.sidebarBlur,
       'liquidGlass': _$LiquidGlassModeEnumMap[instance.liquidGlass]!,
+      'dockScale': instance.dockScale,
+      'dockHideLabelOnScroll': instance.dockHideLabelOnScroll,
       'textScale': instance.textScale,
       'systemFontFamily': instance.fontFamily,
     };

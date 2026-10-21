@@ -122,3 +122,20 @@ double overlayTopOffset(Ref ref) {
   );
   return pageToolbarHeight + (showsHeader ? kHeaderHeight : 0);
 }
+
+/// Whether the page under the dock is scrolling right now. The dock reads it
+/// to drop its labels while the reader moves.
+@Riverpod(keepAlive: true)
+class Scrolling extends _$Scrolling {
+  @override
+  bool build() {
+    return false;
+  }
+
+  void set(bool value) {
+    if (state == value) {
+      return;
+    }
+    state = value;
+  }
+}
