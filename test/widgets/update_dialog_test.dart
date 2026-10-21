@@ -67,7 +67,7 @@ void main() {
   setUpAll(() {
     globalState.packageInfo = PackageInfo(
       appName: 'FlClash',
-      packageName: 'com.threely.trinity',
+      packageName: 'com.threely.skyward',
       version: _runningVersion,
       buildNumber: '1',
     );

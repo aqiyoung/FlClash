@@ -1,15 +1,16 @@
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
         android:width="108dp"
         android:height="108dp"
         android:viewportWidth="240"
-        android:viewportHeight="240">
-  <group android:rotation="0" android:pivotX="120.0" android:pivotY="136.5">
-    <path android:pathData="M120.000,134.520 C87.000,116.700 90.960,92.940 120.000,70.500 C149.040,92.940 153.000,116.700 120.000,134.520 Z" android:fillColor="#10B981"/>
-  </group>
-  <group android:rotation="120" android:pivotX="120.0" android:pivotY="136.5">
-    <path android:pathData="M120.000,134.520 C87.000,116.700 90.960,92.940 120.000,70.500 C149.040,92.940 153.000,116.700 120.000,134.520 Z" android:fillColor="#059669"/>
-  </group>
-  <group android:rotation="240" android:pivotX="120.0" android:pivotY="136.5">
-    <path android:pathData="M120.000,134.520 C87.000,116.700 90.960,92.940 120.000,70.500 C149.040,92.940 153.000,116.700 120.000,134.520 Z" android:fillColor="#047857"/>
-  </group>
+        android:viewportHeight="240"
+>
+  <path
+      android:pathData="M92,368 C152,368 190,310 218,238 C244,172 272,126 316,112"
+      android:strokeColor="#4F46E5"
+      android:strokeWidth="15.680"
+      android:strokeLineCap="round" />
+  <path
+      android:pathData="M158.640,68.760 a13.440,13.440 0 1,0 0,26.880 a13.440,13.440 0 1,0 0,-26.880 z"
+      android:fillColor="#38BDF8" />
 </vector>

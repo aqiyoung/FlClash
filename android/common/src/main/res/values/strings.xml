@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Trinity</string>
-    <string name="service_channel_name">Trinity Service</string>
+    <string name="app_name">Skyward</string>
+    <string name="service_channel_name">Skyward Service</string>
 </resources>

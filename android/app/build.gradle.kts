@@ -37,7 +37,7 @@ android {
         // name, so it must not answer to upstream's id either. The namespace
         // above stays upstream's -- the Kotlin packages and the plugins' method
         // channels live there, and only the installed id is ours.
-        applicationId = "com.threely.trinity"
+        applicationId = "com.threely.skyward"
         minSdk = flutter.minSdkVersion
         targetSdk = libs.versions.targetSdk.get().toInt()
         versionCode = flutter.versionCode

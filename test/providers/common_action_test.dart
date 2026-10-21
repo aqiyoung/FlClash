@@ -27,7 +27,7 @@ void main() {
     core = MockCoreHandlerInterface();
     globalState.packageInfo = PackageInfo(
       appName: 'FlClash',
-      packageName: 'com.threely.trinity',
+      packageName: 'com.threely.skyward',
       version: runningVersion,
       buildNumber: '1',
     );
