@@ -108,6 +108,9 @@ class _AboutHero extends StatelessWidget {
   });
 
   static const _logoSize = 96.0;
+  // The launcher draws the mark at 64% of its canvas while the asset fills
+  // 92% of its own, so the logo takes the icon's share instead of the box's.
+  static const _launcherShare = 0.64 / 0.92;
 
   @override
   Widget build(BuildContext context) {
@@ -119,10 +122,16 @@ class _AboutHero extends StatelessWidget {
         children: [
           _DeveloperModeDetector(
             onEnterDeveloperMode: onEnterDeveloperMode,
-            child: Image.asset(
-              'assets/images/icon.png',
+            child: SizedBox(
               width: _logoSize,
               height: _logoSize,
+              child: Center(
+                child: Image.asset(
+                  'assets/images/icon.png',
+                  width: _logoSize * _launcherShare,
+                  height: _logoSize * _launcherShare,
+                ),
+              ),
             ),
           ),
           const SizedBox(height: 20),
