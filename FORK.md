@@ -1,12 +1,12 @@
-# 三叶 / Sanye（本仓库版）
+# Trinity（本仓库版）
 
-这是 [chen08209/FlClash](https://github.com/chen08209/FlClash) 的一个个人 fork，在这里以**三叶（Sanye）**的名字发布：包名、桌面图标下的名字和安装包文件名都换成自己的，不再挂着上游的名字。上游代码原样保留，我们在上面做了少量定制，并用 GitHub Actions 全平台构建、自签名，发布到本仓库的 Releases（同时推送到 TG 频道 [@sanyeinfo](https://t.me/sanyeinfo)）。
+这是 [chen08209/FlClash](https://github.com/chen08209/FlClash) 的一个个人 fork，在这里以**Trinity**的名字发布：包名、桌面图标下的名字和安装包文件名都换成自己的，不再挂着上游的名字。上游代码原样保留，我们在上面做了少量定制，并用 GitHub Actions 全平台构建、自签名，发布到本仓库的 Releases（同时推送到 TG 频道 [@sanyeinfo](https://t.me/sanyeinfo)）。
 
 本仓库只发布**客户端本体**：不含任何代理服务器、订阅链接、账号或流量，也没有任何收费项目。装好之后用什么配置，由使用者自己填。
 
 **装哪个**
 
-- **正式版**（推荐）：[最新 Release](../../releases/latest) 里 `Sanye-` 开头的安装包。`/releases/latest` 永远指向正式版。
+- **正式版**（推荐）：[最新 Release](../../releases/latest) 里 `Trinity-` 开头的安装包。`/releases/latest` 永远指向正式版。
 - **测试版**：在 [Releases 列表](../../releases) 里标着 *Pre-release* 的那个，跟上游 `dev` 走，比正式版新，也可能有问题。
 
 Android 一般下 `-arm64-v8a.apk`（绝大多数手机）或 `-armeabi-v7a.apk`（老机器），模拟器下 `-x86_64.apk`。
@@ -31,7 +31,7 @@ Android 一般下 `-arm64-v8a.apk`（绝大多数手机）或 `-armeabi-v7a.apk`
 | 正式版 | [`main`](../../tree/main) | 已经跑过 beta、被晋升进来的代码 | 标为 Latest |
 | 测试版 | [`beta`](../../tree/beta) | 上游 `dev` 的最新代码 + 我们自己的改动 | prerelease，不抢占 Latest |
 
-两个渠道**同包名**（`com.threely.sanye`）、**同签名**，可以互相覆盖安装，`versionCode` 保证单调递增。
+两个渠道**同包名**（`com.threely.trinity`）、**同签名**，可以互相覆盖安装，`versionCode` 保证单调递增。
 
 ## 与上游的差异
 
@@ -43,7 +43,7 @@ Android 一般下 `-arm64-v8a.apk`（绝大多数手机）或 `-armeabi-v7a.apk`
 | 关于页 | 去掉上游的 Telegram 频道入口（那个频道不是本仓库运营的） |
 | 更新检查 | 指向本仓库的 Releases，而不是上游；版本比较额外认我们自己的第四位 |
 | 版本名 | 四段版本号由构建注入：Android 走 `versionName`，桌面端走 `APP_VERSION` dart-define（`pubspec.yaml` 仍是三段） |
-| 包名 | Android 的 `applicationId` 改成 `com.threely.sanye`（2026-10-18 起先用 `com.threely.clash`，2026-10-21 随改名换成现在这个）。本仓库用自己的名字发布，和上游官方包分别安装 |
+| 包名 | Android 的 `applicationId` 改成 `com.threely.trinity`（2026-10-18 起先用 `com.threely.clash`，2026-10-21 随改名换成现在这个）。本仓库用自己的名字发布，和上游官方包分别安装 |
 | 服务图标 | 仪表盘「服务状态」的 13 个服务图标由单色改为品牌色，图标底板固定浅色 |
 | 仪表盘 | 「状态」卡片里的出口国家由两个大写字母改成国旗；国旗底下原来的四叶草去掉、只留国旗，检查出口时由旋转改为渐隐 |
 | 用量进度 | 仪表盘「配置」卡片的用量进度由上游的 M3 波浪线改成直线（改 `lib/views/dashboard/widgets/profiles.dart`） |
@@ -57,7 +57,7 @@ Android 一般下 `-arm64-v8a.apk`（绝大多数手机）或 `-armeabi-v7a.apk`
 
 ### 签名变了、包名也换了，第一次要卸载
 
-本仓库的签名与上游官方版、以及 2026-10-21 之前本仓库发的包都不同，装不上；包名也和之前发过的包不同（`com.follow.clash` → `com.threely.clash` → `com.threely.sanye`），不会覆盖安装，而是并排装成几个 App。**先卸载旧版（配置先在 App 里备份出来），再安装**。之后本仓库自己的版本之间（同一个 `com.threely.sanye`）可以直接覆盖升级。
+本仓库的签名与上游官方版、以及 2026-10-21 之前本仓库发的包都不同，装不上；包名也和之前发过的包不同（`com.follow.clash` → `com.threely.clash` → `com.threely.trinity`），不会覆盖安装，而是并排装成几个 App。**先卸载旧版（配置先在 App 里备份出来），再安装**。之后本仓库自己的版本之间（同一个 `com.threely.trinity`）可以直接覆盖升级。
 
 证书 SHA-256：
 

@@ -135,7 +135,7 @@ void main() {
     // populates.
     globalState.packageInfo = PackageInfo(
       appName: 'FlClash',
-      packageName: 'com.threely.sanye',
+      packageName: 'com.threely.trinity',
       version: '0.0.0',
       buildNumber: '1',
     );

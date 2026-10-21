@@ -9,13 +9,13 @@ import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/models/models.dart';
 import 'package:material_ui/material_ui.dart';
 
-const appName = 'Sanye';
+const appName = 'Trinity';
 const appHelperService = 'FlClashHelperService';
 const coreManifestName = 'manifest.json';
 const browserUa =
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 // Names the Android method channels (match Components.PACKAGE_NAME on the
-// Kotlin side); it is not our applicationId, which is com.threely.sanye.
+// Kotlin side); it is not our applicationId, which is com.threely.trinity.
 const packageName = 'com.follow.clash';
 final unixSocketPath = '/tmp/FlClashSocket_${Random().nextInt(10000)}.sock';
 final windowsPipeName = '\\\\.\\pipe\\FlClashCore_${_randomPipeId()}';
