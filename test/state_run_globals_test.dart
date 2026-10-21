@@ -9,7 +9,7 @@ import 'package:riverpod/riverpod.dart';
 
 final _packageInfo = PackageInfo(
   appName: 'FlClash',
-  packageName: 'com.threely.clash',
+  packageName: 'com.threely.sanye',
   version: '1.2.3',
   buildNumber: '1',
 );
