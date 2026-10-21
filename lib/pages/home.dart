@@ -50,17 +50,70 @@ class HomePage extends ConsumerWidget {
   }
 }
 
-class _HomeShell extends ConsumerWidget {
+class _HomeShell extends ConsumerStatefulWidget {
   const _HomeShell({required this.child});
 
   final Widget child;
 
-  void _handleToPage(PageLabel pageLabel, WidgetRef ref) {
+  @override
+  ConsumerState<_HomeShell> createState() => _HomeShellState();
+}
+
+/// How far the list has to travel under the finger before the labels leave.
+const double _scrollTravelToCollapse = 12;
+
+class _HomeShellState extends ConsumerState<_HomeShell> {
+  final _dockCollapsed = ValueNotifier(false);
+  ScrollDirection _scrollDirection = ScrollDirection.idle;
+  double _scrollTravel = 0;
+
+  /// The labels follow the finger, never a list that restores its position
+  /// on its own, nor a page that is not the active one.
+  bool _handleScroll(ScrollNotification notification) {
+    if (notification.metrics.axis != Axis.vertical ||
+        notification.context
+                ?.getInheritedWidgetOfExactType<PageActivityScope>()
+                ?.isActive ==
+            false) {
+      return false;
+    }
+    if (notification is UserScrollNotification) {
+      _scrollDirection = notification.direction;
+      _scrollTravel = 0;
+    }
+    if (notification is ScrollUpdateNotification) {
+      if (notification.metrics.extentBefore <= 0) {
+        _dockCollapsed.value = false;
+        _scrollTravel = 0;
+      } else if (notification.dragDetails != null &&
+          _scrollDirection != ScrollDirection.idle) {
+        _scrollTravel += (notification.scrollDelta ?? 0).abs();
+        if (_scrollTravel >= _scrollTravelToCollapse) {
+          _dockCollapsed.value = _scrollDirection == ScrollDirection.reverse;
+        }
+      }
+    }
+    return false;
+  }
+
+  @override
+  void dispose() {
+    _dockCollapsed.dispose();
+    super.dispose();
+  }
+
+  void _handleToPage(PageLabel pageLabel) {
     ref.read(currentPageLabelProvider.notifier).toPage(pageLabel);
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
+    ref.listen(currentPageLabelProvider, (previous, next) {
+      if (previous == next) return;
+      _dockCollapsed.value = false;
+      _scrollDirection = ScrollDirection.idle;
+      _scrollTravel = 0;
+    });
     final state = ref.watch(navigationStateProvider);
     final isMobile = state.viewMode == ViewMode.mobile;
     final navigationItems = state.navigationItems;
@@ -73,8 +126,7 @@ class _HomeShell extends ConsumerWidget {
     final hideLabelOnScroll = ref.watch(
       themeSettingProvider.select((state) => state.dockHideLabelOnScroll),
     );
-    final scrolling = ref.watch(dockScrollProvider);
-    final showLabel = !(hideLabelOnScroll && scrolling.compact);
+    final dockCollapses = isMobile && floating && hideLabelOnScroll;
     return Material(
       color: SurfaceLevel.page.colorOf(context.colorScheme),
       child: Column(
@@ -92,22 +144,8 @@ class _HomeShell extends ConsumerWidget {
                       child: _BodyPadding(
                         isMobile: isMobile,
                         child: NotificationListener<ScrollNotification>(
-                          onNotification: (notification) {
-                            final notifier = ref.read(dockScrollProvider.notifier);
-                            // Only a finger counts: a list that restores its
-                            // position on its own would take the labels away
-                            // while the reader switches pages.
-                            if (notification is UserScrollNotification) {
-                              if (notification.direction != ScrollDirection.idle) {
-                                notifier.start();
-                                notifier.update(notification.direction);
-                              }
-                            } else if (notification is ScrollEndNotification) {
-                              notifier.end();
-                            }
-                            return false;
-                          },
-                          child: child,
+                          onNotification: dockCollapses ? _handleScroll : null,
+                          child: widget.child,
                         ),
                       ),
                     ),
@@ -120,20 +158,23 @@ class _HomeShell extends ConsumerWidget {
                   child: AnimatedVisibility.bottomNavigation(
                     visible: isMobile && floating,
                     child: _NavigationPadding(
-                      child: NavigationDock(
-                        destinations: [
-                          for (final item in navigationItems)
-                            NavigationDockDestination(
-                              glyph: item.glyph,
-                              label: item.label.label,
-                            ),
-                        ],
-                        selectedIndex: state.currentIndex,
-                        onSelected: (index) {
-                          _handleToPage(navigationItems[index].label, ref);
-                        },
-                        scale: dockScale,
-                        showLabel: showLabel,
+                      child: ValueListenableBuilder<bool>(
+                        valueListenable: _dockCollapsed,
+                        builder: (context, collapsed, _) => NavigationDock(
+                          destinations: [
+                            for (final item in navigationItems)
+                              NavigationDockDestination(
+                                glyph: item.glyph,
+                                label: item.label.label,
+                              ),
+                          ],
+                          selectedIndex: state.currentIndex,
+                          onSelected: (index) {
+                            _handleToPage(navigationItems[index].label);
+                          },
+                          scale: dockScale,
+                          showLabel: !(dockCollapses && collapsed),
+                        ),
                       ),
                     ),
                   ),
@@ -157,7 +198,7 @@ class _HomeShell extends ConsumerWidget {
                 ],
                 selectedIndex: state.currentIndex,
                 onDestinationSelected: (index) {
-                  _handleToPage(navigationItems[index].label, ref);
+                  _handleToPage(navigationItems[index].label);
                 },
               ),
             ),

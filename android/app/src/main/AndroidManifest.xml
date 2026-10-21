@@ -26,7 +26,6 @@
     <uses-permission android:name="com.android.permission.GET_INSTALLED_APPS" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
-    <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <uses-permission android:name="android.permission.ACCESS_LOCAL_NETWORK" />
     <!-- The system download manager writes the update into the Downloads
          folder, which needs this on the versions before scoped storage. -->
@@ -35,7 +34,7 @@
         android:maxSdkVersion="28" />
 
     <application
-        android:name=".FlClashApplication"
+        android:name=".SkywardApplication"
         android:banner="@mipmap/ic_banner"
         android:hardwareAccelerated="true"
         android:icon="@mipmap/ic_launcher"
