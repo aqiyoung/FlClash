@@ -370,6 +370,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "checkUpdate": MessageLookupByLibrary.simpleMessage("更新を確認"),
     "checkUpdateError": MessageLookupByLibrary.simpleMessage("すでに最新バージョンです"),
     "cipher": MessageLookupByLibrary.simpleMessage("暗号方式"),
+    "clearCache": MessageLookupByLibrary.simpleMessage("キャッシュを削除"),
     "clearData": MessageLookupByLibrary.simpleMessage("データを消去"),
     "clearDataAndExitTip": MessageLookupByLibrary.simpleMessage(
       "すべてのプロファイル、設定、ローカルデータを削除してアプリを終了します。もう一度開くと最初から始められます。",
@@ -479,6 +480,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "dark": MessageLookupByLibrary.simpleMessage("ダーク"),
     "dashboard": MessageLookupByLibrary.simpleMessage("ダッシュボード"),
     "dashboardAddableSection": MessageLookupByLibrary.simpleMessage("追加できるカード"),
+    "database": MessageLookupByLibrary.simpleMessage("データベース"),
     "databaseWriteFailedTip": MessageLookupByLibrary.simpleMessage(
       "変更の保存に失敗したため、元に戻しました",
     ),
@@ -510,6 +512,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "developerModeEnableTip": MessageLookupByLibrary.simpleMessage(
       "開発者モードが有効になりました。",
     ),
+    "diagnostics": MessageLookupByLibrary.simpleMessage("診断"),
     "dialerProxy": MessageLookupByLibrary.simpleMessage("ダイヤラープロキシ"),
     "dialerProxyDesc": MessageLookupByLibrary.simpleMessage(
       "ダイヤラープロキシは NTP サーバーへの接続に使用するアウトバウンドです。",
@@ -1527,6 +1530,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "stop": MessageLookupByLibrary.simpleMessage("停止"),
     "stopVpn": MessageLookupByLibrary.simpleMessage("VPNを停止しています…"),
+    "storage": MessageLookupByLibrary.simpleMessage("ストレージ"),
     "strategy": MessageLookupByLibrary.simpleMessage("戦略"),
     "strictRoute": MessageLookupByLibrary.simpleMessage("厳格なルーティング"),
     "strictRouteDesc": MessageLookupByLibrary.simpleMessage(
@@ -1548,6 +1552,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "tapToAuthorize": MessageLookupByLibrary.simpleMessage("タップして許可"),
     "target": MessageLookupByLibrary.simpleMessage("宛先"),
     "tcpConcurrent": MessageLookupByLibrary.simpleMessage("TCP同時接続"),
+    "temporary": MessageLookupByLibrary.simpleMessage("一時ファイル"),
     "testInterval": MessageLookupByLibrary.simpleMessage("テスト間隔"),
     "testUrl": MessageLookupByLibrary.simpleMessage("テストURL"),
     "testWhenUsed": MessageLookupByLibrary.simpleMessage("使用時にテスト"),
@@ -1588,6 +1593,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "turnOff": MessageLookupByLibrary.simpleMessage("オフにする"),
     "turnOn": MessageLookupByLibrary.simpleMessage("オンにする"),
+    "type": MessageLookupByLibrary.simpleMessage("タイプ"),
     "udpRelayMode": MessageLookupByLibrary.simpleMessage("UDP リレーモード"),
     "udpTimeout": MessageLookupByLibrary.simpleMessage("UDP タイムアウト"),
     "udpTimeoutDesc": MessageLookupByLibrary.simpleMessage(

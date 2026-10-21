@@ -962,5 +962,11 @@
   "preferred": "優先",
   "addToLocalProxies": "ローカルプロキシに追加",
   "addedToLocalProxies": "{name} をローカルプロキシに追加しました",
-  "alreadyInLocalProxies": "{name} はすでにローカルプロキシにあります"
+  "alreadyInLocalProxies": "{name} はすでにローカルプロキシにあります",
+  "storage": "ストレージ",
+  "database": "データベース",
+  "temporary": "一時ファイル",
+  "diagnostics": "診断",
+  "clearCache": "キャッシュを削除",
+  "type": "タイプ"
 }

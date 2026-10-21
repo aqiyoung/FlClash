@@ -962,5 +962,11 @@
   "preferred": "Preferred",
   "addToLocalProxies": "Add to local proxies",
   "addedToLocalProxies": "Added {name} to local proxies",
-  "alreadyInLocalProxies": "{name} is already in local proxies"
+  "alreadyInLocalProxies": "{name} is already in local proxies",
+  "storage": "Storage",
+  "database": "Database",
+  "temporary": "Temporary files",
+  "diagnostics": "Diagnostics",
+  "clearCache": "Clear cache",
+  "type": "Type"
 }

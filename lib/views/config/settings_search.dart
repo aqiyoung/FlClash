@@ -1,4 +1,5 @@
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/ui/icons/icons.dart';
 import 'package:fl_clash/views/config/settings_index.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
@@ -42,7 +43,10 @@ class _SettingsSearchViewState extends State<SettingsSearchView> {
           ),
           Expanded(
             child: entries.isEmpty
-                ? Center(child: Text(appLocalizations.none))
+                ? EmptyState(
+                    glyph: AppGlyphs.search,
+                    title: appLocalizations.none,
+                  )
                 : ListView(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,

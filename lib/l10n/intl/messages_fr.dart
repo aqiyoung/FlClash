@@ -473,6 +473,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "L’app est déjà à jour",
     ),
     "cipher": MessageLookupByLibrary.simpleMessage("Chiffrement"),
+    "clearCache": MessageLookupByLibrary.simpleMessage("Vider le cache"),
     "clearData": MessageLookupByLibrary.simpleMessage("Effacer les données"),
     "clearDataAndExitTip": MessageLookupByLibrary.simpleMessage(
       "Cela supprime tous les profils, réglages et données locales, puis ferme l’app. Rouvrez-la pour repartir de zéro.",
@@ -604,6 +605,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "dashboardAddableSection": MessageLookupByLibrary.simpleMessage(
       "Disponibles à l’ajout",
     ),
+    "database": MessageLookupByLibrary.simpleMessage("Base de données"),
     "databaseWriteFailedTip": MessageLookupByLibrary.simpleMessage(
       "Échec de l’enregistrement de la modification ; elle a été annulée",
     ),
@@ -643,6 +645,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "developerModeEnableTip": MessageLookupByLibrary.simpleMessage(
       "Le mode développeur est activé.",
     ),
+    "diagnostics": MessageLookupByLibrary.simpleMessage("Diagnostics"),
     "dialerProxy": MessageLookupByLibrary.simpleMessage("Proxy de connexion"),
     "dialerProxyDesc": MessageLookupByLibrary.simpleMessage(
       "Le proxy de connexion est la sortie utilisée pour joindre le serveur NTP.",
@@ -1017,9 +1020,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "inputRuleContent": MessageLookupByLibrary.simpleMessage(
       "Saisissez le contenu de la règle",
     ),
-    "installedAppsPermissionDeniedMessage": MessageLookupByLibrary.simpleMessage(
-      "L’autorisation de la liste des apps a été refusée ; les apps installées ne peuvent donc pas être listées. Veuillez l’accorder manuellement dans les réglages du système.",
-    ),
+    "installedAppsPermissionDeniedMessage":
+        MessageLookupByLibrary.simpleMessage(
+          "L’autorisation de la liste des apps a été refusée ; les apps installées ne peuvent donc pas être listées. Veuillez l’accorder manuellement dans les réglages du système.",
+        ),
     "installedAppsPermissionDesc": MessageLookupByLibrary.simpleMessage(
       "Ce système masque la liste des apps installées tant que l’autorisation n’est pas accordée. Accordez-la pour configurer le proxy par app.",
     ),
@@ -1919,6 +1923,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "stop": MessageLookupByLibrary.simpleMessage("Arrêter"),
     "stopVpn": MessageLookupByLibrary.simpleMessage("Arrêt du VPN…"),
+    "storage": MessageLookupByLibrary.simpleMessage("Stockage"),
     "strategy": MessageLookupByLibrary.simpleMessage("Stratégie"),
     "strictRoute": MessageLookupByLibrary.simpleMessage("Route stricte"),
     "strictRouteDesc": MessageLookupByLibrary.simpleMessage(
@@ -1950,6 +1955,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "target": MessageLookupByLibrary.simpleMessage("Cible"),
     "tcpConcurrent": MessageLookupByLibrary.simpleMessage("TCP simultané"),
+    "temporary": MessageLookupByLibrary.simpleMessage("Fichiers temporaires"),
     "testInterval": MessageLookupByLibrary.simpleMessage("Intervalle de test"),
     "testUrl": MessageLookupByLibrary.simpleMessage("URL de test"),
     "testWhenUsed": MessageLookupByLibrary.simpleMessage(
@@ -1994,6 +2000,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "turnOff": MessageLookupByLibrary.simpleMessage("Désactiver"),
     "turnOn": MessageLookupByLibrary.simpleMessage("Activer"),
+    "type": MessageLookupByLibrary.simpleMessage("Type"),
     "udpRelayMode": MessageLookupByLibrary.simpleMessage("Mode de relais UDP"),
     "udpTimeout": MessageLookupByLibrary.simpleMessage("Délai UDP"),
     "udpTimeoutDesc": MessageLookupByLibrary.simpleMessage(

@@ -361,6 +361,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "checkUpdate": MessageLookupByLibrary.simpleMessage("업데이트 확인"),
     "checkUpdateError": MessageLookupByLibrary.simpleMessage("이미 최신 버전입니다"),
     "cipher": MessageLookupByLibrary.simpleMessage("암호화 방식"),
+    "clearCache": MessageLookupByLibrary.simpleMessage("캐시 지우기"),
     "clearData": MessageLookupByLibrary.simpleMessage("데이터 지우기"),
     "clearDataAndExitTip": MessageLookupByLibrary.simpleMessage(
       "모든 프로필, 설정, 로컬 데이터를 삭제한 후 앱을 종료합니다. 앱을 다시 열면 처음부터 시작합니다.",
@@ -466,6 +467,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "dark": MessageLookupByLibrary.simpleMessage("다크"),
     "dashboard": MessageLookupByLibrary.simpleMessage("대시보드"),
     "dashboardAddableSection": MessageLookupByLibrary.simpleMessage("추가 가능"),
+    "database": MessageLookupByLibrary.simpleMessage("데이터베이스"),
     "databaseWriteFailedTip": MessageLookupByLibrary.simpleMessage(
       "변경 사항을 저장하지 못해 되돌렸습니다",
     ),
@@ -497,6 +499,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "developerModeEnableTip": MessageLookupByLibrary.simpleMessage(
       "개발자 모드가 켜졌습니다.",
     ),
+    "diagnostics": MessageLookupByLibrary.simpleMessage("진단"),
     "dialerProxy": MessageLookupByLibrary.simpleMessage("다이얼러 프록시"),
     "dialerProxyDesc": MessageLookupByLibrary.simpleMessage(
       "다이얼러 프록시는 NTP 서버에 연결할 때 사용하는 아웃바운드입니다.",
@@ -1498,6 +1501,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "stop": MessageLookupByLibrary.simpleMessage("중지"),
     "stopVpn": MessageLookupByLibrary.simpleMessage("VPN 중지 중…"),
+    "storage": MessageLookupByLibrary.simpleMessage("저장 공간"),
     "strategy": MessageLookupByLibrary.simpleMessage("전략"),
     "strictRoute": MessageLookupByLibrary.simpleMessage("엄격한 라우팅"),
     "strictRouteDesc": MessageLookupByLibrary.simpleMessage(
@@ -1521,6 +1525,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "tapToAuthorize": MessageLookupByLibrary.simpleMessage("눌러서 허용"),
     "target": MessageLookupByLibrary.simpleMessage("대상"),
     "tcpConcurrent": MessageLookupByLibrary.simpleMessage("TCP 동시 연결"),
+    "temporary": MessageLookupByLibrary.simpleMessage("임시 파일"),
     "testInterval": MessageLookupByLibrary.simpleMessage("테스트 간격"),
     "testUrl": MessageLookupByLibrary.simpleMessage("테스트 URL"),
     "testWhenUsed": MessageLookupByLibrary.simpleMessage("사용할 때 테스트"),
@@ -1561,6 +1566,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "turnOff": MessageLookupByLibrary.simpleMessage("끄기"),
     "turnOn": MessageLookupByLibrary.simpleMessage("켜기"),
+    "type": MessageLookupByLibrary.simpleMessage("유형"),
     "udpRelayMode": MessageLookupByLibrary.simpleMessage("UDP 릴레이 모드"),
     "udpTimeout": MessageLookupByLibrary.simpleMessage("UDP 시간 제한"),
     "udpTimeoutDesc": MessageLookupByLibrary.simpleMessage(
