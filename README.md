@@ -10,12 +10,12 @@ A multi-platform proxy client based on ClashMeta. Simple to use, open source and
 
 **English** · [简体中文](README_zh_CN.md)
 
-[![Release](https://img.shields.io/github/v/release/aqiyoung/FlClash?style=flat-square&label=release)](https://github.com/aqiyoung/FlClash/releases/latest)
-[![Downloads](https://img.shields.io/github/downloads/aqiyoung/FlClash/total?style=flat-square&logo=github)](https://github.com/aqiyoung/FlClash/releases)
-[![License](https://img.shields.io/github/license/aqiyoung/FlClash?style=flat-square)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/aqiyoung/Skyward?style=flat-square&label=release)](https://github.com/aqiyoung/Skyward/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/aqiyoung/Skyward/total?style=flat-square&logo=github)](https://github.com/aqiyoung/Skyward/releases)
+[![License](https://img.shields.io/github/license/aqiyoung/Skyward?style=flat-square)](LICENSE)
 [![Telegram](https://img.shields.io/badge/Telegram-channel-26A5E4?style=flat-square&logo=telegram&logoColor=white)](https://t.me/sanyeinfo)
 
-[Releases](https://github.com/aqiyoung/FlClash/releases/latest) · [Download](#download) · [Changelog](CHANGELOG.md) · [Build from source](#build-from-source)
+[Releases](https://github.com/aqiyoung/Skyward/releases/latest) · [Download](#download) · [Changelog](CHANGELOG.md) · [Build from source](#build-from-source)
 
 </div>
 
@@ -42,7 +42,7 @@ A multi-platform proxy client based on ClashMeta. Simple to use, open source and
 
 ## Download
 
-Get the latest build from [this repository's Releases](https://github.com/aqiyoung/FlClash/releases/latest).
+Get the latest build from [this repository's Releases](https://github.com/aqiyoung/Skyward/releases/latest).
 
 | Platform | Packages | Notes |
 | --- | --- | --- |
@@ -52,12 +52,12 @@ Get the latest build from [this repository's Releases](https://github.com/aqiyou
 | Linux | `.deb`, `.rpm` and AppImage, for x64 and ARM64 | See the tray note below. |
 
 <p>
-  <a href="https://github.com/aqiyoung/FlClash/releases/latest"><img alt="Get it on GitHub" src="snapshots/get-it-on-github.svg" height="56"></a>
+  <a href="https://github.com/aqiyoung/Skyward/releases/latest"><img alt="Get it on GitHub" src="snapshots/get-it-on-github.svg" height="56"></a>
 </p>
 
 These builds are compiled from this repository and signed with its own certificate. Builds from the upstream
 project (its website, F-Droid repository or Homebrew tap) carry a different signature, so switching between the
-two means uninstalling once — see [FORK.md](https://github.com/aqiyoung/FlClash/blob/main/FORK.md).
+two means uninstalling once — see [FORK.md](https://github.com/aqiyoung/Skyward/blob/main/FORK.md).
 
 **Linux tray icon**
 
@@ -105,7 +105,7 @@ You need [Flutter](https://docs.flutter.dev/get-started/install) 3.47 (release b
 host, except Android, which builds anywhere.
 
 ```bash
-git clone --recursive https://github.com/aqiyoung/FlClash.git
+git clone --recursive https://github.com/aqiyoung/Skyward.git
 cd FlClash
 flutter pub get
 dart setup.dart android   # or windows, macos, linux
@@ -126,12 +126,12 @@ Run `dart setup.dart --help` for the remaining options, such as `--targets` to b
 
 Starring the repository is the easiest way to support the project. Questions and announcements go to the
 [Telegram channel](https://t.me/sanyeinfo); bugs and feature requests go to
-[GitHub Issues](https://github.com/aqiyoung/FlClash/issues).
+[GitHub Issues](https://github.com/aqiyoung/Skyward/issues).
 
-<a href="https://star-history.com/#aqiyoung/FlClash&Date">
+<a href="https://star-history.com/#aqiyoung/Skyward&Date">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=aqiyoung/FlClash&type=Date&theme=dark">
-    <img alt="Star history" src="https://api.star-history.com/svg?repos=aqiyoung/FlClash&type=Date" width="640">
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=aqiyoung/Skyward&type=Date&theme=dark">
+    <img alt="Star history" src="https://api.star-history.com/svg?repos=aqiyoung/Skyward&type=Date" width="640">
   </picture>
 </a>
 

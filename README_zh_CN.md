@@ -10,12 +10,12 @@
 
 [English](README.md) · **简体中文**
 
-[![Release](https://img.shields.io/github/v/release/aqiyoung/FlClash?style=flat-square&label=release)](https://github.com/aqiyoung/FlClash/releases/latest)
-[![Downloads](https://img.shields.io/github/downloads/aqiyoung/FlClash/total?style=flat-square&logo=github)](https://github.com/aqiyoung/FlClash/releases)
-[![License](https://img.shields.io/github/license/aqiyoung/FlClash?style=flat-square)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/aqiyoung/Skyward?style=flat-square&label=release)](https://github.com/aqiyoung/Skyward/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/aqiyoung/Skyward/total?style=flat-square&logo=github)](https://github.com/aqiyoung/Skyward/releases)
+[![License](https://img.shields.io/github/license/aqiyoung/Skyward?style=flat-square)](LICENSE)
 [![Telegram](https://img.shields.io/badge/Telegram-channel-26A5E4?style=flat-square&logo=telegram&logoColor=white)](https://t.me/sanyeinfo)
 
-[发布页](https://github.com/aqiyoung/FlClash/releases/latest) · [下载](#下载) · [更新日志](CHANGELOG.md) · [从源码构建](#从源码构建)
+[发布页](https://github.com/aqiyoung/Skyward/releases/latest) · [下载](#下载) · [更新日志](CHANGELOG.md) · [从源码构建](#从源码构建)
 
 </div>
 
@@ -39,7 +39,7 @@
 
 ## 下载
 
-从[本仓库的发布页](https://github.com/aqiyoung/FlClash/releases/latest)获取最新版本。
+从[本仓库的发布页](https://github.com/aqiyoung/Skyward/releases/latest)获取最新版本。
 
 这些安装包只是客户端本体：不含任何代理服务器、订阅链接、账号或流量，也没有任何收费项目。
 
@@ -51,11 +51,11 @@
 | Linux | `.deb`、`.rpm` 和 AppImage，分 x64 与 ARM64 | 托盘依赖见下方说明。 |
 
 <p>
-  <a href="https://github.com/aqiyoung/FlClash/releases/latest"><img alt="Get it on GitHub" src="snapshots/get-it-on-github.svg" height="56"></a>
+  <a href="https://github.com/aqiyoung/Skyward/releases/latest"><img alt="Get it on GitHub" src="snapshots/get-it-on-github.svg" height="56"></a>
 </p>
 
 这些包由本仓库编译，用的是本仓库自己的签名证书。上游项目（官网、F-Droid 仓库、Homebrew tap）的包是另一套签名，
-两边混装需要先卸载一次 —— 详见 [FORK.md](https://github.com/aqiyoung/FlClash/blob/main/FORK.md)。
+两边混装需要先卸载一次 —— 详见 [FORK.md](https://github.com/aqiyoung/Skyward/blob/main/FORK.md)。
 
 **Linux 托盘图标**
 
@@ -99,7 +99,7 @@ adb shell am start -a com.threely.skyward.action.TOGGLE
 以及通过 rustup 安装的 [Rust](https://rustup.rs/)。桌面端需要在对应系统上构建，Android 在任意系统上都能构建。
 
 ```bash
-git clone --recursive https://github.com/aqiyoung/FlClash.git
+git clone --recursive https://github.com/aqiyoung/Skyward.git
 cd FlClash
 flutter pub get
 dart setup.dart android   # 或 windows、macos、linux
@@ -119,12 +119,12 @@ dart setup.dart android   # 或 windows、macos、linux
 ## 支持
 
 给仓库点一个 Star 是支持项目最简单的方式。问题讨论和更新通知请关注 [Telegram 频道](https://t.me/sanyeinfo)，
-Bug 与功能建议请提交到 [GitHub Issues](https://github.com/aqiyoung/FlClash/issues)。
+Bug 与功能建议请提交到 [GitHub Issues](https://github.com/aqiyoung/Skyward/issues)。
 
-<a href="https://star-history.com/#aqiyoung/FlClash&Date">
+<a href="https://star-history.com/#aqiyoung/Skyward&Date">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=aqiyoung/FlClash&type=Date&theme=dark">
-    <img alt="Star history" src="https://api.star-history.com/svg?repos=aqiyoung/FlClash&type=Date" width="640">
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=aqiyoung/Skyward&type=Date&theme=dark">
+    <img alt="Star history" src="https://api.star-history.com/svg?repos=aqiyoung/Skyward&type=Date" width="640">
   </picture>
 </a>
 
