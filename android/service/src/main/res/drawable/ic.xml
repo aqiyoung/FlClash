@@ -6,11 +6,12 @@
         android:viewportHeight="240"
         tools:ignore="VectorRaster">
   <path
-      android:pathData="M92,368 C152,368 190,310 218,238 C244,172 272,126 316,112"
+      android:pathData="M330,150 C316,106 244,96 198,126 C150,156 168,214 232,238 C296,262 330,302 300,344 C270,386 194,384 158,340"
       android:strokeColor="#FFFFFF"
-      android:strokeWidth="25.760"
-      android:strokeLineCap="round" />
-  <path
-      android:pathData="M183.480,35.820 a22.080,22.080 0 1,0 0,44.160 a22.080,22.080 0 1,0 0,-44.160 z"
-      android:fillColor="#FFFFFF" />
+      android:strokeWidth="54.600"
+      android:strokeLineCap="round"
+      android:scaleX="0.70000"
+      android:scaleY="0.70000"
+      android:translateX="69.200"
+      android:translateY="73.400" />
 </vector>
