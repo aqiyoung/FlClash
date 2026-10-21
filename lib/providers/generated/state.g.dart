@@ -319,60 +319,71 @@ final class OverlayTopOffsetProvider
 
 String _$overlayTopOffsetHash() => r'44c3b3c9f8f3af5e10ba91e0f2514f52f3c6ddac';
 
-/// Whether the page under the dock is scrolling right now. The dock reads it
-/// to drop its labels while the reader moves.
+/// What the page under the dock is doing right now. The dock reads it to
+/// shrink to its icons while the reader moves the list up.
 
-@ProviderFor(Scrolling)
-final scrollingProvider = ScrollingProvider._();
+@ProviderFor(DockScroll)
+final dockScrollProvider = DockScrollProvider._();
 
-/// Whether the page under the dock is scrolling right now. The dock reads it
-/// to drop its labels while the reader moves.
-final class ScrollingProvider extends $NotifierProvider<Scrolling, bool> {
-  /// Whether the page under the dock is scrolling right now. The dock reads it
-  /// to drop its labels while the reader moves.
-  ScrollingProvider._()
+/// What the page under the dock is doing right now. The dock reads it to
+/// shrink to its icons while the reader moves the list up.
+final class DockScrollProvider
+    extends $NotifierProvider<DockScroll, ({bool compact, bool dragging})> {
+  /// What the page under the dock is doing right now. The dock reads it to
+  /// shrink to its icons while the reader moves the list up.
+  DockScrollProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'scrollingProvider',
+        name: r'dockScrollProvider',
         isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$scrollingHash();
+  String debugGetCreateSourceHash() => _$dockScrollHash();
 
   @$internal
   @override
-  Scrolling create() => Scrolling();
+  DockScroll create() => DockScroll();
 
   /// {@macro riverpod.override_with_value}
-  Override overrideWithValue(bool value) {
+  Override overrideWithValue(({bool compact, bool dragging}) value) {
     return $ProviderOverride(
       origin: this,
-      providerOverride: $SyncValueProvider<bool>(value),
+      providerOverride: $SyncValueProvider<({bool compact, bool dragging})>(
+        value,
+      ),
     );
   }
 }
 
-String _$scrollingHash() => r'002f91418597548c75ba02f95c5bc8d4d3793461';
+String _$dockScrollHash() => r'b0e62298a0c089fa4e78b9cb59a9d51aaf0e6426';
 
-/// Whether the page under the dock is scrolling right now. The dock reads it
-/// to drop its labels while the reader moves.
+/// What the page under the dock is doing right now. The dock reads it to
+/// shrink to its icons while the reader moves the list up.
 
-abstract class _$Scrolling extends $Notifier<bool> {
-  bool build();
+abstract class _$DockScroll extends $Notifier<({bool compact, bool dragging})> {
+  ({bool compact, bool dragging}) build();
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
-    final ref = this.ref as $Ref<bool, bool>;
+    final ref =
+        this.ref
+            as $Ref<
+              ({bool compact, bool dragging}),
+              ({bool compact, bool dragging})
+            >;
     final element =
         ref.element
             as $ClassProviderElement<
-              AnyNotifier<bool, bool>,
-              bool,
+              AnyNotifier<
+                ({bool compact, bool dragging}),
+                ({bool compact, bool dragging})
+              >,
+              ({bool compact, bool dragging}),
               Object?,
               Object?
             >;
