@@ -373,7 +373,7 @@ _ThemeProps _$ThemePropsFromJson(Map<String, dynamic> json) => _ThemeProps(
       ) ??
       LiquidGlassMode.none,
   dockScale: (json['dockScale'] as num?)?.toDouble() ?? 1.0,
-  dockHideLabelOnScroll: json['dockHideLabelOnScroll'] as bool? ?? false,
+  dockHideLabelOnScroll: json['dockHideLabelOnScroll'] as bool? ?? true,
   textScale: json['textScale'] == null
       ? const TextScale()
       : TextScale.fromJson(json['textScale'] as Map<String, dynamic>),
