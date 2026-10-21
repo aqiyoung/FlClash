@@ -859,7 +859,6 @@ class _FloatingNavigationBarState extends State<FloatingNavigationBar>
   late final Listenable _motion = Listenable.merge([_lens, _lift, _jelly]);
   late final Listenable _hoverMotion = Listenable.merge([_hover, _hoverShow]);
   final List<_Spring> _parallax = [];
-  bool _lifted = false;
   int? _pointer;
   int? _pressedIndex;
   double _pressX = 0;
@@ -886,9 +885,7 @@ class _FloatingNavigationBarState extends State<FloatingNavigationBar>
     _lens
       ..addListener(_wobble)
       ..addListener(_dropLift);
-    _lift
-      ..addListener(_dropLift)
-      ..addListener(_noteLift);
+    _lift.addListener(_dropLift);
     _glow.addListener(_shine);
     _glowSpread.addListener(_shine);
     _hoverAt.addListener(_leanContent);
@@ -968,13 +965,6 @@ class _FloatingNavigationBarState extends State<FloatingNavigationBar>
       if (target != parallax.target) {
         parallax.springTo(target, _hoverSpring);
       }
-    }
-  }
-
-  void _noteLift() {
-    final lifted = _lift.value > 0;
-    if (lifted != _lifted) {
-      setState(() => _lifted = lifted);
     }
   }
 
@@ -1304,8 +1294,7 @@ class _FloatingNavigationBarState extends State<FloatingNavigationBar>
                         ],
                       ),
                     );
-                    final lensed =
-                        glass && _lifted && widget.destinations.isNotEmpty;
+                    final lensed = glass && widget.destinations.isNotEmpty;
                     return Stack(
                       clipBehavior: Clip.none,
                       children: [
