@@ -350,7 +350,9 @@ class NavigationDock extends StatelessWidget {
 
   static double heightOf(BuildContext context, [double scale = 1]) {
     final labelSize = _labelSize * scale;
-    return (_barHeight + MediaQuery.textScalerOf(context).scale(labelSize) - labelSize) *
+    return (_barHeight +
+            MediaQuery.textScalerOf(context).scale(labelSize) -
+            labelSize) *
         scale;
   }
 
@@ -1281,7 +1283,8 @@ class _FloatingNavigationBarState extends State<FloatingNavigationBar>
                                 parallax: _parallax[index],
                                 lift: _lift,
                                 labelStyle: labelStyle.copyWith(
-                                  fontSize: _labelSize * labelScale * widget.scale,
+                                  fontSize:
+                                      _labelSize * labelScale * widget.scale,
                                 ),
                                 labelHeight: lineHeight,
                                 labelOverflows:
@@ -2038,9 +2041,9 @@ class _RenderLensTint extends RenderProxyBox {
       }
       return;
     }
-    final reach = moved(rest).expandToInclude(bounds).inflate(
-      _labelInset * _scale,
-    );
+    final reach = moved(
+      rest,
+    ).expandToInclude(bounds).inflate(_labelInset * _scale);
     final lens = AppShape.full.getOuterPath(lensBounds);
     if (outside) {
       _outside.layer = context.pushClipPath(
