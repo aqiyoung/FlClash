@@ -1,6 +1,5 @@
 package com.follow.clash.plugins
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.BroadcastReceiver
@@ -140,16 +139,10 @@ class BatteryPlugin : FlutterPlugin, MethodChannel.MethodCallHandler, ActivityAw
         }
     }
 
-    @SuppressLint("BatteryLife")
     private fun optimizationPages(): List<Intent> {
-        // VPN continuity is the user-requested core function, so the direct exemption is intentional.
-        val prompt = Intent(
-            Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
-            "package:${context.packageName}".toUri(),
-        )
-        // Some ROMs drop the direct prompt; the allowlist page still lets the user exempt the app.
-        val allowlist = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
-        return listOf(prompt, allowlist)
+        // Without REQUEST_IGNORE_BATTERY_OPTIMIZATIONS there is no direct prompt;
+        // the allowlist page still lets the user exempt the app by hand.
+        return listOf(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
     }
 
     private fun saverPages(): List<Intent> {

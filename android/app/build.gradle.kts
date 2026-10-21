@@ -41,12 +41,13 @@ android {
         minSdk = flutter.minSdkVersion
         targetSdk = libs.versions.targetSdk.get().toInt()
         versionCode = flutter.versionCode
-        // Our releases add a fourth component to the version -- the revision we
-        // iterate on top of upstream's -- which pubspec.yaml cannot carry,
-        // because pub refuses a four-part version. The build passes it in and
-        // only Android can show it: the desktop packages take the pubspec's
-        // three-part version.
-        versionName = System.getenv("APP_VERSION_NAME") ?: flutter.versionName
+        // Our revision over upstream rides in the versionCode and in the
+        // APP_VERSION the app shows; versionName stays three-part, because a
+        // four-part name reads like a test build to package scanners.
+        versionName = (System.getenv("APP_VERSION_NAME") ?: flutter.versionName)
+            .split('.')
+            .take(3)
+            .joinToString(".")
     }
 
     signingConfigs {
