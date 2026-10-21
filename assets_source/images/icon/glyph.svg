@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- The Skyward mark: a path rising from the lower left with an orb at
-     its top. The Android notification drawables ic.xml and ic_service.xml
-     carry the same geometry. -->
+<!-- The Skyward mark: the S of Skyward drawn as one ribbon. The Android
+     notification drawables ic.xml and ic_service.xml carry the same
+     geometry. -->
 <svg width="480" height="480" viewBox="0 0 480 480" xmlns="http://www.w3.org/2000/svg">
   <title>glyph</title>
-<defs><linearGradient id="g" x1="0.1" y1="1" x2="0.9" y2="0"><stop offset="0%" stop-color="#4F46E5"/><stop offset="100%" stop-color="#38BDF8"/></linearGradient></defs>
-  <path d="M92,368 C152,368 190,310 218,238 C244,172 272,126 316,112" fill="none" stroke="url(#g)" stroke-width="56" stroke-linecap="round"/>
-  <circle cx="378" cy="78" r="48" fill="url(#g)"/>
+<defs><linearGradient id="g" x1="0.15" y1="0.95" x2="0.85" y2="0.05"><stop offset="0%" stop-color="#4F46E5"/><stop offset="100%" stop-color="#22D3EE"/></linearGradient></defs>
+  <path d="M330,150 C316,106 244,96 198,126 C150,156 168,214 232,238 C296,262 330,302 300,344 C270,386 194,384 158,340" fill="none" stroke="url(#g)" stroke-width="78" stroke-linecap="round"/>
 </svg>
