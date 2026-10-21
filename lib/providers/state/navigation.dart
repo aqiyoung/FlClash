@@ -123,19 +123,40 @@ double overlayTopOffset(Ref ref) {
   return pageToolbarHeight + (showsHeader ? kHeaderHeight : 0);
 }
 
-/// Whether the page under the dock is scrolling right now. The dock reads it
-/// to drop its labels while the reader moves.
+/// What the page under the dock is doing right now. The dock reads it to
+/// shrink to its icons while the reader moves the list up.
 @Riverpod(keepAlive: true)
-class Scrolling extends _$Scrolling {
+class DockScroll extends _$DockScroll {
   @override
-  bool build() {
-    return false;
+  ({bool dragging, bool compact}) build() {
+    return (dragging: false, compact: false);
   }
 
-  void set(bool value) {
-    if (state == value) {
+  /// A finger went down on the list.
+  void start() {
+    if (state.dragging) {
       return;
     }
-    state = value;
+    state = (dragging: true, compact: state.compact);
+  }
+
+  /// The list moved under the finger: up means the reader goes on, down means
+  /// they come back.
+  void update(ScrollDirection direction) {
+    if (!state.dragging) {
+      return;
+    }
+    final compact = direction == ScrollDirection.forward;
+    if (compact != state.compact) {
+      state = (dragging: true, compact: compact);
+    }
+  }
+
+  /// The finger left the list and the list came to rest.
+  void end() {
+    if (!state.dragging && !state.compact) {
+      return;
+    }
+    state = (dragging: false, compact: false);
   }
 }
