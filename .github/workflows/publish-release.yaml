@@ -88,7 +88,7 @@ jobs:
           fi
 
           {
-            echo "本仓库自编译的三叶（基于上游 FlClash）：\`${BRANCH}\` 分支 = ${origin} + 我们自己的改动。"
+            echo "本仓库自编译的 Trinity（基于上游 FlClash）：\`${BRANCH}\` 分支 = ${origin} + 我们自己的改动。"
             echo
             echo "- 渠道：\`${label}\`"
             echo "- 版本：\`${VERSION}\`（前三段跟上游，第四位是我们自己的迭代号）"
@@ -122,9 +122,9 @@ jobs:
         run: |
           set -euo pipefail
           if [ "$CHANNEL" = stable ]; then
-            title="三叶 ${VERSION}（正式版）"
+            title="Trinity ${VERSION}（正式版）"
           else
-            title="三叶 ${VERSION}（beta）"
+            title="Trinity ${VERSION}（beta）"
           fi
           # A tag is a version that has already been published, so this only
           # happens when a run is retried: replacing the release keeps the
@@ -168,7 +168,7 @@ jobs:
           prefix="https://gh-proxy.com/https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG_URL}/"
 
           {
-            echo "📦 三叶 ${VERSION}（${label}）构建成功"
+            echo "📦 Trinity ${VERSION}（${label}）构建成功"
             echo
             for f in dist/*; do
               name="$(basename "$f")"
