@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- The Trinity mark: three leaves around a centre, one up and two below.
-     The Android notification drawables ic.xml and ic_service.xml carry the
-     same geometry as fill paths. -->
-<svg width="240" height="240" viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+<!-- The Skyward mark: a path rising from the lower left with an orb at
+     its top. The Android notification drawables ic.xml and ic_service.xml
+     carry the same geometry. -->
+<svg width="480" height="480" viewBox="0 0 480 480" xmlns="http://www.w3.org/2000/svg">
   <title>glyph</title>
-  <path d="M120.000,134.520 C87.000,116.700 90.960,92.940 120.000,70.500 C149.040,92.940 153.000,116.700 120.000,134.520 Z" fill="#10B981"/>
-  <path d="M121.715,137.490 C153.647,117.821 172.244,133.131 177.158,169.500 C143.204,183.429 120.647,174.979 121.715,137.490 Z" fill="#059669"/>
-  <path d="M118.285,137.490 C119.353,174.979 96.796,183.429 62.842,169.500 C67.756,133.131 86.353,117.821 118.285,137.490 Z" fill="#047857"/>
+<defs><linearGradient id="g" x1="0.1" y1="1" x2="0.9" y2="0"><stop offset="0%" stop-color="#4F46E5"/><stop offset="100%" stop-color="#38BDF8"/></linearGradient></defs>
+  <path d="M92,368 C152,368 190,310 218,238 C244,172 272,126 316,112" fill="none" stroke="url(#g)" stroke-width="56" stroke-linecap="round"/>
+  <circle cx="378" cy="78" r="48" fill="url(#g)"/>
 </svg>
