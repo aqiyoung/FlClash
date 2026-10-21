@@ -1,7 +1,7 @@
-import 'package:fl_clash/ui/context.dart';
-import 'package:fl_clash/ui/metrics.dart';
-import 'package:fl_clash/ui/scroll_behavior.dart';
-import 'package:fl_clash/ui/shape.dart';
+import 'package:skyward/ui/context.dart';
+import 'package:skyward/ui/metrics.dart';
+import 'package:skyward/ui/scroll_behavior.dart';
+import 'package:skyward/ui/shape.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';

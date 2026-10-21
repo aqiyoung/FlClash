@@ -1,15 +1,15 @@
 import 'dart:io';
 
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/models/models.dart';
-import 'package:fl_clash/providers/app.dart';
-import 'package:fl_clash/providers/config.dart';
-import 'package:fl_clash/providers/database.dart';
-import 'package:fl_clash/state.dart';
-import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/views/resources.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/models/models.dart';
+import 'package:skyward/providers/app.dart';
+import 'package:skyward/providers/config.dart';
+import 'package:skyward/providers/database.dart';
+import 'package:skyward/state.dart';
+import 'package:skyward/ui/icons/icons.dart';
+import 'package:skyward/views/resources.dart';
+import 'package:skyward/widgets/widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

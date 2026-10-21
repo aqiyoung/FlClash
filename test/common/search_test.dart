@@ -1,4 +1,4 @@
-import 'package:fl_clash/common/search.dart';
+import 'package:skyward/common/search.dart';
 import 'package:test/test.dart';
 
 void main() {

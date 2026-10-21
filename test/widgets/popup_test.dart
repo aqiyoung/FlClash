@@ -1,11 +1,11 @@
 import 'dart:typed_data';
 
-import 'package:fl_clash/ui/color.dart';
-import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/ui/liquid_glass.dart';
-import 'package:fl_clash/ui/navigation_dock.dart';
-import 'package:fl_clash/ui/popup.dart';
-import 'package:fl_clash/ui/surface.dart';
+import 'package:skyward/ui/color.dart';
+import 'package:skyward/ui/icons/icons.dart';
+import 'package:skyward/ui/liquid_glass.dart';
+import 'package:skyward/ui/navigation_dock.dart';
+import 'package:skyward/ui/popup.dart';
+import 'package:skyward/ui/surface.dart';
 import 'package:flutter/gestures.dart' show PointerDeviceKind, kPressTimeout;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';

@@ -1,5 +1,5 @@
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// A form's batch mode: one field of lines, and how many of them it adds.

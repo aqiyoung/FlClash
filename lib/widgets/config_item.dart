@@ -1,8 +1,8 @@
 import 'dart:io';
 
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/l10n/l10n.dart';
-import 'package:fl_clash/ui/list.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/l10n/l10n.dart';
+import 'package:skyward/ui/list.dart';
 import 'package:flutter/foundation.dart' show listEquals;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

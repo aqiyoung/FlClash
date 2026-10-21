@@ -1,8 +1,8 @@
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/providers/providers.dart';
-import 'package:fl_clash/state.dart';
-import 'package:fl_clash/views/dashboard/widgets/outbound_mode.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/providers/providers.dart';
+import 'package:skyward/state.dart';
+import 'package:skyward/views/dashboard/widgets/outbound_mode.dart';
+import 'package:skyward/widgets/widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

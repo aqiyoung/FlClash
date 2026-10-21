@@ -1,5 +1,5 @@
-import 'package:fl_clash/ui/measure.dart';
-import 'package:fl_clash/ui/typography.dart';
+import 'package:skyward/ui/measure.dart';
+import 'package:skyward/ui/typography.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 

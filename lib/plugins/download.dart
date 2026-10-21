@@ -1,4 +1,4 @@
-import 'package:fl_clash/common/common.dart';
+import 'package:skyward/common/common.dart';
 import 'package:flutter/services.dart';
 
 /// The system download manager: the file lands in the device's Downloads

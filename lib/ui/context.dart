@@ -1,9 +1,9 @@
-import 'package:fl_clash/ui/color.dart';
-import 'package:fl_clash/ui/inherited.dart';
-import 'package:fl_clash/ui/metrics.dart';
-import 'package:fl_clash/ui/scaffold.dart';
-import 'package:fl_clash/ui/typography.dart';
-import 'package:fl_clash/ui/view_scope.dart';
+import 'package:skyward/ui/color.dart';
+import 'package:skyward/ui/inherited.dart';
+import 'package:skyward/ui/metrics.dart';
+import 'package:skyward/ui/scaffold.dart';
+import 'package:skyward/ui/typography.dart';
+import 'package:skyward/ui/view_scope.dart';
 import 'package:material_ui/material_ui.dart';
 
 extension BuildContextExtension on BuildContext {

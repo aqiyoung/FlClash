@@ -1,12 +1,12 @@
 import 'dart:async';
 
 import 'package:animations/animations.dart';
-import 'package:fl_clash/ui/context.dart';
-import 'package:fl_clash/ui/deferred_push.dart';
-import 'package:fl_clash/ui/drag_back.dart';
-import 'package:fl_clash/ui/keyboard_inset_hold.dart';
-import 'package:fl_clash/ui/page_transition.dart';
-import 'package:fl_clash/ui/sheet_navigator.dart';
+import 'package:skyward/ui/context.dart';
+import 'package:skyward/ui/deferred_push.dart';
+import 'package:skyward/ui/drag_back.dart';
+import 'package:skyward/ui/keyboard_inset_hold.dart';
+import 'package:skyward/ui/page_transition.dart';
+import 'package:skyward/ui/sheet_navigator.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:material_ui/material_ui.dart';
 

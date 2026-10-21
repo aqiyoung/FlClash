@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:fl_clash/common/exception.dart';
-import 'package:fl_clash/core/controller.dart';
-import 'package:fl_clash/core/desktop/model.dart';
-import 'package:fl_clash/core/interface.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/models/models.dart';
+import 'package:skyward/common/exception.dart';
+import 'package:skyward/core/controller.dart';
+import 'package:skyward/core/desktop/model.dart';
+import 'package:skyward/core/interface.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/models/models.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:test/test.dart';
 

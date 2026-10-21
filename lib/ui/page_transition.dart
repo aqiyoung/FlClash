@@ -1,5 +1,5 @@
-import 'package:fl_clash/ui/drag_back.dart';
-import 'package:fl_clash/ui/surface.dart';
+import 'package:skyward/ui/drag_back.dart';
+import 'package:skyward/ui/surface.dart';
 import 'package:flutter/rendering.dart';
 import 'package:material_ui/material_ui.dart';
 

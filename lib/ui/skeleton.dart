@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
-import 'package:fl_clash/ui/context.dart';
-import 'package:fl_clash/ui/shape.dart';
+import 'package:skyward/ui/context.dart';
+import 'package:skyward/ui/shape.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// A pulsing bar that holds the place of one line of [style] text.

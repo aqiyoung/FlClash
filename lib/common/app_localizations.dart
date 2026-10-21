@@ -1,10 +1,10 @@
-import 'package:fl_clash/common/constant.dart';
-import 'package:fl_clash/common/exception.dart';
-import 'package:fl_clash/common/network_error.dart';
-import 'package:fl_clash/core/desktop/launch_policy.dart';
-import 'package:fl_clash/core/method.dart';
-import 'package:fl_clash/l10n/l10n.dart';
-import 'package:fl_clash/ui/l10n.dart';
+import 'package:skyward/common/constant.dart';
+import 'package:skyward/common/exception.dart';
+import 'package:skyward/common/network_error.dart';
+import 'package:skyward/core/desktop/launch_policy.dart';
+import 'package:skyward/core/method.dart';
+import 'package:skyward/l10n/l10n.dart';
+import 'package:skyward/ui/l10n.dart';
 import 'package:flutter/widgets.dart';
 
 final currentAppLocalizations = AppLocalizations.current;

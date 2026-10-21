@@ -3,7 +3,7 @@ import 'dart:io';
 import 'dart:isolate';
 
 import 'package:ffi/ffi.dart';
-import 'package:fl_clash/enum/enum.dart';
+import 'package:skyward/enum/enum.dart';
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:win32/win32.dart' show GUID;
 

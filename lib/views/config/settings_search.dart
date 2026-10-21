@@ -1,7 +1,7 @@
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/views/config/settings_index.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/ui/icons/icons.dart';
+import 'package:skyward/views/config/settings_index.dart';
+import 'package:skyward/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// Every row the index knows about, narrowed by what the reader typed.

@@ -1,12 +1,12 @@
 import 'dart:async';
 
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/l10n/l10n.dart';
-import 'package:fl_clash/manager/status_manager.dart';
-import 'package:fl_clash/providers/app.dart';
-import 'package:fl_clash/providers/database.dart';
-import 'package:fl_clash/state.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/l10n/l10n.dart';
+import 'package:skyward/manager/status_manager.dart';
+import 'package:skyward/providers/app.dart';
+import 'package:skyward/providers/database.dart';
+import 'package:skyward/state.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

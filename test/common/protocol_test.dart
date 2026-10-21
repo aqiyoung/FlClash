@@ -1,4 +1,4 @@
-import 'package:fl_clash/common/protocol.dart';
+import 'package:skyward/common/protocol.dart';
 import 'package:test/test.dart';
 
 void main() {

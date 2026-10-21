@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:fl_clash/common/window.dart';
-import 'package:fl_clash/models/config.dart';
+import 'package:skyward/common/window.dart';
+import 'package:skyward/models/config.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:screen_retriever/screen_retriever.dart';

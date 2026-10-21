@@ -1,6 +1,6 @@
 import 'package:animations/animations.dart';
-import 'package:fl_clash/ui/context.dart';
-import 'package:fl_clash/ui/metrics.dart';
+import 'package:skyward/ui/context.dart';
+import 'package:skyward/ui/metrics.dart';
 import 'package:material_ui/material_ui.dart';
 
 class FadeBox extends StatelessWidget {

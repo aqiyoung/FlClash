@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 
-import 'package:fl_clash/ui/icons/glyph.dart';
-import 'package:fl_clash/ui/icons/glyph_icon.dart';
+import 'package:skyward/ui/icons/glyph.dart';
+import 'package:skyward/ui/icons/glyph_icon.dart';
 import 'package:material_ui/material_ui.dart';
 
 const _fillDuration = Duration(milliseconds: 350);

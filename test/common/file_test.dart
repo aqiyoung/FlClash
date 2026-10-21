@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:fl_clash/common/common.dart';
+import 'package:skyward/common/common.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart';
 

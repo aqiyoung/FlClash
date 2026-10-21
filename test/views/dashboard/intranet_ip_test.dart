@@ -1,8 +1,8 @@
-import 'package:fl_clash/providers/providers.dart';
-import 'package:fl_clash/state.dart';
-import 'package:fl_clash/views/dashboard/layout.dart';
-import 'package:fl_clash/views/dashboard/widgets/card.dart';
-import 'package:fl_clash/views/dashboard/widgets/intranet_ip.dart';
+import 'package:skyward/providers/providers.dart';
+import 'package:skyward/state.dart';
+import 'package:skyward/views/dashboard/layout.dart';
+import 'package:skyward/views/dashboard/widgets/card.dart';
+import 'package:skyward/views/dashboard/widgets/intranet_ip.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

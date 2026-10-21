@@ -1,12 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:fl_clash/common/constant.dart';
-import 'package:fl_clash/core/method.dart';
-import 'package:fl_clash/core/spill.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/models/models.dart';
-import 'package:fl_clash/plugins/service.dart';
+import 'package:skyward/common/constant.dart';
+import 'package:skyward/core/method.dart';
+import 'package:skyward/core/spill.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/models/models.dart';
+import 'package:skyward/plugins/service.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart';

@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:math' as math;
 
-import 'package:fl_clash/ui/context.dart';
-import 'package:fl_clash/ui/liquid_glass.dart';
-import 'package:fl_clash/ui/shape.dart';
-import 'package:fl_clash/ui/surface.dart';
+import 'package:skyward/ui/context.dart';
+import 'package:skyward/ui/liquid_glass.dart';
+import 'package:skyward/ui/shape.dart';
+import 'package:skyward/ui/surface.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// The M3 switch's track and thumb, drawn here so no ripple or overlay rings

@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:fl_clash/providers/app.dart';
-import 'package:fl_clash/ui/navigator.dart';
-import 'package:fl_clash/ui/surface.dart';
+import 'package:skyward/providers/app.dart';
+import 'package:skyward/ui/navigator.dart';
+import 'package:skyward/ui/surface.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

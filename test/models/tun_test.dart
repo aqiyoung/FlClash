@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/models/models.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/models/models.dart';
 import 'package:test/test.dart';
 
 Set<String> _keysOf(String path, String struct, String tag) {

@@ -1,16 +1,16 @@
 import 'dart:async';
 
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/models/models.dart';
-import 'package:fl_clash/providers/providers.dart';
-import 'package:fl_clash/state.dart';
-import 'package:fl_clash/views/config/tun.dart';
-import 'package:fl_clash/views/profiles/add.dart';
-import 'package:fl_clash/views/profiles/custom/custom.dart';
-import 'package:fl_clash/views/profiles/custom/providers.dart';
-import 'package:fl_clash/views/profiles/extend/extend.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/models/models.dart';
+import 'package:skyward/providers/providers.dart';
+import 'package:skyward/state.dart';
+import 'package:skyward/views/config/tun.dart';
+import 'package:skyward/views/profiles/add.dart';
+import 'package:skyward/views/profiles/custom/custom.dart';
+import 'package:skyward/views/profiles/custom/providers.dart';
+import 'package:skyward/views/profiles/extend/extend.dart';
+import 'package:skyward/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

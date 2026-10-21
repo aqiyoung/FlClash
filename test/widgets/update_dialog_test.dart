@@ -1,7 +1,7 @@
-import 'package:fl_clash/providers/action.dart';
-import 'package:fl_clash/providers/app.dart';
-import 'package:fl_clash/providers/config.dart';
-import 'package:fl_clash/state.dart';
+import 'package:skyward/providers/action.dart';
+import 'package:skyward/providers/app.dart';
+import 'package:skyward/providers/config.dart';
+import 'package:skyward/state.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

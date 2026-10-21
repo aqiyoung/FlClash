@@ -1,4 +1,4 @@
-import 'package:fl_clash/ui/fade_box.dart';
+import 'package:skyward/ui/fade_box.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 

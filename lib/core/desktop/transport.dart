@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:typed_data';
 
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/enum/enum.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/enum/enum.dart';
 import 'package:rust_api/rust_api.dart';
 
 typedef IpcServerBinder = Future<IpcServer> Function(String address);

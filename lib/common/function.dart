@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/ui/ui.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/ui/ui.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/scheduler.dart';
 

@@ -1,8 +1,8 @@
-import 'package:fl_clash/core/desktop/model.dart';
-import 'package:fl_clash/core/interface.dart';
-import 'package:fl_clash/core/method.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/models/models.dart';
+import 'package:skyward/core/desktop/model.dart';
+import 'package:skyward/core/interface.dart';
+import 'package:skyward/core/method.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/models/models.dart';
 import 'package:test/test.dart';
 
 class _SilentCore extends CoreHandlerInterface {

@@ -1,4 +1,4 @@
-import 'package:fl_clash/ui/ui.dart';
+import 'package:skyward/ui/ui.dart';
 import 'package:flutter/gestures.dart' show kPressTimeout;
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';

@@ -1,4 +1,4 @@
-import 'package:fl_clash/ui/shape.dart';
+import 'package:skyward/ui/shape.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:qr/qr.dart';
 

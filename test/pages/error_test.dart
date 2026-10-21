@@ -1,14 +1,14 @@
 import 'dart:io';
 
-import 'package:fl_clash/common/app_localizations.dart';
-import 'package:fl_clash/l10n/l10n.dart';
-import 'package:fl_clash/pages/error.dart';
+import 'package:skyward/common/app_localizations.dart';
+import 'package:skyward/l10n/l10n.dart';
+import 'package:skyward/pages/error.dart';
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-final _stack = StackTrace.fromString('#0 boot (package:fl_clash/main.dart:1)');
+final _stack = StackTrace.fromString('#0 boot (package:skyward/main.dart:1)');
 
 Widget _screen({
   ThemeData? theme,

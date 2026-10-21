@@ -1,10 +1,10 @@
 import 'dart:async';
 
-import 'package:fl_clash/ui/color.dart';
-import 'package:fl_clash/ui/context.dart';
-import 'package:fl_clash/ui/inherited.dart';
-import 'package:fl_clash/ui/navigator.dart';
-import 'package:fl_clash/ui/view_scope.dart';
+import 'package:skyward/ui/color.dart';
+import 'package:skyward/ui/context.dart';
+import 'package:skyward/ui/inherited.dart';
+import 'package:skyward/ui/navigator.dart';
+import 'package:skyward/ui/view_scope.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'form_sheet.dart';

@@ -4,9 +4,9 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
-import 'package:fl_clash/common/constant.dart';
-import 'package:fl_clash/core/desktop/helper_client.dart';
-import 'package:fl_clash/core/desktop/model.dart';
+import 'package:skyward/common/constant.dart';
+import 'package:skyward/core/desktop/helper_client.dart';
+import 'package:skyward/core/desktop/model.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'fakes.dart';

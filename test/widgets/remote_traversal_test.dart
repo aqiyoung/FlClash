@@ -1,4 +1,4 @@
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:skyward/widgets/widgets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';

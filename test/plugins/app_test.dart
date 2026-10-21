@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:fl_clash/common/boot_record.dart';
-import 'package:fl_clash/common/constant.dart';
-import 'package:fl_clash/plugins/app.dart';
+import 'package:skyward/common/boot_record.dart';
+import 'package:skyward/common/constant.dart';
+import 'package:skyward/plugins/app.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 

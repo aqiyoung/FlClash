@@ -1,4 +1,4 @@
-import 'package:fl_clash/common/iterable.dart';
+import 'package:skyward/common/iterable.dart';
 import 'package:test/test.dart';
 
 void main() {

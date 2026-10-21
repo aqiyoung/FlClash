@@ -16,8 +16,8 @@ final _directive = RegExp(
 );
 
 String _resolve(String uri, String from) {
-  if (uri.startsWith('package:fl_clash/')) {
-    return 'lib/${uri.substring('package:fl_clash/'.length)}';
+  if (uri.startsWith('package:skyward/')) {
+    return 'lib/${uri.substring('package:skyward/'.length)}';
   }
   if (uri.startsWith('dart:') || uri.startsWith('package:')) return uri;
   return p.normalize(p.join(p.dirname(from), uri));

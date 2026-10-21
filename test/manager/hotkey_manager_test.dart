@@ -1,8 +1,8 @@
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/manager/hotkey_manager.dart';
-import 'package:fl_clash/providers/app.dart';
-import 'package:fl_clash/providers/config.dart';
-import 'package:fl_clash/models/common.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/manager/hotkey_manager.dart';
+import 'package:skyward/providers/app.dart';
+import 'package:skyward/providers/config.dart';
+import 'package:skyward/models/common.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';

@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:fl_clash/ui/navigator.dart';
-import 'package:fl_clash/ui/sheet_navigator.dart';
+import 'package:skyward/ui/navigator.dart';
+import 'package:skyward/ui/sheet_navigator.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';

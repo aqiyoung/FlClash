@@ -1,4 +1,4 @@
-import 'package:fl_clash/enum/enum.dart';
+import 'package:skyward/enum/enum.dart';
 import 'package:flutter/services.dart';
 
 import 'system.dart';

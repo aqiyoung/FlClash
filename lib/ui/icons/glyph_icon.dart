@@ -1,5 +1,5 @@
-import 'package:fl_clash/ui/icons/glyph.dart';
-import 'package:fl_clash/ui/icons/glyph_painter.dart';
+import 'package:skyward/ui/icons/glyph.dart';
+import 'package:skyward/ui/icons/glyph_painter.dart';
 import 'package:material_ui/material_ui.dart';
 
 class GlyphIcon extends StatelessWidget {

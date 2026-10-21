@@ -1,11 +1,11 @@
-import 'package:fl_clash/ui/button.dart';
-import 'package:fl_clash/ui/card.dart';
-import 'package:fl_clash/ui/context.dart';
-import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/ui/measure.dart';
-import 'package:fl_clash/ui/shape.dart';
-import 'package:fl_clash/ui/surface.dart';
-import 'package:fl_clash/ui/typography.dart';
+import 'package:skyward/ui/button.dart';
+import 'package:skyward/ui/card.dart';
+import 'package:skyward/ui/context.dart';
+import 'package:skyward/ui/icons/icons.dart';
+import 'package:skyward/ui/measure.dart';
+import 'package:skyward/ui/shape.dart';
+import 'package:skyward/ui/surface.dart';
+import 'package:skyward/ui/typography.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 

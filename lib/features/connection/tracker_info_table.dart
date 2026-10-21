@@ -1,8 +1,8 @@
 import 'dart:math';
 
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/models/models.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/models/models.dart';
+import 'package:skyward/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'tracker_info_item.dart';
