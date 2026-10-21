@@ -1,5 +1,9 @@
 # Commands
 
+These commands are the user's, not the agent's: the agent does not build on the host (see the "Builds Belong to CI"
+section of [.agents/rules.md](rules.md)). The agent dispatches a GitHub Actions workflow and hands the artifact
+over.
+
 ## Building
 
 Update submodules first. The ClashMeta Go core lives in `core/Clash.Meta/`.
