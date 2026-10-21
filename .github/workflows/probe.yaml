@@ -23,7 +23,7 @@ on:
           - stable
         default: pre
       package:
-        description: 'applicationId: ours = com.threely.trinity, upstream = com.follow.clash (diagnostic only)'
+        description: 'applicationId: ours = com.threely.skyward, upstream = com.follow.clash (diagnostic only)'
         type: choice
         options:
           - ours
@@ -66,7 +66,7 @@ jobs:
         if: inputs.package == 'upstream'
         run: |
           set -euo pipefail
-          sed -i 's/applicationId = "com.threely.trinity"/applicationId = "com.follow.clash"/' android/app/build.gradle.kts
+          sed -i 's/applicationId = "com.threely.skyward"/applicationId = "com.follow.clash"/' android/app/build.gradle.kts
           grep -n 'applicationId' android/app/build.gradle.kts
 
       # A probe lands on a phone that already runs a release, so its versionCode
@@ -241,7 +241,7 @@ jobs:
           for file in dist/*; do
             name="$(basename "$file")"
             case "$name" in
-              FlClash-*) mv "$file" "dist/Trinity-${name#FlClash-}" ;;
+              FlClash-*) mv "$file" "dist/Skyward-${name#FlClash-}" ;;
             esac
           done
           ls -l dist
@@ -252,7 +252,7 @@ jobs:
         id: verify
         env:
           VERSION: ${{ steps.version.outputs.version }}
-          APPLICATION_ID: ${{ inputs.package == 'upstream' && 'com.follow.clash' || 'com.threely.trinity' }}
+          APPLICATION_ID: ${{ inputs.package == 'upstream' && 'com.follow.clash' || 'com.threely.skyward' }}
           CERT_SHA256: 65379ed725abfd2330bc2134aaa276ba59a50d5e606f443818003f362c593570
         run: |
           set -euo pipefail
@@ -313,7 +313,7 @@ jobs:
           VERSION_CODE: ${{ steps.verify.outputs.version_code }}
           REF: ${{ inputs.ref }}
           RUN_NUMBER: ${{ github.run_number }}
-          APPLICATION_ID: ${{ inputs.package == 'upstream' && 'com.follow.clash' || 'com.threely.trinity' }}
+          APPLICATION_ID: ${{ inputs.package == 'upstream' && 'com.follow.clash' || 'com.threely.skyward' }}
         run: |
           set -euo pipefail
           tag="probe-${RUN_NUMBER}"
@@ -321,7 +321,7 @@ jobs:
           (cd dist && sha256sum ./* > SHA256SUMS)
 
           cat > probe-notes.md <<EOF
-          Trinity ${VERSION} 测试包，只含 Android arm64-v8a。
+          Skyward ${VERSION} 测试包，只含 Android arm64-v8a。
           EOF
           {
             echo
@@ -340,7 +340,7 @@ jobs:
           gh release create "$tag" dist/* \
             --repo "$GITHUB_REPOSITORY" \
             --target "$REF" \
-            --title "Trinity ${VERSION}（测试包）" \
+            --title "Skyward ${VERSION}（测试包）" \
             --notes-file probe-notes.md \
             --prerelease
 
@@ -353,7 +353,7 @@ jobs:
           VERSION_CODE: ${{ steps.verify.outputs.version_code }}
           REF: ${{ inputs.ref }}
           TAG: probe-${{ github.run_number }}
-          APPLICATION_ID: ${{ inputs.package == 'upstream' && 'com.follow.clash' || 'com.threely.trinity' }}
+          APPLICATION_ID: ${{ inputs.package == 'upstream' && 'com.follow.clash' || 'com.threely.skyward' }}
         run: |
           set -euo pipefail
           shopt -s nullglob
@@ -362,7 +362,7 @@ jobs:
           prefix="https://gh-proxy.com/https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/"
 
           {
-            echo "🧪 Trinity ${VERSION}（测试包）构建成功"
+            echo "🧪 Skyward ${VERSION}（测试包）构建成功"
             echo
             for f in dist/*; do
               name="$(basename "$f")"
