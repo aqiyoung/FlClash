@@ -8,7 +8,7 @@ name: build
 # The signing keystore is injected from repository secrets; without it
 # upstream's Gradle falls back to the debug key and appends a `.dev` suffix, so
 # every APK here is signed with our own certificate and carries our own
-# `com.threely.clash` package name.
+# `com.threely.sanye` package name.
 
 on:
   workflow_call:
@@ -329,6 +329,14 @@ jobs:
                 ;;
             esac
           done
+          # The packaging names the files after the upstream project; this fork
+          # ships under its own name.
+          for file in dist/*; do
+            name="$(basename "$file")"
+            case "$name" in
+              FlClash-*) mv "$file" "dist/Sanye-${name#FlClash-}" ;;
+            esac
+          done
           echo "renamed ${renamed} artifact(s) to ${VERSION}:"
           ls -l dist
 
@@ -344,11 +352,11 @@ jobs:
           # This fork ships under its own id, not upstream's com.follow.clash --
           # and a merge that quietly restored upstream's while keeping our
           # signature would still build and still upload.
-          APPLICATION_ID: com.threely.clash
+          APPLICATION_ID: com.threely.sanye
           # SHA-256 of the certificate in the KEYSTORE secret, lower case, no
           # separators. Rotating the keystore means updating this line, which is
           # the point: a swap cannot happen without saying so here.
-          CERT_SHA256: 048968c1728e0e2e27e704d6b30174276579baa2fa288f4f1ba375b702c7e431
+          CERT_SHA256: 65379ed725abfd2330bc2134aaa276ba59a50d5e606f443818003f362c593570
         run: |
           set -euo pipefail
           build_tools="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)"

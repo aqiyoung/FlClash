@@ -23,7 +23,7 @@ on:
           - stable
         default: pre
       package:
-        description: 'applicationId: ours = com.threely.clash, upstream = com.follow.clash (diagnostic only)'
+        description: 'applicationId: ours = com.threely.sanye, upstream = com.follow.clash (diagnostic only)'
         type: choice
         options:
           - ours
@@ -66,7 +66,7 @@ jobs:
         if: inputs.package == 'upstream'
         run: |
           set -euo pipefail
-          sed -i 's/applicationId = "com.threely.clash"/applicationId = "com.follow.clash"/' android/app/build.gradle.kts
+          sed -i 's/applicationId = "com.threely.sanye"/applicationId = "com.follow.clash"/' android/app/build.gradle.kts
           grep -n 'applicationId' android/app/build.gradle.kts
 
       # A probe lands on a phone that already runs a release, so its versionCode
@@ -236,6 +236,14 @@ jobs:
                 ;;
             esac
           done
+          # The packaging names the files after the upstream project; this fork
+          # ships under its own name.
+          for file in dist/*; do
+            name="$(basename "$file")"
+            case "$name" in
+              FlClash-*) mv "$file" "dist/Sanye-${name#FlClash-}" ;;
+            esac
+          done
           ls -l dist
 
       # `--arch arm64` has to actually limit the APK, not merely prefer arm64: a
@@ -244,8 +252,8 @@ jobs:
         id: verify
         env:
           VERSION: ${{ steps.version.outputs.version }}
-          APPLICATION_ID: ${{ inputs.package == 'upstream' && 'com.follow.clash' || 'com.threely.clash' }}
-          CERT_SHA256: 048968c1728e0e2e27e704d6b30174276579baa2fa288f4f1ba375b702c7e431
+          APPLICATION_ID: ${{ inputs.package == 'upstream' && 'com.follow.clash' || 'com.threely.sanye' }}
+          CERT_SHA256: 65379ed725abfd2330bc2134aaa276ba59a50d5e606f443818003f362c593570
         run: |
           set -euo pipefail
           build_tools="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)"
@@ -305,7 +313,7 @@ jobs:
           VERSION_CODE: ${{ steps.verify.outputs.version_code }}
           REF: ${{ inputs.ref }}
           RUN_NUMBER: ${{ github.run_number }}
-          APPLICATION_ID: ${{ inputs.package == 'upstream' && 'com.follow.clash' || 'com.threely.clash' }}
+          APPLICATION_ID: ${{ inputs.package == 'upstream' && 'com.follow.clash' || 'com.threely.sanye' }}
         run: |
           set -euo pipefail
           tag="probe-${RUN_NUMBER}"
@@ -313,7 +321,7 @@ jobs:
           (cd dist && sha256sum ./* > SHA256SUMS)
 
           cat > probe-notes.md <<EOF
-          FlClash ${VERSION} 测试包，只含 Android arm64-v8a。
+          三叶 ${VERSION} 测试包，只含 Android arm64-v8a。
           EOF
           {
             echo
@@ -332,7 +340,7 @@ jobs:
           gh release create "$tag" dist/* \
             --repo "$GITHUB_REPOSITORY" \
             --target "$REF" \
-            --title "FlClash ${VERSION}（测试包）" \
+            --title "三叶 ${VERSION}（测试包）" \
             --notes-file probe-notes.md \
             --prerelease
 
@@ -345,7 +353,7 @@ jobs:
           VERSION_CODE: ${{ steps.verify.outputs.version_code }}
           REF: ${{ inputs.ref }}
           TAG: probe-${{ github.run_number }}
-          APPLICATION_ID: ${{ inputs.package == 'upstream' && 'com.follow.clash' || 'com.threely.clash' }}
+          APPLICATION_ID: ${{ inputs.package == 'upstream' && 'com.follow.clash' || 'com.threely.sanye' }}
         run: |
           set -euo pipefail
           shopt -s nullglob
@@ -354,7 +362,7 @@ jobs:
           prefix="https://gh-proxy.com/https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/"
 
           {
-            echo "🧪 FlClash ${VERSION}（测试包）构建成功"
+            echo "🧪 三叶 ${VERSION}（测试包）构建成功"
             echo
             for f in dist/*; do
               name="$(basename "$f")"
