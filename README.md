@@ -1,10 +1,10 @@
-> **Fork notice** — this is [aqiyoung](https://github.com/aqiyoung)'s fork of FlClash. Builds are published in [this repository's releases](../../releases/latest); see [FORK.md](FORK.md) for the version scheme, the signing change and the full list of patches. The upstream project is [chen08209/FlClash](https://github.com/chen08209/FlClash). This repository ships the client only: no proxy servers, subscriptions or accounts are bundled, and no paid service is offered.
+> **Fork notice** — this is [aqiyoung](https://github.com/aqiyoung)'s fork of FlClash, released here as **Sanye** (三叶). Builds are published in [this repository's releases](../../releases/latest); see [FORK.md](FORK.md) for the version scheme, the signing change and the full list of patches. The upstream project is [chen08209/FlClash](https://github.com/chen08209/FlClash). This repository ships the client only: no proxy servers, subscriptions or accounts are bundled, and no paid service is offered.
 
 <div align="center">
 
-<img src="assets/images/icon.png" alt="FlClash" width="88">
+<img src="assets/images/icon.png" alt="Sanye" width="88">
 
-# FlClash
+# Sanye
 
 A multi-platform proxy client based on ClashMeta. Simple to use, open source and ad-free.
 
@@ -22,7 +22,7 @@ A multi-platform proxy client based on ClashMeta. Simple to use, open source and
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="snapshots/preview-dark.png">
-    <img alt="FlClash dashboard on a MacBook and a phone" src="snapshots/preview.png" width="92%">
+    <img alt="Sanye dashboard on a MacBook and a phone" src="snapshots/preview.png" width="92%">
   </picture>
 </p>
 
@@ -71,7 +71,7 @@ sudo dnf install libayatana-appindicator-gtk3     # Fedora
 
 ## Usage
 
-**Import a profile from a link.** Opening a link in this form imports the subscription into FlClash. The `clashmeta://`
+**Import a profile from a link.** Opening a link in this form imports the subscription into Sanye. The `clashmeta://`
 and `flclash://` schemes work the same way.
 
 ```text
@@ -82,15 +82,15 @@ clash://install-config?url=<URL-encoded subscription link>
 activity with one of these actions:
 
 ```text
-com.threely.clash.action.START
-com.threely.clash.action.STOP
-com.threely.clash.action.TOGGLE
+com.threely.sanye.action.START
+com.threely.sanye.action.STOP
+com.threely.sanye.action.TOGGLE
 ```
 
 From a computer, the same works over adb:
 
 ```bash
-adb shell am start -a com.threely.clash.action.TOGGLE
+adb shell am start -a com.threely.sanye.action.TOGGLE
 ```
 
 ## Build from source
@@ -132,4 +132,4 @@ Starring the repository is the easiest way to support the project. Questions and
 
 ## License
 
-FlClash is released under the [GPL-3.0 license](LICENSE).
+Sanye is released under the [GPL-3.0 license](LICENSE).

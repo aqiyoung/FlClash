@@ -1,12 +1,12 @@
-# FlClash（本仓库版）
+# 三叶 / Sanye（本仓库版）
 
-这是 [chen08209/FlClash](https://github.com/chen08209/FlClash) 的一个个人 fork。上游代码原样保留，我们在上面做了少量定制，并用 GitHub Actions 全平台构建、自签名，发布到本仓库的 Releases（同时推送到 TG 频道 [@sanyeinfo](https://t.me/sanyeinfo)）。
+这是 [chen08209/FlClash](https://github.com/chen08209/FlClash) 的一个个人 fork，在这里以**三叶（Sanye）**的名字发布：包名、桌面图标下的名字和安装包文件名都换成自己的，不再挂着上游的名字。上游代码原样保留，我们在上面做了少量定制，并用 GitHub Actions 全平台构建、自签名，发布到本仓库的 Releases（同时推送到 TG 频道 [@sanyeinfo](https://t.me/sanyeinfo)）。
 
 本仓库只发布**客户端本体**：不含任何代理服务器、订阅链接、账号或流量，也没有任何收费项目。装好之后用什么配置，由使用者自己填。
 
 **装哪个**
 
-- **正式版**（推荐）：[最新 Release](../../releases/latest) 里 `FlClash` 开头的安装包。`/releases/latest` 永远指向正式版。
+- **正式版**（推荐）：[最新 Release](../../releases/latest) 里 `Sanye-` 开头的安装包。`/releases/latest` 永远指向正式版。
 - **测试版**：在 [Releases 列表](../../releases) 里标着 *Pre-release* 的那个，跟上游 `dev` 走，比正式版新，也可能有问题。
 
 Android 一般下 `-arm64-v8a.apk`（绝大多数手机）或 `-armeabi-v7a.apk`（老机器），模拟器下 `-x86_64.apk`。
@@ -31,7 +31,7 @@ Android 一般下 `-arm64-v8a.apk`（绝大多数手机）或 `-armeabi-v7a.apk`
 | 正式版 | [`main`](../../tree/main) | 已经跑过 beta、被晋升进来的代码 | 标为 Latest |
 | 测试版 | [`beta`](../../tree/beta) | 上游 `dev` 的最新代码 + 我们自己的改动 | prerelease，不抢占 Latest |
 
-两个渠道**同包名**（`com.threely.clash`）、**同签名**，可以互相覆盖安装，`versionCode` 保证单调递增。
+两个渠道**同包名**（`com.threely.sanye`）、**同签名**，可以互相覆盖安装，`versionCode` 保证单调递增。
 
 ## 与上游的差异
 
@@ -43,7 +43,7 @@ Android 一般下 `-arm64-v8a.apk`（绝大多数手机）或 `-armeabi-v7a.apk`
 | 关于页 | 去掉上游的 Telegram 频道入口（那个频道不是本仓库运营的） |
 | 更新检查 | 指向本仓库的 Releases，而不是上游；版本比较额外认我们自己的第四位 |
 | 版本名 | 四段版本号由构建注入：Android 走 `versionName`，桌面端走 `APP_VERSION` dart-define（`pubspec.yaml` 仍是三段） |
-| 包名 | Android 的 `applicationId` 改成 `com.threely.clash`（2026-10-18 起）。国内手机管家对上游那个包名有灰产误报记录，本仓库用独立包名，便于区分本仓库产物与上游官方包；两者签名本就不同，需要分别安装 |
+| 包名 | Android 的 `applicationId` 改成 `com.threely.sanye`（2026-10-18 起先用 `com.threely.clash`，2026-10-21 随改名换成现在这个）。本仓库用自己的名字发布，和上游官方包分别安装 |
 | 服务图标 | 仪表盘「服务状态」的 13 个服务图标由单色改为品牌色，图标底板固定浅色 |
 | 仪表盘 | 「状态」卡片里的出口国家由两个大写字母改成国旗；国旗底下原来的四叶草去掉、只留国旗，检查出口时由旋转改为渐隐 |
 | 用量进度 | 仪表盘「配置」卡片的用量进度由上游的 M3 波浪线改成直线（改 `lib/views/dashboard/widgets/profiles.dart`） |
@@ -52,17 +52,17 @@ Android 一般下 `-arm64-v8a.apk`（绝大多数手机）或 `-armeabi-v7a.apk`
 
 另外两件不在代码里的事：
 
-- **重新签名**：上游官方 APK 在国内部分 ROM 上会被小米安全中心（腾讯引擎）判为风险应用，而这个判定跟着签名证书走。本仓库用一张中性证书重新签名——**不加固、不夹带、不绕过检测**。
+- **重新签名**：本仓库用自己的证书签名，不改上游官方包的签名——**不加固、不夹带、不绕过检测**。国内手机管家（腾讯引擎）会把一批个人自签名的应用标成 `a.gray.BulimiaTGen.*`「风险应用」，这个判定跟着**签名证书**走：换一张新证书往往就干净了，所以本仓库的证书在 2026-10-21 换过一次（换之前那张在 2026-10-17 之前签过上游 APK 的重打包产物，被人报过毒，判定留在了证书上）。这是签名本身的事，不影响代码。
 - **构建**：本目录不含构建产物，全部由 GitHub Actions 构建。
 
 ### 签名变了、包名也换了，第一次要卸载
 
-本仓库的签名与上游官方版、以及 2026-10-17 之前本仓库发的包都不同，装不上；包名又和 2026-10-18 之前本仓库发的包不同（那时沿用上游的 `com.follow.clash`），也不会覆盖安装，而是并排装成两个 App。**先卸载旧版（配置先在 App 里备份出来），再安装**。之后本仓库自己的版本之间（同一个 `com.threely.clash`）可以直接覆盖升级。
+本仓库的签名与上游官方版、以及 2026-10-21 之前本仓库发的包都不同，装不上；包名也和之前发过的包不同（`com.follow.clash` → `com.threely.clash` → `com.threely.sanye`），不会覆盖安装，而是并排装成几个 App。**先卸载旧版（配置先在 App 里备份出来），再安装**。之后本仓库自己的版本之间（同一个 `com.threely.sanye`）可以直接覆盖升级。
 
 证书 SHA-256：
 
 ```
-04:89:68:C1:72:8E:0E:2E:27:E7:04:D6:B3:01:74:27:65:79:BA:A2:FA:28:8F:4F:1B:A3:75:B7:02:C7:E4:31
+65:37:9E:D7:25:AB:FD:23:30:BC:21:34:AA:A2:76:BA:59:A5:0D:5E:60:6F:44:38:18:00:3F:36:2C:59:35:70
 ```
 
 ## 构建流程

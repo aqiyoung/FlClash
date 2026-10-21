@@ -27,7 +27,7 @@ void main() {
     core = MockCoreHandlerInterface();
     globalState.packageInfo = PackageInfo(
       appName: 'FlClash',
-      packageName: 'com.threely.clash',
+      packageName: 'com.threely.sanye',
       version: runningVersion,
       buildNumber: '1',
     );
