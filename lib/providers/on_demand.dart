@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/plugins/battery.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/plugins/battery.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';

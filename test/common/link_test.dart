@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:fl_clash/common/link.dart';
+import 'package:skyward/common/link.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

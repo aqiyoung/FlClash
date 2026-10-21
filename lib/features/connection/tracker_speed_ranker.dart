@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:fl_clash/models/models.dart';
+import 'package:skyward/models/models.dart';
 
 class _SpeedSample {
   final int upload;

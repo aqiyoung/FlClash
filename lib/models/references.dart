@@ -3,8 +3,8 @@
 library;
 
 import 'package:collection/collection.dart';
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/enum/enum.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/enum/enum.dart';
 
 import 'clash_config.dart';
 import 'profile.dart';

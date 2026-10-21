@@ -1,15 +1,15 @@
 import 'dart:math' as math;
 import 'dart:typed_data';
 
-import 'package:fl_clash/common/app_ports.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/models/models.dart';
-import 'package:fl_clash/pages/home.dart';
-import 'package:fl_clash/providers/providers.dart';
-import 'package:fl_clash/state.dart';
-import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/views/navigation.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:skyward/common/app_ports.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/models/models.dart';
+import 'package:skyward/pages/home.dart';
+import 'package:skyward/providers/providers.dart';
+import 'package:skyward/state.dart';
+import 'package:skyward/ui/icons/icons.dart';
+import 'package:skyward/views/navigation.dart';
+import 'package:skyward/widgets/widgets.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

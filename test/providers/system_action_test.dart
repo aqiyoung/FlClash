@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'dart:ui' show Brightness, Color;
 
-import 'package:fl_clash/common/app_ports.dart';
-import 'package:fl_clash/common/preferences.dart';
-import 'package:fl_clash/models/config.dart';
-import 'package:fl_clash/providers/action.dart';
-import 'package:fl_clash/providers/actions/system_exit.dart';
-import 'package:fl_clash/providers/config.dart';
-import 'package:fl_clash/state.dart';
+import 'package:skyward/common/app_ports.dart';
+import 'package:skyward/common/preferences.dart';
+import 'package:skyward/models/config.dart';
+import 'package:skyward/providers/action.dart';
+import 'package:skyward/providers/actions/system_exit.dart';
+import 'package:skyward/providers/config.dart';
+import 'package:skyward/state.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/riverpod.dart';
 

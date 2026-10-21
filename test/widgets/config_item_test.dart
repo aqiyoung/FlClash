@@ -1,5 +1,5 @@
-import 'package:fl_clash/l10n/l10n.dart';
-import 'package:fl_clash/widgets/config_item.dart';
+import 'package:skyward/l10n/l10n.dart';
+import 'package:skyward/widgets/config_item.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 

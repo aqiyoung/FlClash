@@ -1,6 +1,6 @@
-import 'package:fl_clash/ui/color.dart';
-import 'package:fl_clash/ui/metrics.dart';
-import 'package:fl_clash/ui/typography.dart';
+import 'package:skyward/ui/color.dart';
+import 'package:skyward/ui/metrics.dart';
+import 'package:skyward/ui/typography.dart';
 import 'package:material_ui/material_ui.dart';
 
 class CommonMinFilledButtonTheme extends StatelessWidget {

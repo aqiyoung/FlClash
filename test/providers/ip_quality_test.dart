@@ -3,12 +3,12 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:drift/native.dart';
-import 'package:fl_clash/common/ip_quality.dart';
-import 'package:fl_clash/common/request.dart';
-import 'package:fl_clash/database/database.dart' as db;
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/models/models.dart';
-import 'package:fl_clash/providers/ip_quality.dart';
+import 'package:skyward/common/ip_quality.dart';
+import 'package:skyward/common/request.dart';
+import 'package:skyward/database/database.dart' as db;
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/models/models.dart';
+import 'package:skyward/providers/ip_quality.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/riverpod.dart';
 

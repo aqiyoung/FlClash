@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:fl_clash/common/link_receiver.dart';
+import 'package:skyward/common/link_receiver.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 const _texts = (

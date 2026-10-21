@@ -1,9 +1,9 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
-import 'package:fl_clash/ui/color.dart';
-import 'package:fl_clash/ui/context.dart';
-import 'package:fl_clash/ui/shape.dart';
+import 'package:skyward/ui/color.dart';
+import 'package:skyward/ui/context.dart';
+import 'package:skyward/ui/shape.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/rendering.dart';
 import 'package:material_ui/material_ui.dart';

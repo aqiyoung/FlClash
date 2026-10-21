@@ -1,10 +1,10 @@
 import 'dart:convert';
 
-import 'package:fl_clash/common/migration.dart';
-import 'package:fl_clash/common/constant.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/models/models.dart';
-import 'package:fl_clash/ui/color.dart';
+import 'package:skyward/common/migration.dart';
+import 'package:skyward/common/constant.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/models/models.dart';
+import 'package:skyward/ui/color.dart';
 import 'package:material_ui/material_ui.dart' show ThemeMode;
 import 'package:flutter_test/flutter_test.dart';
 

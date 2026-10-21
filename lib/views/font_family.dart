@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:collection';
 
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/features/form/form.dart';
-import 'package:fl_clash/providers/config.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/features/form/form.dart';
+import 'package:skyward/providers/config.dart';
+import 'package:skyward/widgets/widgets.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';

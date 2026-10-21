@@ -1,8 +1,8 @@
 import 'dart:io';
 
-import 'package:fl_clash/core/desktop/helper_client.dart';
-import 'package:fl_clash/core/desktop/launch_policy.dart';
-import 'package:fl_clash/core/desktop/model.dart';
+import 'package:skyward/core/desktop/helper_client.dart';
+import 'package:skyward/core/desktop/launch_policy.dart';
+import 'package:skyward/core/desktop/model.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

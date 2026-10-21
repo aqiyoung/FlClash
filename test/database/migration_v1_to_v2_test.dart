@@ -1,7 +1,7 @@
 import 'package:drift/native.dart';
-import 'package:fl_clash/database/database.dart' as fl;
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/models/models.dart';
+import 'package:skyward/database/database.dart' as fl;
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/models/models.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sqlite3/sqlite3.dart';
 

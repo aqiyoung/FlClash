@@ -1,14 +1,14 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:fl_clash/common/app_localizations.dart';
-import 'package:fl_clash/common/app_ports.dart';
-import 'package:fl_clash/l10n/l10n.dart';
-import 'package:fl_clash/manager/window_manager.dart';
-import 'package:fl_clash/models/config.dart';
-import 'package:fl_clash/providers/providers.dart';
-import 'package:fl_clash/state.dart';
-import 'package:fl_clash/ui/icons/icons.dart';
+import 'package:skyward/common/app_localizations.dart';
+import 'package:skyward/common/app_ports.dart';
+import 'package:skyward/l10n/l10n.dart';
+import 'package:skyward/manager/window_manager.dart';
+import 'package:skyward/models/config.dart';
+import 'package:skyward/providers/providers.dart';
+import 'package:skyward/state.dart';
+import 'package:skyward/ui/icons/icons.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

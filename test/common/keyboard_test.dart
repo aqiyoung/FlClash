@@ -1,5 +1,5 @@
-import 'package:fl_clash/common/keyboard.dart';
-import 'package:fl_clash/enum/enum.dart';
+import 'package:skyward/common/keyboard.dart';
+import 'package:skyward/enum/enum.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 

@@ -1,14 +1,14 @@
 import 'dart:async';
 
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/pages/scan.dart';
-import 'package:fl_clash/plugins/app.dart';
-import 'package:fl_clash/providers/providers.dart';
-import 'package:fl_clash/state.dart';
-import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/views/profiles/custom/custom.dart';
-import 'package:fl_clash/features/form/form.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/pages/scan.dart';
+import 'package:skyward/plugins/app.dart';
+import 'package:skyward/providers/providers.dart';
+import 'package:skyward/state.dart';
+import 'package:skyward/ui/icons/icons.dart';
+import 'package:skyward/views/profiles/custom/custom.dart';
+import 'package:skyward/features/form/form.dart';
+import 'package:skyward/widgets/widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

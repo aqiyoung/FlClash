@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/core/method.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/core/method.dart';
 import 'package:flutter/foundation.dart';
 import 'package:riverpod/riverpod.dart';
 

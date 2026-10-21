@@ -1,6 +1,6 @@
-import 'package:fl_clash/features/form/form.dart';
-import 'package:fl_clash/providers/app.dart';
-import 'package:fl_clash/ui/ui.dart';
+import 'package:skyward/features/form/form.dart';
+import 'package:skyward/providers/app.dart';
+import 'package:skyward/ui/ui.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 

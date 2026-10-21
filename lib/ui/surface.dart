@@ -1,4 +1,4 @@
-import 'package:fl_clash/ui/color.dart';
+import 'package:skyward/ui/color.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// `.agents/surfaces.md` explains the levels and why dark mode never steps

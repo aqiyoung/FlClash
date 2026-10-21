@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:fl_clash/common/path.dart';
+import 'package:skyward/common/path.dart';
 
 /// Resolves every directory [appPath] hands out to [root].
 Future<void> useAppPaths(Directory root) {

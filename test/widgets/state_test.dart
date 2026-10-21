@@ -1,5 +1,5 @@
-import 'package:fl_clash/ui/activate_box.dart';
-import 'package:fl_clash/ui/disabled_mask.dart';
+import 'package:skyward/ui/activate_box.dart';
+import 'package:skyward/ui/disabled_mask.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 

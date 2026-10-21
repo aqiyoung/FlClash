@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:ui';
 
-import 'package:fl_clash/ui/ui.dart';
+import 'package:skyward/ui/ui.dart';
 
 extension FutureExt<T> on Future<T> {
   Future<T> withTimeout({

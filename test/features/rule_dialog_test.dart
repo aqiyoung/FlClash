@@ -1,9 +1,9 @@
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/features/form/form.dart';
-import 'package:fl_clash/l10n/l10n.dart';
-import 'package:fl_clash/models/models.dart';
-import 'package:fl_clash/providers/app.dart';
-import 'package:fl_clash/ui/ui.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/features/form/form.dart';
+import 'package:skyward/l10n/l10n.dart';
+import 'package:skyward/models/models.dart';
+import 'package:skyward/providers/app.dart';
+import 'package:skyward/ui/ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';

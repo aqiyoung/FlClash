@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:crypto/crypto.dart';
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/enum/enum.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/enum/enum.dart';
 
 import 'dart:math';
 

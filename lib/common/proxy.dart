@@ -1,9 +1,9 @@
-import 'package:fl_clash/common/constant.dart';
-import 'package:fl_clash/common/preferences.dart';
-import 'package:fl_clash/common/print.dart';
-import 'package:fl_clash/common/system.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/models/models.dart' show ProxyState;
+import 'package:skyward/common/constant.dart';
+import 'package:skyward/common/preferences.dart';
+import 'package:skyward/common/print.dart';
+import 'package:skyward/common/system.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/models/models.dart' show ProxyState;
 import 'package:proxy/proxy.dart';
 
 final proxy = system.isDesktop && !safeModeBuild ? Proxy() : null;

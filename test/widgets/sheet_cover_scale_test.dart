@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:fl_clash/providers/app.dart';
-import 'package:fl_clash/ui/paged_sheet.dart';
-import 'package:fl_clash/ui/scaffold.dart';
-import 'package:fl_clash/ui/sheet.dart';
+import 'package:skyward/providers/app.dart';
+import 'package:skyward/ui/paged_sheet.dart';
+import 'package:skyward/ui/scaffold.dart';
+import 'package:skyward/ui/sheet.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 

@@ -1,5 +1,5 @@
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/ui/ui.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/ui/ui.dart';
 import 'package:intl/intl.dart' show NumberFormat;
 import 'package:material_ui/material_ui.dart';
 

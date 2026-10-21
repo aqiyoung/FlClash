@@ -2,11 +2,11 @@
 
 import 'dart:io';
 
-import 'package:fl_clash/common/context.dart';
-import 'package:fl_clash/common/system.dart';
-import 'package:fl_clash/ui/color.dart';
-import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/ui/surface.dart';
+import 'package:skyward/common/context.dart';
+import 'package:skyward/common/system.dart';
+import 'package:skyward/ui/color.dart';
+import 'package:skyward/ui/icons/icons.dart';
+import 'package:skyward/ui/surface.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';

@@ -1,5 +1,5 @@
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/ui/ui.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/ui/ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 

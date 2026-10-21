@@ -1,4 +1,4 @@
-import 'package:fl_clash/enum/enum.dart';
+import 'package:skyward/enum/enum.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'generated/ip_quality.freezed.dart';

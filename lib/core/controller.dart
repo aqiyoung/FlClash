@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/core/core.dart';
-import 'package:fl_clash/core/interface.dart';
-import 'package:fl_clash/core/spill.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/models/models.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/core/core.dart';
+import 'package:skyward/core/interface.dart';
+import 'package:skyward/core/spill.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/models/models.dart';
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter/services.dart';
 import 'package:path/path.dart';

@@ -1,7 +1,7 @@
-import 'package:fl_clash/providers/app.dart';
-import 'package:fl_clash/ui/paged_sheet.dart';
-import 'package:fl_clash/ui/route_motion_hold.dart';
-import 'package:fl_clash/ui/sheet.dart';
+import 'package:skyward/providers/app.dart';
+import 'package:skyward/ui/paged_sheet.dart';
+import 'package:skyward/ui/route_motion_hold.dart';
+import 'package:skyward/ui/sheet.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';

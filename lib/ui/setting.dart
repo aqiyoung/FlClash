@@ -1,5 +1,5 @@
-import 'package:fl_clash/ui/context.dart';
-import 'package:fl_clash/ui/typography.dart';
+import 'package:skyward/ui/context.dart';
+import 'package:skyward/ui/typography.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'card.dart';

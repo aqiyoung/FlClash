@@ -1,10 +1,10 @@
 import 'dart:async';
 
-import 'package:fl_clash/ui/inherited.dart';
-import 'package:fl_clash/ui/paged_sheet.dart';
-import 'package:fl_clash/ui/shape.dart';
-import 'package:fl_clash/ui/sheet.dart';
-import 'package:fl_clash/ui/surface.dart';
+import 'package:skyward/ui/inherited.dart';
+import 'package:skyward/ui/paged_sheet.dart';
+import 'package:skyward/ui/shape.dart';
+import 'package:skyward/ui/sheet.dart';
+import 'package:skyward/ui/surface.dart';
 import 'package:flutter/rendering.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';

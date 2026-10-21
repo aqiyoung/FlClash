@@ -1,8 +1,8 @@
 import 'dart:math';
 import 'dart:ui' show Size;
 
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/ui/ui.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/ui/ui.dart';
 import 'package:flutter/widgets.dart' show BuildContext;
 
 import 'constant.dart';

@@ -1,9 +1,9 @@
-import 'package:fl_clash/ui/inherited.dart';
-import 'package:fl_clash/ui/navigator.dart';
-import 'package:fl_clash/ui/open_container.dart';
-import 'package:fl_clash/ui/paged_sheet.dart';
-import 'package:fl_clash/ui/sheet.dart';
-import 'package:fl_clash/ui/side_sheet.dart';
+import 'package:skyward/ui/inherited.dart';
+import 'package:skyward/ui/navigator.dart';
+import 'package:skyward/ui/open_container.dart';
+import 'package:skyward/ui/paged_sheet.dart';
+import 'package:skyward/ui/sheet.dart';
+import 'package:skyward/ui/side_sheet.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';

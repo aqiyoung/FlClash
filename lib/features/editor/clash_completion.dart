@@ -4,7 +4,7 @@ import 'package:code_forge/code_forge.dart'
         CodeForgeCompletionRequest,
         CodeForgeSnippet,
         CodeForgeSuggestion;
-import 'package:fl_clash/enum/enum.dart' show RuleTarget;
+import 'package:skyward/enum/enum.dart' show RuleTarget;
 
 import 'clash_schema.dart';
 import 'completion_matcher.dart';

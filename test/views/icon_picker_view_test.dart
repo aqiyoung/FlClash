@@ -1,11 +1,11 @@
 import 'package:drift/native.dart';
-import 'package:fl_clash/database/database.dart' hide IconSets;
-import 'package:fl_clash/models/models.dart';
-import 'package:fl_clash/providers/providers.dart';
-import 'package:fl_clash/state.dart';
-import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/views/profiles/custom/icon.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:skyward/database/database.dart' hide IconSets;
+import 'package:skyward/models/models.dart';
+import 'package:skyward/providers/providers.dart';
+import 'package:skyward/state.dart';
+import 'package:skyward/ui/icons/icons.dart';
+import 'package:skyward/views/profiles/custom/icon.dart';
+import 'package:skyward/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

@@ -1,4 +1,4 @@
-import 'package:fl_clash/common/preferences.dart';
+import 'package:skyward/common/preferences.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Backs [preferences] with a fresh in-memory store holding [values].

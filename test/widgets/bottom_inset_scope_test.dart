@@ -1,8 +1,8 @@
-import 'package:fl_clash/ui/context.dart';
-import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/ui/inherited.dart';
-import 'package:fl_clash/ui/models.dart';
-import 'package:fl_clash/ui/scaffold.dart';
+import 'package:skyward/ui/context.dart';
+import 'package:skyward/ui/icons/icons.dart';
+import 'package:skyward/ui/inherited.dart';
+import 'package:skyward/ui/models.dart';
+import 'package:skyward/ui/scaffold.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 

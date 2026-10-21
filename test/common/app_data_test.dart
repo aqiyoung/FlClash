@@ -1,9 +1,9 @@
 import 'dart:io';
 
 import 'package:drift/drift.dart';
-import 'package:fl_clash/common/app_data.dart';
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/database/database.dart' as db;
+import 'package:skyward/common/app_data.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/database/database.dart' as db;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart';
 
