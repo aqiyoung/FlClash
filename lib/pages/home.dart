@@ -66,6 +66,14 @@ class _HomeShell extends ConsumerWidget {
     final floating = ref.watch(
       appSettingProvider.select((state) => state.floatingNavigationBar),
     );
+    final dockScale = ref.watch(
+      themeSettingProvider.select((state) => state.dockScale),
+    );
+    final hideLabelOnScroll = ref.watch(
+      themeSettingProvider.select((state) => state.dockHideLabelOnScroll),
+    );
+    final scrolling = ref.watch(scrollingProvider);
+    final showLabel = !(hideLabelOnScroll && scrolling);
     return Material(
       color: SurfaceLevel.page.colorOf(context.colorScheme),
       child: Column(
@@ -78,9 +86,23 @@ class _HomeShell extends ConsumerWidget {
                     policy: PageTraversalPolicy(),
                     child: BottomInsetScope(
                       inset: isMobile && floating
-                          ? NavigationDock.insetOf(context)
+                          ? NavigationDock.insetOf(context, dockScale)
                           : 0,
-                      child: _BodyPadding(isMobile: isMobile, child: child),
+                      child: _BodyPadding(
+                        isMobile: isMobile,
+                        child: NotificationListener<ScrollNotification>(
+                          onNotification: (notification) {
+                            final notifier = ref.read(scrollingProvider.notifier);
+                            if (notification is ScrollStartNotification) {
+                              notifier.set(true);
+                            } else if (notification is ScrollEndNotification) {
+                              notifier.set(false);
+                            }
+                            return false;
+                          },
+                          child: child,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -103,6 +125,8 @@ class _HomeShell extends ConsumerWidget {
                         onSelected: (index) {
                           _handleToPage(navigationItems[index].label, ref);
                         },
+                        scale: dockScale,
+                        showLabel: showLabel,
                       ),
                     ),
                   ),

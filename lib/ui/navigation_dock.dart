@@ -131,15 +131,18 @@ Rect _lensRect({
 ({double pitch, double lens, double inset}) _dockLayout(
   double span,
   int count,
+  double scale,
 ) {
+  final padding = _barPadding * scale;
+  final minLens = _minLensWidth * scale;
   if (count <= 1) {
-    return (pitch: span - _barPadding * 2, lens: span, inset: _barPadding);
+    return (pitch: span - padding * 2, lens: span, inset: padding);
   }
-  final pitch = (span - _barPadding * 2) / count;
-  if (pitch + _barPadding * 2 >= _minLensWidth) {
-    return (pitch: pitch, lens: pitch + _barPadding * 2, inset: _barPadding);
+  final pitch = (span - padding * 2) / count;
+  if (pitch + padding * 2 >= minLens) {
+    return (pitch: pitch, lens: pitch + padding * 2, inset: padding);
   }
-  final lens = math.min(_minLensWidth, span);
+  final lens = math.min(minLens, span);
   final closed = (span - lens) / (count - 1);
   return (pitch: closed, lens: lens, inset: (lens - closed) / 2);
 }
@@ -325,34 +328,42 @@ class NavigationDock extends StatelessWidget {
     required this.destinations,
     required this.selectedIndex,
     required this.onSelected,
+    this.scale = 1,
+    this.showLabel = true,
   });
 
   final List<NavigationDockDestination> destinations;
   final int selectedIndex;
   final ValueChanged<int> onSelected;
 
-  static double heightOf(BuildContext context) {
-    return _barHeight +
-        MediaQuery.textScalerOf(context).scale(_labelSize) -
-        _labelSize;
+  /// The user-set size of the dock; every metric follows it.
+  final double scale;
+
+  /// Whether the destinations carry their label.
+  final bool showLabel;
+
+  static double heightOf(BuildContext context, [double scale = 1]) {
+    final labelSize = _labelSize * scale;
+    return (_barHeight + MediaQuery.textScalerOf(context).scale(labelSize) - labelSize) *
+        scale;
   }
 
-  static double _bottomMarginOf(BuildContext context) =>
-      math.max(_edgeMargin, MediaQuery.paddingOf(context).bottom);
+  static double _bottomMarginOf(BuildContext context, double scale) =>
+      math.max(_edgeMargin * scale, MediaQuery.paddingOf(context).bottom);
 
   /// The room content scrolling under the dock leaves at its foot.
-  static double insetOf(BuildContext context) =>
-      heightOf(context) + _bottomMarginOf(context);
+  static double insetOf(BuildContext context, [double scale = 1]) =>
+      heightOf(context, scale) + _bottomMarginOf(context, scale);
 
   @override
   Widget build(BuildContext context) {
-    final height = heightOf(context);
+    final height = heightOf(context, scale);
     final dock = Padding(
       padding: EdgeInsets.fromLTRB(
-        _edgeMargin,
-        _shadowRoom,
-        _edgeMargin,
-        _bottomMarginOf(context),
+        _edgeMargin * scale,
+        _shadowRoom * scale,
+        _edgeMargin * scale,
+        _bottomMarginOf(context, scale),
       ),
       child: _HitSlop(
         child: SizedBox(
@@ -367,13 +378,15 @@ class NavigationDock extends StatelessWidget {
                     constraints: BoxConstraints(
                       maxWidth: destinations.length >= _fullWidthCount
                           ? double.infinity
-                          : destinations.length * _maxItemExtent +
-                                _barPadding * 4,
+                          : destinations.length * _maxItemExtent * scale +
+                                _barPadding * 4 * scale,
                     ),
                     child: FloatingNavigationBar(
                       destinations: destinations,
                       selectedIndex: selectedIndex,
                       onSelected: onSelected,
+                      scale: scale,
+                      showLabel: showLabel,
                     ),
                   ),
                 ),
@@ -387,7 +400,7 @@ class NavigationDock extends StatelessWidget {
     // own keeps that to the dock (.agents/architecture.md, Rebuild Scopes).
     return SizedBox(
       width: double.infinity,
-      height: _shadowRoom + height + _bottomMarginOf(context),
+      height: _shadowRoom * scale + height + _bottomMarginOf(context, scale),
       child: RepaintBoundary(child: LayoutBuilder(builder: (_, _) => dock)),
     );
   }
@@ -770,11 +783,15 @@ class FloatingNavigationBar extends StatefulWidget {
     required this.destinations,
     required this.selectedIndex,
     required this.onSelected,
+    this.scale = 1,
+    this.showLabel = true,
   });
 
   final List<NavigationDockDestination> destinations;
   final int selectedIndex;
   final ValueChanged<int> onSelected;
+  final double scale;
+  final bool showLabel;
 
   @override
   State<FloatingNavigationBar> createState() => _FloatingNavigationBarState();
@@ -814,8 +831,9 @@ class _FloatingNavigationBarState extends State<FloatingNavigationBar>
   int get _selectedIndex => widget.selectedIndex.clamp(0, _lastIndex);
 
   ({double pitch, double lens, double inset}) get _layout => _dockLayout(
-    context.size!.width - _barPadding * 2,
+    context.size!.width - _barPadding * 2 * widget.scale,
     widget.destinations.length,
+    widget.scale,
   );
 
   @override
@@ -934,7 +952,8 @@ class _FloatingNavigationBarState extends State<FloatingNavigationBar>
         ? localPosition.dx
         : width - localPosition.dx;
     final layout = _layout;
-    final position = (dx - _barPadding - layout.inset) / layout.pitch - 0.5;
+    final position =
+        (dx - _barPadding * widget.scale - layout.inset) / layout.pitch - 0.5;
     if (position < 0) {
       return _rubberBand(position, _overdrag);
     }
@@ -1143,8 +1162,8 @@ class _FloatingNavigationBarState extends State<FloatingNavigationBar>
     final colorScheme = context.colorScheme;
     final labelStyle = AppTextStyle.custom(
       context,
-      size: _labelSize,
-      leading: _labelLeading,
+      size: _labelSize * widget.scale,
+      leading: _labelLeading * widget.scale,
       weight: FontWeight.w500,
     );
     final labels = [
@@ -1184,7 +1203,7 @@ class _FloatingNavigationBarState extends State<FloatingNavigationBar>
             onHover: _handleHover,
             onExit: _handleExit,
             child: Padding(
-              padding: const EdgeInsets.all(_barPadding),
+              padding: EdgeInsets.all(_barPadding * widget.scale),
               // Above the LayoutBuilder: rebuilding anything under one relays
               // it out, and that repaint would otherwise reach the whole dock.
               child: RepaintBoundary(
@@ -1193,8 +1212,9 @@ class _FloatingNavigationBarState extends State<FloatingNavigationBar>
                     final layout = _dockLayout(
                       constraints.maxWidth,
                       widget.destinations.length,
+                      widget.scale,
                     );
-                    final room = layout.pitch - _labelInset * 2;
+                    final room = layout.pitch - _labelInset * 2 * widget.scale;
                     final labelScale = widest <= room
                         ? 1.0
                         : math.max(room / widest, _minLabelSize / _labelSize);
@@ -1224,11 +1244,13 @@ class _FloatingNavigationBarState extends State<FloatingNavigationBar>
                                 parallax: _parallax[index],
                                 lift: _lift,
                                 labelStyle: labelStyle.copyWith(
-                                  fontSize: _labelSize * labelScale,
+                                  fontSize: _labelSize * labelScale * widget.scale,
                                 ),
                                 labelHeight: lineHeight,
                                 labelOverflows:
                                     labels[index].width * labelScale > room,
+                                scale: widget.scale,
+                                showLabel: widget.showLabel,
                                 onActivate: () => widget.onSelected(index),
                               ),
                             ),
@@ -1520,6 +1542,8 @@ class _FloatingBarItem extends StatefulWidget {
     required this.labelStyle,
     required this.labelHeight,
     required this.labelOverflows,
+    required this.scale,
+    required this.showLabel,
     required this.onActivate,
   });
 
@@ -1538,6 +1562,8 @@ class _FloatingBarItem extends StatefulWidget {
   final TextStyle? labelStyle;
   final double labelHeight;
   final bool labelOverflows;
+  final double scale;
+  final bool showLabel;
   final VoidCallback onActivate;
 
   @override
@@ -1581,27 +1607,37 @@ class _FloatingBarItemState extends State<_FloatingBarItem> {
       index: widget.index,
       color: tint,
       textDirection: Directionality.of(context),
+      scale: widget.scale,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: _labelInset),
+        padding: EdgeInsets.symmetric(horizontal: _labelInset * widget.scale),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             GlyphIcon(
               widget.destination.glyph,
-              size: _iconSize,
+              size: _iconSize * widget.scale,
               color: color,
               fill: 1,
             ),
-            const SizedBox(height: _labelGap),
-            SizedBox(
-              height: widget.labelHeight,
-              child: Center(
-                child: Text(
-                  widget.destination.label,
-                  maxLines: 1,
-                  softWrap: false,
-                  overflow: TextOverflow.ellipsis,
-                  style: widget.labelStyle?.copyWith(color: color),
+            SizedBox(height: _labelGap * widget.scale),
+            AnimatedSize(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeOutCubic,
+              alignment: Alignment.topCenter,
+              child: SizedBox(
+                height: widget.showLabel ? widget.labelHeight : 0,
+                child: Center(
+                  child: AnimatedOpacity(
+                    opacity: widget.showLabel ? 1 : 0,
+                    duration: const Duration(milliseconds: 160),
+                    child: Text(
+                      widget.destination.label,
+                      maxLines: 1,
+                      softWrap: false,
+                      overflow: TextOverflow.ellipsis,
+                      style: widget.labelStyle?.copyWith(color: color),
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -1656,6 +1692,7 @@ class _LensTint extends SingleChildRenderObjectWidget {
     required this.index,
     required this.color,
     required this.textDirection,
+    required this.scale,
     super.child,
   });
 
@@ -1668,6 +1705,7 @@ class _LensTint extends SingleChildRenderObjectWidget {
   final int index;
   final Color color;
   final TextDirection textDirection;
+  final double scale;
 
   @override
   RenderObject createRenderObject(BuildContext context) {
@@ -1681,6 +1719,7 @@ class _LensTint extends SingleChildRenderObjectWidget {
       index: index,
       color: color,
       textDirection: textDirection,
+      scale: scale,
     );
   }
 
@@ -1695,7 +1734,8 @@ class _LensTint extends SingleChildRenderObjectWidget {
       ..parallax = parallax
       ..index = index
       ..color = color
-      ..textDirection = textDirection;
+      ..textDirection = textDirection
+      ..scale = scale;
   }
 }
 
@@ -1710,6 +1750,7 @@ class _RenderLensTint extends RenderProxyBox {
     required int index,
     required Color color,
     required TextDirection textDirection,
+    required double scale,
   }) : _part = part,
        _lens = lens,
        _lensWidth = lensWidth,
@@ -1718,7 +1759,8 @@ class _RenderLensTint extends RenderProxyBox {
        _parallax = parallax,
        _index = index,
        _color = color,
-       _textDirection = textDirection;
+       _textDirection = textDirection,
+       _scale = scale;
 
   final _outside = LayerHandle<ClipPathLayer>();
   final _inside = LayerHandle<ClipPathLayer>();
@@ -1820,6 +1862,15 @@ class _RenderLensTint extends RenderProxyBox {
       return;
     }
     _textDirection = value;
+    markNeedsPaint();
+  }
+
+  double _scale;
+  set scale(double value) {
+    if (value == _scale) {
+      return;
+    }
+    _scale = value;
     markNeedsPaint();
   }
 
@@ -1926,9 +1977,9 @@ class _RenderLensTint extends RenderProxyBox {
     // The lens rests [_barPadding] past its destination, over the edges of
     // the neighbours where nothing is drawn.
     final reached = Rect.fromLTRB(
-      lensBounds.left + _barPadding,
+      lensBounds.left + _barPadding * _scale,
       lensBounds.top,
-      lensBounds.right - _barPadding,
+      lensBounds.right - _barPadding * _scale,
       lensBounds.bottom,
     );
     final outside = _part != _LensPart.inside;
@@ -1945,7 +1996,9 @@ class _RenderLensTint extends RenderProxyBox {
       }
       return;
     }
-    final reach = moved(rest).expandToInclude(bounds).inflate(_labelInset);
+    final reach = moved(rest).expandToInclude(bounds).inflate(
+      _labelInset * _scale,
+    );
     final lens = AppShape.full.getOuterPath(lensBounds);
     if (outside) {
       _outside.layer = context.pushClipPath(

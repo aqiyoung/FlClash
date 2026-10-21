@@ -482,6 +482,8 @@ abstract class ThemeProps with _$ThemeProps {
     @Default(LiquidGlassMode.none)
     @JsonKey(readValue: _readLiquidGlass)
     LiquidGlassMode liquidGlass,
+    @Default(1.0) double dockScale,
+    @Default(false) bool dockHideLabelOnScroll,
     @Default(TextScale()) TextScale textScale,
     // `fontFamily` held the names of a removed enum, which old configs may
     // still carry.
