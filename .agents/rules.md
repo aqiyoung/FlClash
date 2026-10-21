@@ -552,6 +552,21 @@ When testing freezed models with nested objects, always round-trip through `json
 For async widgets, put visual cleanup in `finally` when the action may throw. Focused widget tests should cover success,
 failure, disposal, and any timer boundary that changes visible state.
 
+## Builds Belong to CI
+
+The agent never builds on the host. `flutter build`, `dart setup.dart` and `flutter test` all compile the Go core
+and the Rust plugin through `plugins/setup/hook/build.dart`, so each of them is a build and each of them belongs
+to GitHub Actions:
+
+- Every platform's packages come from the workflows (`.github/workflows/`): the release channel builds and signs
+  them, `probe.yaml` builds the throwaway Android build that goes onto a phone.
+- The test suites run in CI as well. A local `flutter test` would build the native assets, which the rule forbids.
+- What the agent may run on the host: `dart format`, `flutter analyze --no-fatal-infos`, and the code generation
+  (`dart run build_runner build --delete-conflicting-outputs`, `dart run intl_utils:generate`), which write
+  sources rather than artifacts.
+- When a change needs a build to be seen, dispatch a workflow (a `probe-` release is the cheap one) and hand the
+  artifact over instead of building it.
+
 ## Running the App Locally
 
 - An agent starts FlClash on the host only as a safe mode build (`--dart-define=SAFE_MODE=true`, see

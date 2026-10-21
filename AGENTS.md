@@ -43,6 +43,10 @@ Read these only when the task touches their area:
   touch. Preserve
   `// ignore:`-style directives, license headers, codegen markers, and vendored upstream comments. See
   [.agents/rules.md](.agents/rules.md) for what belongs in a test or in `.agents/` instead.
+- **Never build on the host.** Every build runs in GitHub Actions: `flutter build`, `dart setup.dart` and
+  `flutter test` are off limits locally, because each of them compiles the Go core and the Rust plugin on the
+  user's machine. Locally the agent only edits files, runs `dart format` and `flutter analyze`; the test suites
+  run in CI. See [.agents/rules.md](.agents/rules.md).
 - Start FlClash on the host only as a safe mode build, and end only processes you started, by recorded pid. Never
   kill a FlClash instance by name; the user's own instance is not yours to close. See
   [.agents/rules.md](.agents/rules.md).
@@ -66,9 +70,9 @@ Read these only when the task touches their area:
   [.agents/rules.md](.agents/rules.md).
 - Follow `lint_options.yaml` (included by every `analysis_options.yaml`), especially single quotes, trailing commas, `child:` last, no `print()`, const/final
   preferences, and declared return types.
-- Before reporting a change done, run `flutter pub get`, `flutter analyze --no-fatal-infos`, and the `flutter test`
-  suites that cover it, as CI does. If a toolchain the build hook needs is missing (Go, and on Linux and Windows
-  cargo), say which check was skipped rather than dropping it silently.
+- Before reporting a change done, run `flutter pub get` and `flutter analyze --no-fatal-infos`. The `flutter test`
+  suites that cover the change run in CI, not on the host: a local test run builds the native assets, which the
+  rules above forbid. If a check could not run, say which one and why rather than dropping it silently.
 
 ## Repo Skills
 
