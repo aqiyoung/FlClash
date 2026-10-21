@@ -966,5 +966,11 @@
   "preferred": "Préféré",
   "addToLocalProxies": "Ajouter aux proxys locaux",
   "addedToLocalProxies": "{name} ajouté aux proxys locaux",
-  "alreadyInLocalProxies": "{name} est déjà dans les proxys locaux"
+  "alreadyInLocalProxies": "{name} est déjà dans les proxys locaux",
+  "storage": "Stockage",
+  "database": "Base de données",
+  "temporary": "Fichiers temporaires",
+  "diagnostics": "Diagnostics",
+  "clearCache": "Vider le cache",
+  "type": "Type"
 }

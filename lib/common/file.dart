@@ -83,3 +83,34 @@ Future<void> safeDeletePath(String path) async {
   };
   await entity.safeDelete(recursive: true);
 }
+
+/// Bytes a file, or everything under a directory, occupies. An entry that
+/// cannot be read counts as zero, so one locked file cannot fail a whole
+/// measurement.
+Future<int> pathSize(String path) async {
+  final type = await FileSystemEntity.type(path);
+  if (type == FileSystemEntityType.file) {
+    try {
+      return await File(path).length();
+    } catch (_) {
+      return 0;
+    }
+  }
+  if (type != FileSystemEntityType.directory) {
+    return 0;
+  }
+  var total = 0;
+  try {
+    await for (final entity in Directory(
+      path,
+    ).list(recursive: true, followLinks: false)) {
+      if (entity is! File) {
+        continue;
+      }
+      try {
+        total += await entity.length();
+      } catch (_) {}
+    }
+  } catch (_) {}
+  return total;
+}

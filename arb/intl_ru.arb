@@ -966,5 +966,11 @@
   "preferred": "Предпочтительный",
   "addToLocalProxies": "Добавить в локальные прокси",
   "addedToLocalProxies": "«{name}» добавлен в локальные прокси",
-  "alreadyInLocalProxies": "«{name}» уже есть в локальных прокси"
+  "alreadyInLocalProxies": "«{name}» уже есть в локальных прокси",
+  "storage": "Хранилище",
+  "database": "База данных",
+  "temporary": "Временные файлы",
+  "diagnostics": "Диагностика",
+  "clearCache": "Очистить кэш",
+  "type": "Тип"
 }

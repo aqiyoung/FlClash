@@ -1,7 +1,14 @@
 import 'package:fl_clash/common/common.dart';
+import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/l10n/l10n.dart';
+import 'package:fl_clash/views/config/advanced.dart';
+import 'package:fl_clash/views/config/diagnostics.dart';
+import 'package:fl_clash/views/config/dns.dart';
 import 'package:fl_clash/views/config/general.dart';
 import 'package:fl_clash/views/config/network.dart';
+import 'package:fl_clash/views/config/rules.dart';
+import 'package:fl_clash/views/config/scripts.dart';
+import 'package:fl_clash/views/config/storage.dart';
 import 'package:fl_clash/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -29,7 +36,13 @@ class SettingsEntry {
 }
 
 /// Rows of the lists that carry enough of them to be worth searching.
-final settingsEntries = <SettingsEntry>[..._generalEntries, ..._networkEntries];
+final settingsEntries = <SettingsEntry>[
+  ..._generalEntries,
+  ..._networkEntries,
+  ..._dnsEntries,
+  ..._advancedEntries,
+  ..._maintenanceEntries,
+];
 
 final _generalEntries = <SettingsEntry>[
   SettingsEntry(
@@ -252,6 +265,52 @@ final _networkEntries = <SettingsEntry>[
   ),
 ];
 
+/// DNS is one switch after another, so every key it can override is a row a
+/// reader may look for by name.
+final _dnsEntries = <SettingsEntry>[
+  for (final key in DnsOverrideKey.values)
+    SettingsEntry(title: key.label, page: (l) => 'DNS', view: _dnsView),
+];
+
+/// The advanced page's rows open other lists rather than change a value, but
+/// they are still settings a reader looks for by name.
+final _advancedEntries = <SettingsEntry>[
+  SettingsEntry(
+    title: (l) => l.network,
+    page: (l) => l.advancedConfig,
+    view: _advancedView,
+  ),
+  SettingsEntry(
+    title: (l) => 'DNS',
+    page: (l) => l.advancedConfig,
+    view: _dnsView,
+  ),
+  SettingsEntry(
+    title: (l) => l.addedRules,
+    page: (l) => l.advancedConfig,
+    view: _rulesView,
+  ),
+  SettingsEntry(
+    title: (l) => l.script,
+    page: (l) => l.advancedConfig,
+    view: _scriptsView,
+  ),
+];
+
+/// The two pages that read the app's own state rather than change a setting.
+final _maintenanceEntries = <SettingsEntry>[
+  SettingsEntry(
+    title: (l) => l.storage,
+    page: (l) => l.settings,
+    view: _storageView,
+  ),
+  SettingsEntry(
+    title: (l) => l.diagnostics,
+    page: (l) => l.settings,
+    view: _diagnosticsView,
+  ),
+];
+
 /// Kept as tear-offs so the entries stay const.
 Widget _generalView(BuildContext context) => const GeneralView();
 
@@ -259,3 +318,15 @@ Widget _networkView(BuildContext context) => BaseScaffold(
   title: context.appLocalizations.network,
   body: const NetworkListView(),
 );
+
+Widget _dnsView(BuildContext context) => const DnsView();
+
+Widget _advancedView(BuildContext context) => const AdvancedConfigView();
+
+Widget _rulesView(BuildContext context) => const AddedRulesView();
+
+Widget _scriptsView(BuildContext context) => const ScriptsView();
+
+Widget _storageView(BuildContext context) => const StorageView();
+
+Widget _diagnosticsView(BuildContext context) => const DiagnosticsView();

@@ -11,7 +11,7 @@ import 'package:flutter/foundation.dart' show mapEquals;
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-extension on DnsOverrideKey {
+extension DnsOverrideKeyLabel on DnsOverrideKey {
   String label(AppLocalizations l) => switch (this) {
     DnsOverrideKey.enable => l.status,
     DnsOverrideKey.listen => l.listen,

@@ -7978,8 +7978,7 @@ class AppLocalizations {
   String customImportDroppedSubRules(num count, Object label) {
     return Intl.plural(
       count,
-      one:
-          '1 SUB-RULE rule was dropped, since custom profiles do not support sub-rules',
+      one: '1 SUB-RULE rule was dropped, since custom profiles do not support sub-rules',
       other:
           '$label SUB-RULE rules were dropped, since custom profiles do not support sub-rules',
       name: 'customImportDroppedSubRules',
@@ -8086,6 +8085,41 @@ class AppLocalizations {
       desc: '',
       args: [name],
     );
+  }
+
+  /// `Storage`
+  String get storage {
+    return Intl.message('Storage', name: 'storage', desc: '', args: []);
+  }
+
+  /// `Database`
+  String get database {
+    return Intl.message('Database', name: 'database', desc: '', args: []);
+  }
+
+  /// `Temporary files`
+  String get temporary {
+    return Intl.message(
+      'Temporary files',
+      name: 'temporary',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Diagnostics`
+  String get diagnostics {
+    return Intl.message('Diagnostics', name: 'diagnostics', desc: '', args: []);
+  }
+
+  /// `Clear cache`
+  String get clearCache {
+    return Intl.message('Clear cache', name: 'clearCache', desc: '', args: []);
+  }
+
+  /// `Type`
+  String get type {
+    return Intl.message('Type', name: 'type', desc: '', args: []);
   }
 }
 
