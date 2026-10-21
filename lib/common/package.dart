@@ -5,9 +5,9 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'common.dart';
 
 extension PackageInfoExtension on PackageInfo {
-  /// The version users see and updates are compared against. Android reports
-  /// the four-component versionName itself; the desktop packages only carry
-  /// upstream's three, so the injected [buildVersion] fills in the revision.
+  /// The version users see and updates are compared against. The packages only
+  /// carry upstream's three components, so the injected [buildVersion] supplies
+  /// the revision our release adds on top.
   String get displayVersion => buildVersion.isNotEmpty ? buildVersion : version;
 
   String get ua => [
