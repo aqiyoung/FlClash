@@ -1,6 +1,6 @@
 # Surfaces
 
-FlClash draws structure with fills and keeps color for state. A surface stands out from what it sits on by a step in
+Skyward draws structure with fills and keeps color for state. A surface stands out from what it sits on by a step in
 lightness, never by a border. Color appears where something is selected, on, failing, or the one action a screen is
 for. The dashboard set this direction; every other screen follows it, and Material components keep their behavior
 but give up their tonal container fills.
@@ -44,7 +44,7 @@ nothing nests below it, so a design that needs a fifth level needs fewer contain
   blurred shadow each costs raster time for no extra layering. A render object that paints a shadow itself draws it
   with `drawRSuperellipse`, as `ShapeDecoration` does: Impeller blurs a superellipse in one analytic pass, but a path
   through an offscreen Gaussian blur on every frame, which made the shadows the largest raster cost of an opening menu.
-  A shadow is black at an opacity, so one measured on iOS darkens FlClash's surfaces as it darkens iOS's own: the
+  A shadow is black at an opacity, so one measured on iOS darkens Skyward's surfaces as it darkens iOS's own: the
   surfaces differ from iOS's too little to call for retuning, and over the dark page, which is not black, a shadow
   shows where iOS's would not.
 

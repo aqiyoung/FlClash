@@ -30,7 +30,7 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m3(detail) => "Не удалось очистить данные: ${detail}";
 
   static String m4(code) =>
-      "Windows отказалась запускать FlClashCore.exe (ошибка ${code}). Политики контроля приложений, такие как Smart App Control или AppLocker, блокируют неподписанные программы; разрешите Skyward в этой политике или отключите её и повторите попытку.";
+      "Windows отказалась запускать SkywardCore.exe (ошибка ${code}). Политики контроля приложений, такие как Smart App Control или AppLocker, блокируют неподписанные программы; разрешите Skyward в этой политике или отключите её и повторите попытку.";
 
   static String m5(name) =>
       "Приложение два раза подряд не смогло завершить запуск. Чтобы разорвать цикл, профиль ${name} снят с выбора, а автоматическая настройка пропущена. Вы можете выбрать его снова в любой момент.";
@@ -530,7 +530,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "core": MessageLookupByLibrary.simpleMessage("Ядро"),
     "coreBlockedByPolicyTip": m4,
     "coreBlockedBySmartAppControlTip": MessageLookupByLibrary.simpleMessage(
-      "Smart App Control в Windows заблокировал неподписанный FlClashCore.exe. Откройте Безопасность Windows → Управление приложениями и браузером → Параметры Smart App Control, выберите «Выкл.» и снова запустите Skyward. Повторно включить Smart App Control без переустановки Windows нельзя.",
+      "Smart App Control в Windows заблокировал неподписанный SkywardCore.exe. Откройте Безопасность Windows → Управление приложениями и браузером → Параметры Smart App Control, выберите «Выкл.» и снова запустите Skyward. Повторно включить Smart App Control без переустановки Windows нельзя.",
     ),
     "coreStatus": MessageLookupByLibrary.simpleMessage("Статус ядра"),
     "country": MessageLookupByLibrary.simpleMessage("Регион"),
@@ -993,10 +993,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "inputRuleContent": MessageLookupByLibrary.simpleMessage(
       "Введите содержимое правила",
     ),
-    "installedAppsPermissionDeniedMessage":
-        MessageLookupByLibrary.simpleMessage(
-          "Разрешение на список приложений отклонено, поэтому установленные приложения недоступны. Предоставьте его вручную в системных настройках.",
-        ),
+    "installedAppsPermissionDeniedMessage": MessageLookupByLibrary.simpleMessage(
+      "Разрешение на список приложений отклонено, поэтому установленные приложения недоступны. Предоставьте его вручную в системных настройках.",
+    ),
     "installedAppsPermissionDesc": MessageLookupByLibrary.simpleMessage(
       "Эта система не выдаёт список установленных приложений без разрешения. Предоставьте его, чтобы настроить прокси для отдельных приложений.",
     ),
@@ -1741,10 +1740,10 @@ class MessageLookup extends MessageLookupByLibrary {
       "Отправлено. Подтвердите импорт на другом устройстве.",
     ),
     "sendFromPhonePageTitle": MessageLookupByLibrary.simpleMessage(
-      "Отправить ссылку в FlClash",
+      "Отправить ссылку в Skyward",
     ),
     "sendFromPhonePermissionDenied": MessageLookupByLibrary.simpleMessage(
-      "Чтобы получить ссылку с телефона, FlClash нужно разрешение «Устройства поблизости» для доступа к локальной сети. Включите его в настройках приложения.",
+      "Чтобы получить ссылку с телефона, Skyward нужно разрешение «Устройства поблизости» для доступа к локальной сети. Включите его в настройках приложения.",
     ),
     "sendFromPhoneTip": MessageLookupByLibrary.simpleMessage(
       "Отсканируйте код камерой телефона и вставьте ссылку на открывшейся странице. Оба устройства должны быть в одной сети.",
@@ -1788,7 +1787,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Не удалось прочитать прокси из ссылок",
     ),
     "shareQrcodeTip": MessageLookupByLibrary.simpleMessage(
-      "Отсканируйте в FlClash на другом устройстве, чтобы импортировать этот профиль.",
+      "Отсканируйте в Skyward на другом устройстве, чтобы импортировать этот профиль.",
     ),
     "show": MessageLookupByLibrary.simpleMessage("Показать"),
     "showLess": MessageLookupByLibrary.simpleMessage("Свернуть"),

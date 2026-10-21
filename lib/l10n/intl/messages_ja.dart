@@ -29,7 +29,7 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m3(detail) => "データを消去できませんでした：${detail}";
 
   static String m4(code) =>
-      "Windows が FlClashCore.exe の実行を拒否しました（エラー ${code}）。スマート アプリ コントロールや AppLocker などのアプリ制御ポリシーは未署名のプログラムをブロックします。ポリシーで Skyward を許可するか、ポリシーを無効にしてから再試行してください。";
+      "Windows が SkywardCore.exe の実行を拒否しました（エラー ${code}）。スマート アプリ コントロールや AppLocker などのアプリ制御ポリシーは未署名のプログラムをブロックします。ポリシーで Skyward を許可するか、ポリシーを無効にしてから再試行してください。";
 
   static String m5(name) =>
       "アプリの起動が2回連続で完了しませんでした。クラッシュループを断ち切るため、プロファイル ${name} の選択を解除し、今回の自動セットアップをスキップしました。いつでも選択し直せます。";
@@ -434,7 +434,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "core": MessageLookupByLibrary.simpleMessage("コア"),
     "coreBlockedByPolicyTip": m4,
     "coreBlockedBySmartAppControlTip": MessageLookupByLibrary.simpleMessage(
-      "Windows のスマート アプリ コントロールが、署名されていない FlClashCore.exe をブロックしました。Windows セキュリティ → アプリとブラウザーの制御 → スマート アプリ コントロールの設定で「オフ」を選び、Skyward を再起動してください。一度オフにすると、Windows を再インストールしない限り再度オンにはできません。",
+      "Windows のスマート アプリ コントロールが、署名されていない SkywardCore.exe をブロックしました。Windows セキュリティ → アプリとブラウザーの制御 → スマート アプリ コントロールの設定で「オフ」を選び、Skyward を再起動してください。一度オフにすると、Windows を再インストールしない限り再度オンにはできません。",
     ),
     "coreStatus": MessageLookupByLibrary.simpleMessage("コアの状態"),
     "country": MessageLookupByLibrary.simpleMessage("地域"),
@@ -1427,10 +1427,10 @@ class MessageLookup extends MessageLookupByLibrary {
       "送信しました。もう一方のデバイスでインポートを確認してください。",
     ),
     "sendFromPhonePageTitle": MessageLookupByLibrary.simpleMessage(
-      "FlClash にリンクを送信",
+      "Skyward にリンクを送信",
     ),
     "sendFromPhonePermissionDenied": MessageLookupByLibrary.simpleMessage(
-      "スマートフォンからリンクを受け取るには、FlClash がローカルネットワークにアクセスするための「付近のデバイス」権限が必要です。アプリの設定でオンにしてください。",
+      "スマートフォンからリンクを受け取るには、Skyward がローカルネットワークにアクセスするための「付近のデバイス」権限が必要です。アプリの設定でオンにしてください。",
     ),
     "sendFromPhoneTip": MessageLookupByLibrary.simpleMessage(
       "スマートフォンのカメラでコードをスキャンし、開いたページにリンクを貼り付けてください。両方のデバイスを同じネットワークに接続する必要があります。",
@@ -1466,7 +1466,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "リンクからプロキシを読み取れませんでした",
     ),
     "shareQrcodeTip": MessageLookupByLibrary.simpleMessage(
-      "別のデバイスの FlClash でスキャンすると、このプロファイルをインポートできます。",
+      "別のデバイスの Skyward でスキャンすると、このプロファイルをインポートできます。",
     ),
     "show": MessageLookupByLibrary.simpleMessage("表示"),
     "showLess": MessageLookupByLibrary.simpleMessage("折りたたむ"),

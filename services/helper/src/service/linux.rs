@@ -152,7 +152,7 @@ fn quoted_unit_argument(path: &Path) -> String {
 fn unit_contents(executable: &Path, owner: Owner) -> String {
     format!(
         "[Unit]\n\
-         Description=FlClash Helper starts the FlClash Core with the privileges TUN mode needs.\n\
+         Description=Skyward Helper starts the FlClash Core with the privileges TUN mode needs.\n\
          After=network-online.target nftables.service iptables.service\n\
          StartLimitIntervalSec=60\n\
          StartLimitBurst=5\n\

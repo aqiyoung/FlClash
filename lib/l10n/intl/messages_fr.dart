@@ -30,7 +30,7 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m3(detail) => "Impossible d’effacer les données : ${detail}";
 
   static String m4(code) =>
-      "Windows a refusé d’exécuter FlClashCore.exe (erreur ${code}). Une stratégie de contrôle des applications, telle que Smart App Control ou AppLocker, bloque les programmes non signés ; autorisez Skyward dans cette stratégie ou désactivez-la, puis réessayez.";
+      "Windows a refusé d’exécuter SkywardCore.exe (erreur ${code}). Une stratégie de contrôle des applications, telle que Smart App Control ou AppLocker, bloque les programmes non signés ; autorisez Skyward dans cette stratégie ou désactivez-la, puis réessayez.";
 
   static String m5(name) =>
       "L’app n’a pas réussi à finir de démarrer deux fois de suite. Pour sortir de cette boucle, le profil ${name} a été désélectionné et la configuration automatique a été ignorée. Vous pouvez le sélectionner de nouveau à tout moment.";
@@ -551,7 +551,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "core": MessageLookupByLibrary.simpleMessage("Cœur"),
     "coreBlockedByPolicyTip": m4,
     "coreBlockedBySmartAppControlTip": MessageLookupByLibrary.simpleMessage(
-      "Windows Smart App Control a bloqué FlClashCore.exe car il n’est pas signé. Ouvrez Sécurité Windows → Contrôle des applications et du navigateur → Paramètres de Smart App Control, choisissez Désactivé, puis relancez Skyward. Smart App Control ne peut pas être réactivé sans réinstaller Windows.",
+      "Windows Smart App Control a bloqué SkywardCore.exe car il n’est pas signé. Ouvrez Sécurité Windows → Contrôle des applications et du navigateur → Paramètres de Smart App Control, choisissez Désactivé, puis relancez Skyward. Smart App Control ne peut pas être réactivé sans réinstaller Windows.",
     ),
     "coreStatus": MessageLookupByLibrary.simpleMessage("État du cœur"),
     "country": MessageLookupByLibrary.simpleMessage("Région"),
@@ -1026,10 +1026,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "inputRuleContent": MessageLookupByLibrary.simpleMessage(
       "Saisissez le contenu de la règle",
     ),
-    "installedAppsPermissionDeniedMessage":
-        MessageLookupByLibrary.simpleMessage(
-          "L’autorisation de la liste des apps a été refusée ; les apps installées ne peuvent donc pas être listées. Veuillez l’accorder manuellement dans les réglages du système.",
-        ),
+    "installedAppsPermissionDeniedMessage": MessageLookupByLibrary.simpleMessage(
+      "L’autorisation de la liste des apps a été refusée ; les apps installées ne peuvent donc pas être listées. Veuillez l’accorder manuellement dans les réglages du système.",
+    ),
     "installedAppsPermissionDesc": MessageLookupByLibrary.simpleMessage(
       "Ce système masque la liste des apps installées tant que l’autorisation n’est pas accordée. Accordez-la pour configurer le proxy par app.",
     ),
@@ -1794,10 +1793,10 @@ class MessageLookup extends MessageLookupByLibrary {
       "Envoyé. Confirmez l\'importation sur l\'autre appareil.",
     ),
     "sendFromPhonePageTitle": MessageLookupByLibrary.simpleMessage(
-      "Envoyer un lien à FlClash",
+      "Envoyer un lien à Skyward",
     ),
     "sendFromPhonePermissionDenied": MessageLookupByLibrary.simpleMessage(
-      "Pour recevoir un lien depuis le téléphone, FlClash a besoin de l\'autorisation Appareils à proximité, qui lui donne accès au réseau local. Activez-la dans les paramètres de l\'application.",
+      "Pour recevoir un lien depuis le téléphone, Skyward a besoin de l\'autorisation Appareils à proximité, qui lui donne accès au réseau local. Activez-la dans les paramètres de l\'application.",
     ),
     "sendFromPhoneTip": MessageLookupByLibrary.simpleMessage(
       "Scannez le code avec l\'appareil photo du téléphone, puis collez le lien dans la page qui s\'ouvre. Les deux appareils doivent être sur le même réseau.",
@@ -1845,7 +1844,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Aucun proxy n’a pu être lu dans les liens",
     ),
     "shareQrcodeTip": MessageLookupByLibrary.simpleMessage(
-      "Scannez avec FlClash sur un autre appareil pour importer ce profil.",
+      "Scannez avec Skyward sur un autre appareil pour importer ce profil.",
     ),
     "show": MessageLookupByLibrary.simpleMessage("Afficher"),
     "showLess": MessageLookupByLibrary.simpleMessage("Réduire"),

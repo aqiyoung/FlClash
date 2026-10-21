@@ -29,7 +29,7 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m3(detail) => "데이터를 지우지 못했습니다: ${detail}";
 
   static String m4(code) =>
-      "Windows에서 FlClashCore.exe 실행을 거부했습니다(오류 ${code}). Smart App Control이나 AppLocker와 같은 앱 제어 정책이 서명되지 않은 프로그램을 차단합니다. 해당 정책에서 Skyward를 허용하거나 정책을 끈 후 다시 시도하세요.";
+      "Windows에서 SkywardCore.exe 실행을 거부했습니다(오류 ${code}). Smart App Control이나 AppLocker와 같은 앱 제어 정책이 서명되지 않은 프로그램을 차단합니다. 해당 정책에서 Skyward를 허용하거나 정책을 끈 후 다시 시도하세요.";
 
   static String m5(name) =>
       "앱이 두 번 연속 시작을 완료하지 못했습니다. 반복을 끊기 위해 프로필 ${name}의 선택을 해제하고 자동 설정을 건너뛰었습니다. 언제든지 다시 선택할 수 있습니다.";
@@ -421,7 +421,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "core": MessageLookupByLibrary.simpleMessage("코어"),
     "coreBlockedByPolicyTip": m4,
     "coreBlockedBySmartAppControlTip": MessageLookupByLibrary.simpleMessage(
-      "서명되지 않아 Windows Smart App Control이 FlClashCore.exe를 차단했습니다. Windows 보안 → 앱 및 브라우저 컨트롤 → Smart App Control 설정에서 끔을 선택한 후 Skyward를 다시 시작하세요. Smart App Control은 Windows를 다시 설치하지 않으면 다시 켤 수 없습니다.",
+      "서명되지 않아 Windows Smart App Control이 SkywardCore.exe를 차단했습니다. Windows 보안 → 앱 및 브라우저 컨트롤 → Smart App Control 설정에서 끔을 선택한 후 Skyward를 다시 시작하세요. Smart App Control은 Windows를 다시 설치하지 않으면 다시 켤 수 없습니다.",
     ),
     "coreStatus": MessageLookupByLibrary.simpleMessage("코어 상태"),
     "country": MessageLookupByLibrary.simpleMessage("지역"),
@@ -1398,10 +1398,10 @@ class MessageLookup extends MessageLookupByLibrary {
       "보냈습니다. 다른 기기에서 가져오기를 확인하세요.",
     ),
     "sendFromPhonePageTitle": MessageLookupByLibrary.simpleMessage(
-      "FlClash로 링크 보내기",
+      "Skyward로 링크 보내기",
     ),
     "sendFromPhonePermissionDenied": MessageLookupByLibrary.simpleMessage(
-      "휴대폰에서 링크를 받으려면 FlClash가 로컬 네트워크에 접근할 수 있도록 \'근처 기기\' 권한이 필요합니다. 앱 설정에서 켜 주세요.",
+      "휴대폰에서 링크를 받으려면 Skyward가 로컬 네트워크에 접근할 수 있도록 \'근처 기기\' 권한이 필요합니다. 앱 설정에서 켜 주세요.",
     ),
     "sendFromPhoneTip": MessageLookupByLibrary.simpleMessage(
       "휴대폰 카메라로 코드를 스캔한 뒤 열린 페이지에 링크를 붙여 넣으세요. 두 기기가 같은 네트워크에 연결되어 있어야 합니다.",
@@ -1437,7 +1437,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "링크에서 읽을 수 있는 프록시가 없습니다",
     ),
     "shareQrcodeTip": MessageLookupByLibrary.simpleMessage(
-      "다른 기기의 FlClash로 스캔하면 이 프로필을 가져올 수 있습니다.",
+      "다른 기기의 Skyward로 스캔하면 이 프로필을 가져올 수 있습니다.",
     ),
     "show": MessageLookupByLibrary.simpleMessage("표시"),
     "showLess": MessageLookupByLibrary.simpleMessage("접기"),

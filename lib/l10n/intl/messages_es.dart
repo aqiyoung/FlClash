@@ -30,7 +30,7 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m3(detail) => "No se pudieron borrar los datos: ${detail}";
 
   static String m4(code) =>
-      "Windows se negó a ejecutar FlClashCore.exe (error ${code}). Una directiva de control de aplicaciones, como Smart App Control o AppLocker, bloquea los programas sin firmar; permite Skyward en esa directiva o desactívala e inténtalo de nuevo.";
+      "Windows se negó a ejecutar SkywardCore.exe (error ${code}). Una directiva de control de aplicaciones, como Smart App Control o AppLocker, bloquea los programas sin firmar; permite Skyward en esa directiva o desactívala e inténtalo de nuevo.";
 
   static String m5(name) =>
       "La app no pudo terminar de iniciarse dos veces seguidas. Para romper el ciclo, se ha deseleccionado el perfil ${name} y se ha omitido la configuración automática. Puedes volver a seleccionarlo en cualquier momento.";
@@ -554,7 +554,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "core": MessageLookupByLibrary.simpleMessage("Núcleo"),
     "coreBlockedByPolicyTip": m4,
     "coreBlockedBySmartAppControlTip": MessageLookupByLibrary.simpleMessage(
-      "Smart App Control de Windows bloqueó FlClashCore.exe porque no está firmado. Abre Seguridad de Windows → Control de aplicaciones y navegador → Configuración de Smart App Control, elige Desactivado y vuelve a iniciar Skyward. Smart App Control no se puede volver a activar sin reinstalar Windows.",
+      "Smart App Control de Windows bloqueó SkywardCore.exe porque no está firmado. Abre Seguridad de Windows → Control de aplicaciones y navegador → Configuración de Smart App Control, elige Desactivado y vuelve a iniciar Skyward. Smart App Control no se puede volver a activar sin reinstalar Windows.",
     ),
     "coreStatus": MessageLookupByLibrary.simpleMessage("Estado del núcleo"),
     "country": MessageLookupByLibrary.simpleMessage("Región"),
@@ -1027,10 +1027,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "inputRuleContent": MessageLookupByLibrary.simpleMessage(
       "Introduce el contenido de la regla",
     ),
-    "installedAppsPermissionDeniedMessage":
-        MessageLookupByLibrary.simpleMessage(
-          "Se denegó el permiso de lista de apps, por lo que no se pueden mostrar las apps instaladas. Concédelo manualmente en los ajustes del sistema.",
-        ),
+    "installedAppsPermissionDeniedMessage": MessageLookupByLibrary.simpleMessage(
+      "Se denegó el permiso de lista de apps, por lo que no se pueden mostrar las apps instaladas. Concédelo manualmente en los ajustes del sistema.",
+    ),
     "installedAppsPermissionDesc": MessageLookupByLibrary.simpleMessage(
       "Este sistema oculta la lista de apps instaladas hasta que se concede el permiso. Autorízalo para configurar el proxy por app.",
     ),
@@ -1795,10 +1794,10 @@ class MessageLookup extends MessageLookupByLibrary {
       "Enviado. Confirma la importación en el otro dispositivo.",
     ),
     "sendFromPhonePageTitle": MessageLookupByLibrary.simpleMessage(
-      "Enviar un enlace a FlClash",
+      "Enviar un enlace a Skyward",
     ),
     "sendFromPhonePermissionDenied": MessageLookupByLibrary.simpleMessage(
-      "Para recibir un enlace desde el teléfono, FlClash necesita el permiso Dispositivos cercanos, que le da acceso a la red local. Actívalo en los ajustes de la aplicación.",
+      "Para recibir un enlace desde el teléfono, Skyward necesita el permiso Dispositivos cercanos, que le da acceso a la red local. Actívalo en los ajustes de la aplicación.",
     ),
     "sendFromPhoneTip": MessageLookupByLibrary.simpleMessage(
       "Escanea el código con la cámara del teléfono y pega el enlace en la página que se abre. Ambos dispositivos deben estar en la misma red.",
@@ -1848,7 +1847,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "No se pudo leer ningún proxy de los enlaces",
     ),
     "shareQrcodeTip": MessageLookupByLibrary.simpleMessage(
-      "Escanea con FlClash en otro dispositivo para importar este perfil.",
+      "Escanea con Skyward en otro dispositivo para importar este perfil.",
     ),
     "show": MessageLookupByLibrary.simpleMessage("Mostrar"),
     "showLess": MessageLookupByLibrary.simpleMessage("Contraer"),

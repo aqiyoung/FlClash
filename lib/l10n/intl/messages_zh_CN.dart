@@ -29,7 +29,7 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m3(detail) => "清除数据失败：${detail}";
 
   static String m4(code) =>
-      "Windows 拒绝运行 FlClashCore.exe（错误 ${code}）。智能应用控制、AppLocker 等应用控制策略会拦截未签名程序，请在该策略中放行 Skyward 或关闭策略后重试。";
+      "Windows 拒绝运行 SkywardCore.exe（错误 ${code}）。智能应用控制、AppLocker 等应用控制策略会拦截未签名程序，请在该策略中放行 Skyward 或关闭策略后重试。";
 
   static String m5(name) =>
       "应用连续两次未能完成启动。为打断崩溃循环，已取消选中配置 ${name}，并跳过本次自动配置，你可以随时重新选中它。";
@@ -399,7 +399,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "core": MessageLookupByLibrary.simpleMessage("内核"),
     "coreBlockedByPolicyTip": m4,
     "coreBlockedBySmartAppControlTip": MessageLookupByLibrary.simpleMessage(
-      "Windows 智能应用控制拦截了未签名的 FlClashCore.exe。请打开 Windows 安全中心 → 应用和浏览器控制 → 智能应用控制设置，选择「关闭」后重新启动 Skyward。智能应用控制关闭后无法再开启，除非重装 Windows。",
+      "Windows 智能应用控制拦截了未签名的 SkywardCore.exe。请打开 Windows 安全中心 → 应用和浏览器控制 → 智能应用控制设置，选择「关闭」后重新启动 Skyward。智能应用控制关闭后无法再开启，除非重装 Windows。",
     ),
     "coreStatus": MessageLookupByLibrary.simpleMessage("核心状态"),
     "country": MessageLookupByLibrary.simpleMessage("区域"),
@@ -1294,10 +1294,10 @@ class MessageLookup extends MessageLookupByLibrary {
       "已发送，请在另一台设备上确认导入。",
     ),
     "sendFromPhonePageTitle": MessageLookupByLibrary.simpleMessage(
-      "把链接发送到 FlClash",
+      "把链接发送到 Skyward",
     ),
     "sendFromPhonePermissionDenied": MessageLookupByLibrary.simpleMessage(
-      "从手机接收链接需要「附近的设备」权限，FlClash 才能访问局域网。请在应用设置中开启。",
+      "从手机接收链接需要「附近的设备」权限，Skyward 才能访问局域网。请在应用设置中开启。",
     ),
     "sendFromPhoneTip": MessageLookupByLibrary.simpleMessage(
       "用手机相机扫描二维码，在打开的页面里粘贴链接。两台设备需要连在同一个网络。",
@@ -1327,7 +1327,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "shareLinkUnreadable": m78,
     "shareLinksInvalid": MessageLookupByLibrary.simpleMessage("无法从链接中读取代理"),
     "shareQrcodeTip": MessageLookupByLibrary.simpleMessage(
-      "在另一台设备上用 FlClash 扫码即可导入此配置。",
+      "在另一台设备上用 Skyward 扫码即可导入此配置。",
     ),
     "show": MessageLookupByLibrary.simpleMessage("显示"),
     "showLess": MessageLookupByLibrary.simpleMessage("收起"),

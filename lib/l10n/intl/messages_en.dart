@@ -30,7 +30,7 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m3(detail) => "Couldn\'t clear the data: ${detail}";
 
   static String m4(code) =>
-      "Windows refused to run FlClashCore.exe (error ${code}). An app control policy such as Smart App Control or AppLocker blocks unsigned programs; allow Skyward in that policy or turn it off, then try again.";
+      "Windows refused to run SkywardCore.exe (error ${code}). An app control policy such as Smart App Control or AppLocker blocks unsigned programs; allow Skyward in that policy or turn it off, then try again.";
 
   static String m5(name) =>
       "The app failed to finish launching twice in a row. To break the loop, the profile ${name} has been deselected and automatic setup was skipped. You can select it again at any time.";
@@ -511,7 +511,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "core": MessageLookupByLibrary.simpleMessage("Core"),
     "coreBlockedByPolicyTip": m4,
     "coreBlockedBySmartAppControlTip": MessageLookupByLibrary.simpleMessage(
-      "Windows Smart App Control blocked FlClashCore.exe because it is not signed. Open Windows Security → App & browser control → Smart App Control settings, choose Off, then start Skyward again. Smart App Control cannot be turned back on without reinstalling Windows.",
+      "Windows Smart App Control blocked SkywardCore.exe because it is not signed. Open Windows Security → App & browser control → Smart App Control settings, choose Off, then start Skyward again. Smart App Control cannot be turned back on without reinstalling Windows.",
     ),
     "coreStatus": MessageLookupByLibrary.simpleMessage("Core status"),
     "country": MessageLookupByLibrary.simpleMessage("Region"),
@@ -960,10 +960,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "inputRuleContent": MessageLookupByLibrary.simpleMessage(
       "Enter the rule content",
     ),
-    "installedAppsPermissionDeniedMessage":
-        MessageLookupByLibrary.simpleMessage(
-          "The app list permission was denied, so installed apps cannot be listed. Please grant it manually in system settings.",
-        ),
+    "installedAppsPermissionDeniedMessage": MessageLookupByLibrary.simpleMessage(
+      "The app list permission was denied, so installed apps cannot be listed. Please grant it manually in system settings.",
+    ),
     "installedAppsPermissionDesc": MessageLookupByLibrary.simpleMessage(
       "This system hides the installed app list until the permission is granted. Authorize it to configure the per-app proxy.",
     ),
@@ -1662,10 +1661,10 @@ class MessageLookup extends MessageLookupByLibrary {
       "Sent. Confirm the import on the other device.",
     ),
     "sendFromPhonePageTitle": MessageLookupByLibrary.simpleMessage(
-      "Send a link to FlClash",
+      "Send a link to Skyward",
     ),
     "sendFromPhonePermissionDenied": MessageLookupByLibrary.simpleMessage(
-      "Receiving a link from your phone needs the Nearby devices permission, which lets FlClash reach the local network. Turn it on in the app\'s settings.",
+      "Receiving a link from your phone needs the Nearby devices permission, which lets Skyward reach the local network. Turn it on in the app\'s settings.",
     ),
     "sendFromPhoneTip": MessageLookupByLibrary.simpleMessage(
       "Scan the code with your phone\'s camera and paste the link on the page that opens. Both devices need to be on the same network.",
@@ -1709,7 +1708,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "No proxy could be read from the links",
     ),
     "shareQrcodeTip": MessageLookupByLibrary.simpleMessage(
-      "Scan with FlClash on another device to import this profile.",
+      "Scan with Skyward on another device to import this profile.",
     ),
     "show": MessageLookupByLibrary.simpleMessage("Show"),
     "showLess": MessageLookupByLibrary.simpleMessage("Collapse"),

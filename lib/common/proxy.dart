@@ -30,7 +30,7 @@ final class PreferencesSystemProxyStore implements SystemProxyStore {
 /// Exit's stop goes through the same queue as every other change, so a start
 /// still waiting behind a slow call cannot turn the proxy back on after it.
 /// A stop also clears settings someone else made, so it only runs while the
-/// mark written before each start says FlClash set the proxy.
+/// mark written before each start says Skyward set the proxy.
 class SystemProxyQueue {
   final Proxy _proxy;
   final SystemProxyStore _store;
