@@ -119,17 +119,10 @@ class _AboutHero extends StatelessWidget {
         children: [
           _DeveloperModeDetector(
             onEnterDeveloperMode: onEnterDeveloperMode,
-            // The icon carries its own tile, so it is the hero itself: no
-            // card behind it to show as a rim around its corners.
-            child: ClipPath(
-              clipper: ShapeBorderClipper(
-                shape: AppShape.all(AppCorner.fit(_logoSize)),
-              ),
-              child: Image.asset(
-                'assets/images/icon.png',
-                width: _logoSize,
-                height: _logoSize,
-              ),
+            child: Image.asset(
+              'assets/images/icon.png',
+              width: _logoSize,
+              height: _logoSize,
             ),
           ),
           const SizedBox(height: 20),
