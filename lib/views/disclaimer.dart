@@ -365,24 +365,6 @@ class _ConsentBar extends StatelessWidget {
   }
 }
 
-enum _Restatement {
-  partial,
-  diverged,
-  complete;
-
-  static _Restatement of(TextEditingValue value, String statement) {
-    if (value.text.trim() == statement) {
-      return complete;
-    }
-    // Pinyin or kana still being composed is not part of the restatement yet.
-    final composing = value.composing;
-    final committed = value.isComposingRangeValid
-        ? composing.textBefore(value.text) + composing.textAfter(value.text)
-        : value.text;
-    return statement.startsWith(committed.trimLeft()) ? partial : diverged;
-  }
-}
-
 class _RestateDialog extends StatefulWidget {
   const _RestateDialog();
 
@@ -391,14 +373,7 @@ class _RestateDialog extends StatefulWidget {
 }
 
 class _RestateDialogState extends State<_RestateDialog> {
-  final _controller = TextEditingController();
   bool _acknowledged = false;
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
 
   Widget _buildStatement(String statement) {
     return DecoratedBox(
@@ -463,54 +438,22 @@ class _RestateDialogState extends State<_RestateDialog> {
   @override
   Widget build(BuildContext context) {
     final appLocalizations = context.appLocalizations;
-    final statement = appLocalizations.disclaimerNoServiceStatement;
-    // Typing the statement out takes hundreds of presses on a remote.
-    if (RemoteFocusAdapter.isEnabledOf(context)) {
-      return _buildDialog(
-        title: appLocalizations.disclaimerAcknowledgeTitle,
-        tip: appLocalizations.disclaimerAcknowledgeTip,
-        statement: statement,
-        canConfirm: _acknowledged,
-        confirmation: generateGroup([
-          ListItem.checkbox(
-            title: Text(appLocalizations.disclaimerAcknowledgeLabel),
-            value: _acknowledged,
-            onChanged: (value) {
-              setState(() => _acknowledged = value ?? false);
-            },
-          ),
-        ]),
-      );
-    }
-    return ValueListenableBuilder<TextEditingValue>(
-      valueListenable: _controller,
-      builder: (context, value, _) {
-        final restatement = _Restatement.of(value, statement);
-        return _buildDialog(
-          title: appLocalizations.disclaimerRestateTitle,
-          tip: appLocalizations.disclaimerRestateTip,
-          statement: statement,
-          canConfirm: restatement == _Restatement.complete,
-          confirmation: FilledInputTheme(
-            borderRadius: AppRadius.lg,
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 12,
-            ),
-            child: TextField(
-              controller: _controller,
-              minLines: 3,
-              maxLines: null,
-              decoration: InputDecoration(
-                hintText: appLocalizations.disclaimerRestateHint,
-                errorText: restatement == _Restatement.diverged
-                    ? appLocalizations.disclaimerRestateMismatch
-                    : null,
-              ),
-            ),
-          ),
-        );
-      },
+    // Typing the statement out takes hundreds of presses on a remote, so the
+    // dialog asks for a check instead (the fork's take, see FORK.md).
+    return _buildDialog(
+      title: appLocalizations.disclaimerAcknowledgeTitle,
+      tip: appLocalizations.disclaimerAcknowledgeTip,
+      statement: appLocalizations.disclaimerNoServiceStatement,
+      canConfirm: _acknowledged,
+      confirmation: generateGroup([
+        ListItem.checkbox(
+          title: Text(appLocalizations.disclaimerAcknowledgeLabel),
+          value: _acknowledged,
+          onChanged: (value) {
+            setState(() => _acknowledged = value ?? false);
+          },
+        ),
+      ]),
     );
   }
 }
