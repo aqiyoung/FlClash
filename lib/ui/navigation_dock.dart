@@ -23,6 +23,8 @@ const double _edgeMargin = 21;
 const double _shadowRoom = 8;
 const double _hitSlop = 8;
 const double _maxItemExtent = 86;
+const double _compactItemExtent = 56;
+const double _compactBarHeight = 56;
 const double _minLensWidth = 84;
 const _fullWidthCount = 5;
 const double _iconSize = 28;
@@ -348,9 +350,9 @@ class NavigationDock extends StatelessWidget {
         scale;
   }
 
-  /// The bar without its labels: the icon and the room it needs to breathe.
+  /// The bar without its labels: the icons keep their room, the labels go.
   static double compactHeightOf(BuildContext context, [double scale = 1]) =>
-      (_iconSize + _barPadding * 4) * scale;
+      _compactBarHeight * scale;
 
   static double _bottomMarginOf(BuildContext context, double scale) =>
       math.max(_edgeMargin * scale, MediaQuery.paddingOf(context).bottom);
@@ -387,19 +389,38 @@ class NavigationDock extends StatelessWidget {
                 children: [
                   Flexible(
                     child: _HitSlop(
-                      child: ConstrainedBox(
-                        constraints: BoxConstraints(
-                          maxWidth: destinations.length >= _fullWidthCount
-                              ? double.infinity
-                              : destinations.length * _maxItemExtent * scale +
-                                    _barPadding * 4 * scale,
-                        ),
-                        child: FloatingNavigationBar(
-                          destinations: destinations,
-                          selectedIndex: selectedIndex,
-                          onSelected: onSelected,
-                          scale: scale,
-                        ),
+                      // The bar narrows as its labels go; the row still spans
+                      // the page, the bar only takes what its items need.
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final room = constraints.maxWidth;
+                          final expanded =
+                              destinations.length >= _fullWidthCount
+                              ? room
+                              : math.min(
+                                  destinations.length * _maxItemExtent * scale +
+                                      _barPadding * 4 * scale,
+                                  room,
+                                );
+                          final compact = math.min(
+                            destinations.length * _compactItemExtent * scale +
+                                _barPadding * 4 * scale,
+                            room,
+                          );
+                          return ConstrainedBox(
+                            constraints: BoxConstraints(
+                              maxWidth:
+                                  expanded + (compact - expanded) * compactness,
+                            ),
+                            child: FloatingNavigationBar(
+                              destinations: destinations,
+                              selectedIndex: selectedIndex,
+                              onSelected: onSelected,
+                              scale: scale,
+                              compactness: compactness,
+                            ),
+                          );
+                        },
                       ),
                     ),
                   ),
@@ -798,12 +819,16 @@ class FloatingNavigationBar extends StatefulWidget {
     required this.selectedIndex,
     required this.onSelected,
     this.scale = 1,
+    this.compactness = 0,
   });
 
   final List<NavigationDockDestination> destinations;
   final int selectedIndex;
   final ValueChanged<int> onSelected;
   final double scale;
+
+  /// How far the dock has given up its labels, from 0 to 1.
+  final double compactness;
 
   @override
   State<FloatingNavigationBar> createState() => _FloatingNavigationBarState();
@@ -1226,22 +1251,8 @@ class _FloatingNavigationBarState extends State<FloatingNavigationBar>
                       widget.destinations.length,
                       widget.scale,
                     );
-                    // The bar's height carries how compact it is, so the
-                    // labels follow the same motion as the bar itself.
-                    final labelSize = _labelSize * widget.scale;
-                    final fullHeight =
-                        (_barHeight +
-                                MediaQuery.textScalerOf(
-                                  context,
-                                ).scale(labelSize) -
-                                labelSize) *
-                            widget.scale;
-                    final compactHeight =
-                        (_iconSize + _barPadding * 4) * widget.scale;
-                    final compactness =
-                        ((fullHeight - constraints.maxHeight) /
-                                (fullHeight - compactHeight))
-                            .clamp(0.0, 1.0);
+                    // The labels follow the same motion as the bar itself.
+                    final compactness = widget.compactness;
                     final room = layout.pitch - _labelInset * 2 * widget.scale;
                     final labelScale = widest <= room
                         ? 1.0
@@ -1627,6 +1638,9 @@ class _FloatingBarItemState extends State<_FloatingBarItem> {
         blue: math.min(tint.b * brightness, 1),
       );
     }
+    // The label's box shrinks with the dock, but its text keeps its line
+    // height and only fades and scales: squeezing it would cut it in half.
+    final labelVisibility = 1 - widget.compactness;
     final content = _LensTint(
       part: widget.part,
       lens: widget.lens,
@@ -1649,18 +1663,25 @@ class _FloatingBarItemState extends State<_FloatingBarItem> {
               color: color,
               fill: 1,
             ),
-            SizedBox(height: _labelGap * widget.scale),
+            SizedBox(height: _labelGap * widget.scale * labelVisibility),
             SizedBox(
-              height: widget.labelHeight * (1 - widget.compactness),
-              child: Center(
-                child: Opacity(
-                  opacity: 1 - widget.compactness,
-                  child: Text(
-                    widget.destination.label,
-                    maxLines: 1,
-                    softWrap: false,
-                    overflow: TextOverflow.ellipsis,
-                    style: widget.labelStyle?.copyWith(color: color),
+              height: widget.labelHeight * labelVisibility,
+              child: OverflowBox(
+                minHeight: widget.labelHeight,
+                maxHeight: widget.labelHeight,
+                child: Center(
+                  child: Transform.scale(
+                    scale: labelVisibility,
+                    child: Opacity(
+                      opacity: labelVisibility,
+                      child: Text(
+                        widget.destination.label,
+                        maxLines: 1,
+                        softWrap: false,
+                        overflow: TextOverflow.ellipsis,
+                        style: widget.labelStyle?.copyWith(color: color),
+                      ),
+                    ),
                   ),
                 ),
               ),
