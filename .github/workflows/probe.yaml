@@ -22,6 +22,13 @@ on:
           - dev
           - stable
         default: pre
+      package:
+        description: 'applicationId: ours = com.threely.clash, upstream = com.follow.clash (diagnostic only)'
+        type: choice
+        options:
+          - ours
+          - upstream
+        default: ours
 
 # A probe is expendable: a newer one supersedes the one still building.
 concurrency:
@@ -51,6 +58,16 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
           submodules: recursive
+
+      # Diagnostic only: the Tencent engine's verdict may follow the package
+      # id, so this rebuilds the same tree under upstream's id for a scan to
+      # compare. It is never a release.
+      - name: Choose the package id
+        if: inputs.package == 'upstream'
+        run: |
+          set -euo pipefail
+          sed -i 's/applicationId = "com.threely.clash"/applicationId = "com.follow.clash"/' android/app/build.gradle.kts
+          grep -n 'applicationId' android/app/build.gradle.kts
 
       # A probe lands on a phone that already runs a release, so its versionCode
       # sits above the date-shaped numbers ci.yaml hands out (2,02x,xxxxxx) and
@@ -227,7 +244,7 @@ jobs:
         id: verify
         env:
           VERSION: ${{ steps.version.outputs.version }}
-          APPLICATION_ID: com.threely.clash
+          APPLICATION_ID: ${{ inputs.package == 'upstream' && 'com.follow.clash' || 'com.threely.clash' }}
           CERT_SHA256: 048968c1728e0e2e27e704d6b30174276579baa2fa288f4f1ba375b702c7e431
         run: |
           set -euo pipefail
@@ -288,6 +305,7 @@ jobs:
           VERSION_CODE: ${{ steps.verify.outputs.version_code }}
           REF: ${{ inputs.ref }}
           RUN_NUMBER: ${{ github.run_number }}
+          APPLICATION_ID: ${{ inputs.package == 'upstream' && 'com.follow.clash' || 'com.threely.clash' }}
         run: |
           set -euo pipefail
           tag="probe-${RUN_NUMBER}"
@@ -301,6 +319,7 @@ jobs:
             echo
             echo "- 分支：\`${REF}\`"
             echo "- 版本：\`${VERSION}\`"
+            echo "- 包名：\`${APPLICATION_ID}\`"
             echo "- 构建号（versionCode）：\`${VERSION_CODE}\`"
             echo "- 提交：[\`${commit}\`](https://github.com/${GITHUB_REPOSITORY}/commit/${commit})"
             echo "- 构建日志：${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
@@ -326,6 +345,7 @@ jobs:
           VERSION_CODE: ${{ steps.verify.outputs.version_code }}
           REF: ${{ inputs.ref }}
           TAG: probe-${{ github.run_number }}
+          APPLICATION_ID: ${{ inputs.package == 'upstream' && 'com.follow.clash' || 'com.threely.clash' }}
         run: |
           set -euo pipefail
           shopt -s nullglob
@@ -343,7 +363,7 @@ jobs:
               echo "  ${prefix}${name}"
             done
             echo
-            echo "分支 \`${REF}\` ｜ versionCode \`${VERSION_CODE}\` ｜ Android arm64-v8a 单架构"
+            echo "分支 \`${REF}\` ｜ 包名 \`${APPLICATION_ID}\` ｜ versionCode \`${VERSION_CODE}\` ｜ Android arm64-v8a 单架构"
             echo "全部文件：https://github.com/${GITHUB_REPOSITORY}/releases/tag/${TAG}"
             echo "构建日志：${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
             echo
