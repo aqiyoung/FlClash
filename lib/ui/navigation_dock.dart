@@ -129,18 +129,22 @@ Rect _lensRect({
 }
 
 /// Spaces destinations as iOS's tab bar does: the resting lens overhangs its
-/// destination by [_barPadding] and never narrows below [_minLensWidth].
+/// destination by [_barPadding] and its minimum follows the labels.
 ({double pitch, double lens, double inset}) _dockLayout(
   double span,
   int count,
-  double scale,
-) {
+  double scale, [
+  double collapse = 0,
+]) {
   final padding = _barPadding * scale;
-  final minLens = _minLensWidth * scale;
   if (count <= 1) {
     return (pitch: span - padding * 2, lens: span, inset: padding);
   }
   final pitch = (span - padding * 2) / count;
+  final minLens =
+      (_minLensWidth +
+          (_compactItemExtent + _barPadding * 2 - _minLensWidth) * collapse) *
+      scale;
   if (pitch + padding * 2 >= minLens) {
     return (pitch: pitch, lens: pitch + padding * 2, inset: padding);
   }
@@ -379,8 +383,10 @@ class NavigationDock extends StatelessWidget {
           alignment: Alignment.bottomCenter,
           child: TweenAnimationBuilder<double>(
             tween: Tween<double>(end: showLabel ? 0 : 1),
-            duration: const Duration(milliseconds: 220),
-            curve: Curves.easeOutCubic,
+            duration: MediaQuery.disableAnimationsOf(context)
+                ? Duration.zero
+                : const Duration(milliseconds: 300),
+            curve: Curves.easeInOutCubic,
             builder: (context, compactness, _) => SizedBox(
               height: height + (compactHeight - height) * compactness,
               child: Row(
@@ -871,6 +877,7 @@ class _FloatingNavigationBarState extends State<FloatingNavigationBar>
     context.size!.width - _barPadding * 2 * widget.scale,
     widget.destinations.length,
     widget.scale,
+    widget.compactness,
   );
 
   @override
@@ -1250,6 +1257,7 @@ class _FloatingNavigationBarState extends State<FloatingNavigationBar>
                       constraints.maxWidth,
                       widget.destinations.length,
                       widget.scale,
+                      widget.compactness,
                     );
                     // The labels follow the same motion as the bar itself.
                     final compactness = widget.compactness;
