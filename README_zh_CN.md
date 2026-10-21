@@ -1,8 +1,10 @@
+> **Fork 说明** — 这是 [aqiyoung](https://github.com/aqiyoung) 的 FlClash 分支，在这里以 **三叶（Sanye）** 的名字发布。构建产物在[本仓库的发布页](../../releases/latest)；版本方案、签名改动和全部补丁见 [FORK.md](FORK.md)。上游项目是 [chen08209/FlClash](https://github.com/chen08209/FlClash)。本仓库只发布客户端本体：不含任何代理服务器、订阅链接、账号或流量，也没有任何收费项目。
+
 <div align="center">
 
-<img src="assets/images/icon.png" alt="FlClash" width="88">
+<img src="assets/images/icon.png" alt="三叶" width="88">
 
-# FlClash
+# 三叶
 
 基于 ClashMeta 的多平台代理客户端，简单易用，开源无广告。
 
@@ -20,7 +22,7 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="snapshots/preview-dark.png">
-    <img alt="FlClash 在 MacBook 与手机上的仪表盘" src="snapshots/preview.png" width="92%">
+    <img alt="三叶 在 MacBook 与手机上的仪表盘" src="snapshots/preview.png" width="92%">
   </picture>
 </p>
 
@@ -71,7 +73,7 @@ FlClash 要在免责声明被接受后才会启动核心。在容器等无人点
 
 ## 使用
 
-**通过链接导入配置。** 打开下面格式的链接，即可把订阅导入 FlClash。`clashmeta://` 和 `flclash://` 开头的链接同样可用。
+**通过链接导入配置。** 打开下面格式的链接，即可把订阅导入三叶。`clashmeta://` 和 `flclash://` 开头的链接同样可用。
 
 ```text
 clash://install-config?url=<经过 URL 编码的订阅链接>
@@ -80,15 +82,15 @@ clash://install-config?url=<经过 URL 编码的订阅链接>
 **Android 自动化。** Tasker、MacroDroid 等应用可以用下面的 Action 启动 Activity，从而启动、停止或切换代理：
 
 ```text
-com.threely.clash.action.START
-com.threely.clash.action.STOP
-com.threely.clash.action.TOGGLE
+com.threely.sanye.action.START
+com.threely.sanye.action.STOP
+com.threely.sanye.action.TOGGLE
 ```
 
 在电脑上也可以通过 adb 触发：
 
 ```bash
-adb shell am start -a com.threely.clash.action.TOGGLE
+adb shell am start -a com.threely.sanye.action.TOGGLE
 ```
 
 ## 从源码构建
@@ -128,4 +130,4 @@ Bug 与功能建议请提交到 [GitHub Issues](https://github.com/aqiyoung/FlCl
 
 ## 许可证
 
-FlClash 以 [GPL-3.0 协议](LICENSE)发布。
+三叶以 [GPL-3.0 协议](LICENSE)发布。

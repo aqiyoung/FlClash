@@ -33,11 +33,11 @@ android {
     }
 
     defaultConfig {
-        // Ours, not upstream's `com.follow.clash`: phone managers key their
-        // heuristic on the package id, and sharing FlClash's put this build
-        // under the same grayware flag. Must move with the two literals below
-        // (android/common Components.PACKAGE_NAME and lib/common/constant.dart).
-        applicationId = "com.threely.clash"
+        // Ours, not upstream's `com.follow.clash`: the app ships under its own
+        // name, so it must not answer to upstream's id either. The namespace
+        // above stays upstream's -- the Kotlin packages and the plugins' method
+        // channels live there, and only the installed id is ours.
+        applicationId = "com.threely.sanye"
         minSdk = flutter.minSdkVersion
         targetSdk = libs.versions.targetSdk.get().toInt()
         versionCode = flutter.versionCode

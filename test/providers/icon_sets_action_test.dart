@@ -36,7 +36,7 @@ void main() {
     await AppLocalizations.load(const Locale('en'));
     globalState.packageInfo = PackageInfo(
       appName: 'FlClash',
-      packageName: 'com.threely.clash',
+      packageName: 'com.threely.sanye',
       version: '1.0.0',
       buildNumber: '1',
     );
