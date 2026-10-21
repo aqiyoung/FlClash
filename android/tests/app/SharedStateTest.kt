@@ -93,7 +93,7 @@ class SharedStateTest {
     fun `the constructed default keeps every fallback Flutter relies on`() {
         val defaults = SharedState()
 
-        assertEquals("Sanye", defaults.currentProfileName)
+        assertEquals("Trinity", defaults.currentProfileName)
         assertEquals("Stop", defaults.stopText)
         assertEquals(false, defaults.onlyStatisticsProxy)
         assertEquals(true, defaults.showStopAction)
@@ -110,7 +110,7 @@ class SharedStateTest {
 
         assertNotNull(state)
         assertEquals("Starting VPN...", state.startTip)
-        assertEquals("Sanye", state.currentProfileName)
+        assertEquals("Trinity", state.currentProfileName)
         assertNull(state.vpnOptions)
         assertNull(state.setupParams)
     }
