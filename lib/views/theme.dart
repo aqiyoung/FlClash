@@ -886,34 +886,39 @@ class _LiquidGlassItem extends ConsumerWidget {
   }
 }
 
-class _SidebarBlurItem extends ConsumerWidget {
+class _SidebarBlurItem extends StatelessWidget {
   const _SidebarBlurItem();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    if (!feature.sidebarBlur || (!system.isMacOS && !system.isWindows)) {
-      return const SizedBox.shrink();
-    }
+  Widget build(BuildContext context) {
     final appLocalizations = context.appLocalizations;
-    final sidebarBlur = ref.watch(
-      themeSettingProvider.select((state) => state.sidebarBlur),
-    );
-    return ListItem.toggle(
-      leading: const GlyphIcon(AppGlyphs.blur),
-      horizontalTitleGap: 12,
-      title: Text(
-        appLocalizations.sidebarBlur,
-        style: AppTextStyle.subheadline
-            .of(context, emphasized: true)
-            .copyWith(color: context.colorScheme.onSurfaceVariant),
-      ),
-      subtitle: Text(appLocalizations.sidebarBlurDesc),
-      value: sidebarBlur,
-      onChanged: (value) {
-        ref
-            .read(themeSettingProvider.notifier)
-            .update((state) => state.copyWith(sidebarBlur: value));
-      },
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        InfoHeader(
+          info: Info(label: appLocalizations.sidebar, glyph: AppGlyphs.blur),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              generateGroup([
+                ConfigToggleItem(
+                  title: (l) => l.backgroundBlur,
+                  selector: themeSettingProvider.select(
+                    (state) => state.sidebarBlur,
+                  ),
+                  onChanged: (ref, value) => ref
+                      .read(themeSettingProvider.notifier)
+                      .update((state) => state.copyWith(sidebarBlur: value)),
+                ),
+              ]),
+              ListFooter(text: appLocalizations.sidebarBlurDesc),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
