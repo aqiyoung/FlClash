@@ -98,6 +98,10 @@ extension StringExtension on String {
     return (Uri.tryParse(this)?.path ?? this).toLowerCase().endsWith('.svg');
   }
 
+  /// Whether this points into the asset bundle rather than at something to
+  /// fetch.
+  bool get isBundleAsset => startsWith('assets/');
+
   bool get isRegex {
     try {
       RegExp(this);

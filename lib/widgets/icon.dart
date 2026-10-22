@@ -99,6 +99,14 @@ class CommonTargetIcon extends StatelessWidget {
       );
     }
 
+    if (src.isBundleAsset) {
+      return Image.asset(
+        src,
+        gaplessPlayback: true,
+        errorBuilder: (_, _, _) => _defaultIcon(),
+      );
+    }
+
     return ImageCacheWidget(src: src, defaultWidget: _defaultIcon());
   }
 
@@ -190,48 +198,63 @@ class GroupMonogram extends StatelessWidget {
   }
 }
 
-/// The colour icon set the fork's default config dresses its groups in. A group
-/// that carries no picture of its own borrows the entry its kind is known by,
-/// so it keeps the same face as the config's own groups.
+/// The pictures the fork's default config gives its groups, carried in the
+/// bundle so a group wears the same face whether its config names one, whether
+/// the network is up and whether the cache survived a reinstall.
 abstract final class GroupIconSource {
-  static const _set =
-      'https://cdn.jsdmirror.com/gh/Koolson/Qure@master/IconSet/Color/';
+  static const _dir = 'assets/images/groups/';
 
-  /// The names the default config gives the groups it builds.
+  /// The names the default config gives the groups it builds. A group by one of
+  /// these names takes the picture whatever the config or the Core says, since
+  /// that picture is what the name means.
   static const _named = {
-    '默认代理': 'Rocket.png',
-    '自动选择': 'Auto.png',
-    '故障转移': 'Round_Robin.png',
-    '负载均衡': 'Stack.png',
-    '漏网之鱼': 'Final.png',
-    '直连': 'Direct.png',
-    '其他节点': 'World_Map.png',
+    '默认代理': 'rocket.png',
+    '自动选择': 'auto.png',
+    '故障转移': 'round_robin.png',
+    '负载均衡': 'stack.png',
+    '漏网之鱼': 'final.png',
+    '直连': 'direct.png',
+    '其他节点': 'world_map.png',
+    '香港': 'hong_kong.png',
+    '日本': 'japan.png',
+    '美国': 'america_map.png',
+    '新加坡': 'singapore.png',
+    '台湾': 'taiwan.png',
   };
 
-  /// A group's own icon, or the set's entry for its kind, or empty for a
-  /// [GroupMonogram] to stand in. A selector without a name the set knows keeps
-  /// the monogram: which picture would suit an arbitrary group is a guess.
+  /// The entry a group wears, or empty for a [GroupGlyph] to stand in.
+  ///
+  /// A selector the set does not know keeps the glyph: which picture would suit
+  /// an arbitrary group is a guess, while a test group, a relay and a hand-made
+  /// group all share the type.
   static String of({
     required String name,
     required GroupType type,
     required String icon,
   }) {
+    final known = _named[name] ?? _regionAuto(name);
+    if (known != null) {
+      return '$_dir$known';
+    }
     if (icon.isNotEmpty) {
       return icon;
     }
     if (GroupMonogram.isGlobal(name)) {
       return '';
     }
-    final entry =
-        _named[name] ??
-        switch (type) {
-          GroupType.URLTest => 'Auto.png',
-          GroupType.Fallback => 'Round_Robin.png',
-          GroupType.LoadBalance => 'Stack.png',
-          GroupType.Selector || GroupType.Relay => null,
-        };
-    return entry == null ? '' : '$_set$entry';
+    final typed = switch (type) {
+      GroupType.URLTest => 'auto.png',
+      GroupType.Fallback => 'round_robin.png',
+      GroupType.LoadBalance => 'stack.png',
+      GroupType.Selector || GroupType.Relay => null,
+    };
+    return typed == null ? '' : '$_dir$typed';
   }
+
+  /// `<地区>-自动选择` is how the default config names the url-test group it
+  /// builds beside each region.
+  static String? _regionAuto(String name) =>
+      name.endsWith('-自动选择') ? 'auto.png' : null;
 }
 
 /// Stands in for a group the config gave no icon: the glyph of what the group
@@ -369,6 +392,7 @@ Future<void> precacheTargetIcons(Iterable<String> srcs) async {
         (src) =>
             src.isNotEmpty &&
             !src.contains('base64,') &&
+            !src.isBundleAsset &&
             !_remoteIcons.contains(src),
       )
       .map((src) async {
