@@ -21,6 +21,12 @@ apply_standard_settings(${PLUGIN_NAME})
 # (Visual Studio 2026) rejects as an error.
 target_compile_features(${PLUGIN_NAME} PRIVATE cxx_std_20)
 
+# C++/WinRT still drives these headers through <experimental/coroutine> when it
+# is built for arm64, which MSVC 14.51 rejects unless the deprecation is
+# silenced.
+target_compile_definitions(${PLUGIN_NAME} PRIVATE
+  _SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS)
+
 set_target_properties(${PLUGIN_NAME} PROPERTIES
   CXX_VISIBILITY_PRESET hidden)
 target_compile_definitions(${PLUGIN_NAME} PRIVATE FLUTTER_PLUGIN_IMPL)
