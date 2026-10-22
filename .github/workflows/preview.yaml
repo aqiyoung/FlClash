@@ -413,9 +413,13 @@ jobs:
 
           # A retried run reuses its number, so the tag may already exist.
           gh release delete "$tag" --repo "$GITHUB_REPOSITORY" --yes --cleanup-tag 2>/dev/null || true
+          # The tag names the commit this preview was built from. --target would
+          # resolve the branch when the tag is created, which can be a later
+          # commit, and the next preview's compare range then comes back empty.
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/git/refs" \
+            -f ref="refs/tags/${tag}" -f sha="$(git rev-parse HEAD)" > /dev/null
           gh release create "$tag" dist/* \
             --repo "$GITHUB_REPOSITORY" \
-            --target "$REF" \
             --title "Skyward ${VERSION}（预览版）" \
             --notes-file preview-notes.md \
             --prerelease
