@@ -251,6 +251,8 @@ void main() {
         ('OpenAI', 'chatgpt.png'),
         ('广告拦截', 'adblock.png'),
         ('剩余流量', 'world_map.png'),
+        ('🌍 国外媒体', 'netflix.png'),
+        ('🎮 游戏', 'steam.png'),
       ]) {
         expect(
           GroupIconSource.of(name: name, icon: ''),
@@ -261,9 +263,24 @@ void main() {
     });
 
     test('a two-letter code is a word, not a fragment', () {
+      expect(GroupIconSource.of(name: 'Rush', icon: ''), GroupIconSource.logo);
+    });
+
+    test('a region the bundle has no picture for wears its flag', () {
+      expect(GroupIconSource.of(name: '韩国', icon: ''), '');
+      expect(GroupIconSource.flagOf('韩国'), '🇰🇷');
+      expect(GroupIconSource.flagOf('英国 01'), '🇬🇧');
+      expect(GroupIconSource.flagOf('mine'), '');
+    });
+
+    test('a code carries the node number behind it', () {
       expect(
-        GroupIconSource.of(name: 'Russia', icon: ''),
-        GroupIconSource.logo,
+        GroupIconSource.of(name: 'US01', icon: ''),
+        '${_groupDir}united_states.png',
+      );
+      expect(
+        GroupIconSource.of(name: '美国 01', icon: ''),
+        '${_groupDir}united_states.png',
       );
     });
 
@@ -305,6 +322,14 @@ void main() {
       );
 
       expect(find.text('🇭🇰'), findsOne);
+    });
+
+    testWidgets('the badge wears the flag of a region without a picture', (
+      tester,
+    ) async {
+      await _pump(tester, const GroupBadge(name: '韩国'));
+
+      expect(find.text('🇰🇷'), findsOne);
     });
   });
 }

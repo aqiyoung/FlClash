@@ -271,9 +271,23 @@ abstract final class GroupIconSource {
     if (GroupMonogram.isGlobal(name)) {
       return '';
     }
-    final guessed = _guess(name);
+    final guessed = _guess(name, _serviceKeywords);
     if (guessed != null) {
       return '$_dir$guessed';
+    }
+    final country = _country(name);
+    if (country != null) {
+      final picture = _countryPictures[country];
+      if (picture != null) {
+        return '$_dir$picture';
+      }
+      // The flag is only a stand-in for a picture the bundle does not carry,
+      // so a config that names one of its own still wins.
+      return icon.isEmpty ? '' : icon;
+    }
+    final kind = _guess(name, _kindKeywords);
+    if (kind != null) {
+      return '$_dir$kind';
     }
     return icon.isEmpty ? logo : icon;
   }
@@ -283,49 +297,309 @@ abstract final class GroupIconSource {
   static String? _regionAuto(String name) =>
       name.endsWith('-自动选择') ? 'auto.png' : null;
 
-  /// The same pictures for the names a subscription actually writes. The list
-  /// above is the fork's own default config; a provider is free to call the
+  /// The same pictures for the names a subscription actually writes. The lists
+  /// above are the fork's own default config; a provider is free to call the
   /// group `🇭🇰 香港 01`, `香港节点` or `HK`, or to carry a group the fork
-  /// never names at all. Order matters: a service wins over the region it sits
-  /// behind, a region wins over the group's kind, and within a list the first
-  /// match wins.
-  static const _keywords = <String, List<String>>{
-    'youtube.png': ['youtube', '油管'],
-    'netflix.png': ['netflix', '奈飞', '网飞'],
+  /// never names at all. A service wins over the region it sits behind, a
+  /// region over the group's kind, and within a list the first match wins.
+  static const _serviceKeywords = <String, List<String>>{
+    'youtube.png': ['youtube', '油管', 'yt'],
+    'netflix.png': ['netflix', '奈飞', '网飞', '影视', '国外媒体', '电影'],
     'disney.png': ['disney', '迪士尼'],
-    'spotify.png': ['spotify'],
-    'chatgpt.png': ['chatgpt', 'openai'],
+    'spotify.png': ['spotify', '音乐'],
+    'chatgpt.png': ['chatgpt', 'openai', 'gpt', 'ai', '人工智能'],
     'github.png': ['github'],
-    'telegram.png': ['telegram', '电报'],
+    'telegram.png': ['telegram', '电报', '纸飞机', 'tg'],
     'twitter.png': ['twitter', '推特'],
-    'meta.png': ['meta', 'facebook', 'instagram'],
-    'line.png': ['line'],
+    'meta.png': ['meta', 'facebook', 'instagram', '社交', '脸书', 'fb'],
+    'line.png': ['line', '连我'],
     'tiktok.png': ['tiktok', '抖音'],
     'pikpak.png': ['pikpak'],
-    'crypto.png': ['crypto', 'binance', 'okx', 'coinbase'],
-    'adblock.png': ['adblock', 'adguard', '广告', '拦截'],
-    'apple.png': ['apple', 'icloud', '苹果'],
-    'microsoft.png': ['microsoft', '微软'],
+    'crypto.png': ['crypto', 'binance', 'okx', 'coinbase', '加密', '数字货币'],
+    'adblock.png': ['adblock', 'adguard', '广告', '拦截', '去广告', '屏蔽'],
+    'apple.png': ['apple', 'icloud', '苹果', 'itunes'],
+    'microsoft.png': ['microsoft', '微软', 'office'],
     'onedrive.png': ['onedrive'],
-    'google_search.png': ['google', '谷歌'],
-    'spark.png': ['fcm'],
-    'hong_kong.png': ['香港', 'hk', 'hongkong'],
-    'japan.png': ['日本', 'jp', 'japan', '东京', 'tokyo', '大阪', 'osaka'],
-    'united_states.png': ['美国', 'us', 'usa', 'america', '洛杉矶', '硅谷', '西雅图'],
-    'singapore.png': ['新加坡', 'sg', 'singapore', '狮城'],
-    'taiwan.png': ['台湾', 'tw', 'taiwan', '台北'],
-    'rocket.png': ['选择', 'select', 'proxy', '节点'],
-    'auto.png': ['自动', 'auto', 'urltest'],
-    'round_robin.png': ['故障转移', 'failover', 'fallback'],
-    'stack.png': ['负载', 'balance'],
-    'final.png': ['漏网', 'final', '兜底'],
-    'direct.png': ['直连', 'direct'],
-    'world_map.png': ['其他', 'other', '剩余', 'world'],
+    'google_search.png': ['google', '谷歌', '搜索', 'gmail'],
+    'spark.png': ['fcm', 'gcm', '推送'],
+    'steam.png': ['steam', '游戏', 'game'],
   };
 
-  static String? _guess(String name) {
+  /// The kinds of group, by the words a config writes for them: a group that
+  /// picks, tests, fails over, balances, catches, connects or holds the rest
+  /// wears the picture of what it does.
+  static const _kindKeywords = <String, List<String>>{
+    'auto.png': ['自动', 'auto', 'urltest', '测速', '速度'],
+    'round_robin.png': ['故障转移', 'failover', 'fallback', '容错'],
+    'stack.png': ['负载', 'balance', '轮询'],
+    'final.png': ['漏网', 'final', '兜底'],
+    'direct.png': ['直连', 'direct', '绕过'],
+    'world_map.png': ['其他', 'other', '剩余', 'world', '全球', '全部', '所有'],
+    'rocket.png': ['选择', 'select', 'proxy', '节点', '手动', 'manual', '策略', '默认'],
+  };
+
+  /// The countries a subscription names its region groups after, by the words
+  /// those names use. The bundle carries a picture for a few of them; the rest
+  /// wear the flag the app already has the font for, so a region the fork
+  /// never heard of still shows where it goes.
+  static const _countries = <String, String>{
+    '香港': 'HK',
+    'hk': 'HK',
+    'hongkong': 'HK',
+    '深港': 'HK',
+    '沪港': 'HK',
+    '京港': 'HK',
+    '日本': 'JP',
+    'jp': 'JP',
+    'japan': 'JP',
+    '东京': 'JP',
+    'tokyo': 'JP',
+    '大阪': 'JP',
+    'osaka': 'JP',
+    '美国': 'US',
+    'us': 'US',
+    'usa': 'US',
+    'unitedstates': 'US',
+    'america': 'US',
+    '洛杉矶': 'US',
+    '硅谷': 'US',
+    '西雅图': 'US',
+    '纽约': 'US',
+    '美西': 'US',
+    '美东': 'US',
+    '新加坡': 'SG',
+    'sg': 'SG',
+    'singapore': 'SG',
+    '狮城': 'SG',
+    '沪新': 'SG',
+    '京新': 'SG',
+    '深新': 'SG',
+    '台湾': 'TW',
+    'tw': 'TW',
+    'taiwan': 'TW',
+    '台北': 'TW',
+    '台中': 'TW',
+    '新北': 'TW',
+    '韩国': 'KR',
+    'kr': 'KR',
+    'korea': 'KR',
+    'southkorea': 'KR',
+    '首尔': 'KR',
+    '春川': 'KR',
+    '英国': 'GB',
+    'uk': 'GB',
+    'gb': 'GB',
+    'england': 'GB',
+    'unitedkingdom': 'GB',
+    '伦敦': 'GB',
+    '德国': 'DE',
+    'de': 'DE',
+    'germany': 'DE',
+    '法兰克福': 'DE',
+    '法国': 'FR',
+    'fr': 'FR',
+    'france': 'FR',
+    '巴黎': 'FR',
+    '加拿大': 'CA',
+    'ca': 'CA',
+    'canada': 'CA',
+    '多伦多': 'CA',
+    '澳大利亚': 'AU',
+    'au': 'AU',
+    'australia': 'AU',
+    '悉尼': 'AU',
+    '墨尔本': 'AU',
+    '俄罗斯': 'RU',
+    'ru': 'RU',
+    'russia': 'RU',
+    '莫斯科': 'RU',
+    '圣彼得堡': 'RU',
+    '印度': 'IN',
+    'in': 'IN',
+    'india': 'IN',
+    '孟买': 'IN',
+    '荷兰': 'NL',
+    'nl': 'NL',
+    'netherlands': 'NL',
+    'holland': 'NL',
+    '阿姆斯特丹': 'NL',
+    '土耳其': 'TR',
+    'tr': 'TR',
+    'turkey': 'TR',
+    '伊斯坦布尔': 'TR',
+    '巴西': 'BR',
+    'br': 'BR',
+    'brazil': 'BR',
+    '圣保罗': 'BR',
+    '里约热内卢': 'BR',
+    '阿根廷': 'AR',
+    'ar': 'AR',
+    'argentina': 'AR',
+    '布宜诺斯艾利斯': 'AR',
+    '泰国': 'TH',
+    'th': 'TH',
+    'thailand': 'TH',
+    '曼谷': 'TH',
+    '越南': 'VN',
+    'vn': 'VN',
+    'vietnam': 'VN',
+    '胡志明': 'VN',
+    '马来西亚': 'MY',
+    'my': 'MY',
+    'malaysia': 'MY',
+    '吉隆坡': 'MY',
+    '印尼': 'ID',
+    'id': 'ID',
+    'indonesia': 'ID',
+    '雅加达': 'ID',
+    '菲律宾': 'PH',
+    'ph': 'PH',
+    'philippines': 'PH',
+    '马尼拉': 'PH',
+    '意大利': 'IT',
+    'it': 'IT',
+    'italy': 'IT',
+    '米兰': 'IT',
+    '罗马': 'IT',
+    '西班牙': 'ES',
+    'es': 'ES',
+    'spain': 'ES',
+    '马德里': 'ES',
+    '瑞士': 'CH',
+    'ch': 'CH',
+    'switzerland': 'CH',
+    '苏黎世': 'CH',
+    '瑞典': 'SE',
+    'se': 'SE',
+    'sweden': 'SE',
+    '挪威': 'NO',
+    'no': 'NO',
+    'norway': 'NO',
+    '芬兰': 'FI',
+    'fi': 'FI',
+    'finland': 'FI',
+    '丹麦': 'DK',
+    'dk': 'DK',
+    'denmark': 'DK',
+    '波兰': 'PL',
+    'pl': 'PL',
+    'poland': 'PL',
+    '乌克兰': 'UA',
+    'ua': 'UA',
+    'ukraine': 'UA',
+    '爱尔兰': 'IE',
+    'ie': 'IE',
+    'ireland': 'IE',
+    '都柏林': 'IE',
+    '奥地利': 'AT',
+    'at': 'AT',
+    'austria': 'AT',
+    '维也纳': 'AT',
+    '捷克': 'CZ',
+    'cz': 'CZ',
+    'czechia': 'CZ',
+    '布拉格': 'CZ',
+    '匈牙利': 'HU',
+    'hu': 'HU',
+    'hungary': 'HU',
+    '布达佩斯': 'HU',
+    '葡萄牙': 'PT',
+    'pt': 'PT',
+    'portugal': 'PT',
+    '里斯本': 'PT',
+    '希腊': 'GR',
+    'gr': 'GR',
+    'greece': 'GR',
+    '雅典': 'GR',
+    '南非': 'ZA',
+    'za': 'ZA',
+    'southafrica': 'ZA',
+    '开普敦': 'ZA',
+    '墨西哥': 'MX',
+    'mx': 'MX',
+    'mexico': 'MX',
+    '以色列': 'IL',
+    'il': 'IL',
+    'israel': 'IL',
+    '特拉维夫': 'IL',
+    '阿联酋': 'AE',
+    'ae': 'AE',
+    'dubai': 'AE',
+    '迪拜': 'AE',
+    '沙特': 'SA',
+    'sa': 'SA',
+    'saudiarabia': 'SA',
+    '新西兰': 'NZ',
+    'nz': 'NZ',
+    'newzealand': 'NZ',
+    '哈萨克斯坦': 'KZ',
+    'kz': 'KZ',
+    'kazakhstan': 'KZ',
+    '蒙古': 'MN',
+    'mn': 'MN',
+    'mongolia': 'MN',
+    '巴基斯坦': 'PK',
+    'pk': 'PK',
+    'pakistan': 'PK',
+    '中国': 'CN',
+    'cn': 'CN',
+    'china': 'CN',
+    '回国': 'CN',
+    '卢森堡': 'LU',
+    'lu': 'LU',
+    'luxembourg': 'LU',
+    '爱沙尼亚': 'EE',
+    'ee': 'EE',
+    'estonia': 'EE',
+    '拉脱维亚': 'LV',
+    'lv': 'LV',
+    'latvia': 'LV',
+    '立陶宛': 'LT',
+    'lt': 'LT',
+    'lithuania': 'LT',
+    '塞尔维亚': 'RS',
+    'rs': 'RS',
+    'serbia': 'RS',
+    '保加利亚': 'BG',
+    'bg': 'BG',
+    'bulgaria': 'BG',
+    '罗马尼亚': 'RO',
+    'ro': 'RO',
+    'romania': 'RO',
+  };
+
+  /// The pictures the bundle carries for the countries above.
+  static const _countryPictures = <String, String>{
+    'HK': 'hong_kong.png',
+    'JP': 'japan.png',
+    'US': 'united_states.png',
+    'SG': 'singapore.png',
+    'TW': 'taiwan.png',
+  };
+
+  /// The flag a country group wears when the bundle has no picture for it, and
+  /// empty for a group that is not a country.
+  static String flagOf(String name) {
+    final country = _country(name);
+    if (country == null || _countryPictures.containsKey(country)) {
+      return '';
+    }
+    return country.countryFlagEmoji;
+  }
+
+  static String? _country(String name) {
     final words = _words(name);
-    for (final entry in _keywords.entries) {
+    for (final entry in _countries.entries) {
+      if (_mentions(words, entry.key)) {
+        return entry.value;
+      }
+    }
+    return null;
+  }
+
+  static String? _guess(String name, Map<String, List<String>> table) {
+    final words = _words(name);
+    for (final entry in table.entries) {
       if (entry.value.any((key) => _mentions(words, key))) {
         return entry.key;
       }
@@ -364,15 +638,24 @@ abstract final class GroupIconSource {
       (rune >= 0xAC00 && rune <= 0xD7AF);
 
   /// A one- or two-letter code (`us`, `hk`) only counts as its own word, so
-  /// `Russia` does not read as `US`; longer keys and every CJK word match inside
-  /// the word they appear in, so `香港节点` counts as Hong Kong.
+  /// `Russia` does not read as `US`; a code with a node number behind it still
+  /// counts. Longer keys and every CJK word match inside the word they appear
+  /// in, so `香港节点` counts as Hong Kong.
   static bool _mentions(List<String> words, String key) {
     final ascii = key.codeUnits.every((unit) => unit < 0x80);
-    if (ascii && key.length <= 2) {
-      return words.contains(key);
+    if (!ascii || key.length > 2) {
+      return words.any((word) => word.contains(key));
     }
-    return words.any((word) => word.contains(key));
+    return words.any(
+      (word) =>
+          word == key ||
+          (word.startsWith(key) && _isNumber(word.substring(key.length))),
+    );
   }
+
+  static bool _isNumber(String text) =>
+      text.isNotEmpty &&
+      text.codeUnits.every((unit) => unit >= 0x30 && unit <= 0x39);
 }
 
 /// Stands in for a group whose picture is empty or unreadable: the app's own
@@ -408,6 +691,20 @@ class GroupBadge extends StatelessWidget {
       return GroupMonogram(name, exitCountryCode: exitCountryCode);
     }
     final size = IconTheme.of(context).size ?? 24;
+    final flag = GroupIconSource.flagOf(name);
+    if (flag.isNotEmpty) {
+      return SizedBox.square(
+        dimension: size,
+        child: FittedBox(
+          fit: BoxFit.contain,
+          child: EmojiText(
+            flag,
+            maxLines: 1,
+            style: AppTextStyle.custom(context, size: size, leading: size),
+          ),
+        ),
+      );
+    }
     return Image.asset(
       GroupIconSource.logo,
       width: size,
