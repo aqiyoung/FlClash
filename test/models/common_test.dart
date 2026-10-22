@@ -1,8 +1,8 @@
 import 'dart:io';
 
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/models/models.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/models/models.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -208,10 +208,6 @@ void main() {
       expect(
         IpInfo.fromIdentMeJson({'ip': '2.2.2.2', 'cc': 'JP'}),
         const IpInfo(ip: '2.2.2.2', countryCode: 'JP'),
-      );
-      expect(
-        IpInfo.fromIpAPIJson({'query': '3.3.3.3', 'countryCode': 'CN'}),
-        const IpInfo(ip: '3.3.3.3', countryCode: 'CN'),
       );
       expect(
         IpInfo.fromGeoJsJson({'ip': '4.4.4.4', 'country_code': 'DE'}),

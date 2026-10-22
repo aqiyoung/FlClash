@@ -1,14 +1,14 @@
 import 'dart:async';
 
-import 'package:fl_clash/core/controller.dart';
-import 'package:fl_clash/core/interface.dart';
-import 'package:fl_clash/features/features.dart';
-import 'package:fl_clash/models/models.dart';
-import 'package:fl_clash/providers/core.dart';
-import 'package:fl_clash/providers/database.dart';
-import 'package:fl_clash/state.dart';
-import 'package:fl_clash/ui/ui.dart';
-import 'package:fl_clash/views/connection/connections.dart';
+import 'package:skyward/core/controller.dart';
+import 'package:skyward/core/interface.dart';
+import 'package:skyward/features/features.dart';
+import 'package:skyward/models/models.dart';
+import 'package:skyward/providers/core.dart';
+import 'package:skyward/providers/database.dart';
+import 'package:skyward/state.dart';
+import 'package:skyward/ui/ui.dart';
+import 'package:skyward/views/connection/connections.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

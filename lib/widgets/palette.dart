@@ -1,5 +1,5 @@
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/ui/ui.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/ui/ui.dart';
 import 'package:flutter/foundation.dart' show clampDouble;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';

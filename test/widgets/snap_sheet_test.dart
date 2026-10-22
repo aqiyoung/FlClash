@@ -1,17 +1,17 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:fl_clash/common/constant.dart';
-import 'package:fl_clash/providers/app.dart';
-import 'package:fl_clash/ui/color.dart';
-import 'package:fl_clash/ui/inherited.dart';
-import 'package:fl_clash/ui/scaffold.dart';
-import 'package:fl_clash/ui/scroll.dart';
-import 'package:fl_clash/ui/sheet.dart';
-import 'package:fl_clash/ui/sheet_header.dart';
-import 'package:fl_clash/ui/side_sheet.dart';
-import 'package:fl_clash/ui/snap_sheet.dart';
-import 'package:fl_clash/ui/surface.dart';
+import 'package:skyward/common/constant.dart';
+import 'package:skyward/providers/app.dart';
+import 'package:skyward/ui/color.dart';
+import 'package:skyward/ui/inherited.dart';
+import 'package:skyward/ui/scaffold.dart';
+import 'package:skyward/ui/scroll.dart';
+import 'package:skyward/ui/sheet.dart';
+import 'package:skyward/ui/sheet_header.dart';
+import 'package:skyward/ui/side_sheet.dart';
+import 'package:skyward/ui/snap_sheet.dart';
+import 'package:skyward/ui/surface.dart';
 import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -410,6 +410,46 @@ void main() {
     }
 
     expect(highest, greaterThan(expanded - (collapsed - expanded) * 0.03));
+    expect(sheetTop(tester), closeTo(expanded, 1));
+
+    await close(tester);
+  });
+
+  testWidgets('a drag on the handle past the tallest detent rubber-bands the '
+      'sheet and it springs back from there', (tester) async {
+    await openSheet(tester);
+    final expanded = _mobile.height * (1 - snapSheetDetents.last);
+    final collapsed = _mobile.height * (1 - snapSheetDetents.first);
+    final extent = min(100.0, expanded - stackedSheetPeek);
+    final overshoot = 600 - kDragSlopDefault - (collapsed - expanded);
+    final stretch = (1 - 1 / (overshoot * 0.55 / extent + 1)) * extent;
+
+    final gesture = await tester.startGesture(
+      tester.getCenter(find.byType(SheetDragHandle)),
+    );
+    for (var i = 0; i < 60; i++) {
+      await gesture.moveBy(const Offset(0, -10));
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    expect(sheetTop(tester), closeTo(expanded - stretch, 2));
+
+    await gesture.up();
+    await tester.pump(const Duration(milliseconds: 16));
+    expect(sheetTop(tester), lessThan(expanded - stretch / 2));
+
+    final again = await tester.startGesture(
+      tester.getCenter(find.byType(SheetDragHandle)),
+    );
+    await again.moveBy(const Offset(0, -kDragSlopDefault - 1));
+    await tester.pump(const Duration(milliseconds: 16));
+    final caught = sheetTop(tester);
+    await again.moveBy(const Offset(0, -1));
+    await tester.pump(const Duration(milliseconds: 16));
+    expect(caught, lessThan(expanded - 5));
+    expect(sheetTop(tester), closeTo(caught, 1));
+
+    await again.up();
+    await tester.pumpAndSettle();
     expect(sheetTop(tester), closeTo(expanded, 1));
 
     await close(tester);
@@ -848,13 +888,16 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
-    for (final (page, sheet) in [
-      (plain, plain.elevated),
-      (plain.toPureBlack(true), plain),
-    ]) {
+    for (final page in [plain, plain.toPureBlack(true)]) {
+      final sheet = page.elevated;
+      expect(sheet.surface, SurfaceLevel.card.colorOf(page));
       expect(
-        sheet.surface.tone,
-        closeTo(SurfaceLevel.card.colorOf(page).tone, 0.5),
+        SurfaceLevel.card.colorOf(sheet),
+        SurfaceLevel.block.colorOf(page),
+      );
+      expect(
+        SurfaceLevel.block.colorOf(sheet),
+        SurfaceLevel.inset.colorOf(page),
       );
       final theme = ThemeData(
         colorScheme: page,

@@ -1,12 +1,13 @@
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/models/models.dart';
-import 'package:fl_clash/providers/app.dart';
-import 'package:fl_clash/providers/config.dart';
-import 'package:fl_clash/providers/database.dart';
-import 'package:fl_clash/state.dart';
-import 'package:fl_clash/views/config/network.dart';
-import 'package:fl_clash/views/config/tun.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/models/models.dart';
+import 'package:skyward/providers/app.dart';
+import 'package:skyward/providers/config.dart';
+import 'package:skyward/providers/database.dart';
+import 'package:skyward/state.dart';
+import 'package:skyward/ui/switch.dart';
+import 'package:skyward/views/config/network.dart';
+import 'package:skyward/views/config/tun.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -112,11 +113,11 @@ void main() {
 
         expect(testCase.read(container), testCase.initial);
 
-        await tester.tap(find.byType(Switch));
+        await tester.tap(find.byType(CommonSwitch));
         await tester.pumpAndSettle();
         expect(testCase.read(container), !testCase.initial);
 
-        await tester.tap(find.byType(Switch));
+        await tester.tap(find.byType(CommonSwitch));
         await tester.pumpAndSettle();
         expect(testCase.read(container), testCase.initial);
       });

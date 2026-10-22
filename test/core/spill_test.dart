@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:fl_clash/core/method.dart';
-import 'package:fl_clash/core/spill.dart';
-import 'package:fl_clash/models/models.dart';
+import 'package:skyward/core/method.dart';
+import 'package:skyward/core/spill.dart';
+import 'package:skyward/models/models.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart';
 

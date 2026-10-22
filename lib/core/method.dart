@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:fl_clash/enum/enum.dart';
+import 'package:skyward/enum/enum.dart';
 
 enum CoreMethod {
   message,
@@ -19,6 +19,7 @@ enum CoreMethod {
   getConfig,
   getProfileBase,
   getProfileOutbounds,
+  getProxyDefinition,
   buildProfile,
   dumpRuleSet,
   compileRuleSet,
@@ -35,6 +36,7 @@ enum CoreMethod {
   getConnectionCount,
   closeConnections,
   resetConnections,
+  clearDnsCache,
   closeConnection,
   getExternalProviders,
   getExternalProvider,

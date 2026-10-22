@@ -1,9 +1,9 @@
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/features/features.dart';
-import 'package:fl_clash/models/clash_config.dart';
-import 'package:fl_clash/providers/providers.dart';
-import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/features/features.dart';
+import 'package:skyward/models/clash_config.dart';
+import 'package:skyward/providers/providers.dart';
+import 'package:skyward/ui/icons/icons.dart';
+import 'package:skyward/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -111,15 +111,12 @@ class _AddedRulesViewState extends ConsumerState<AddedRulesView> {
       ),
     ];
     return CommonPopScope(
-      onPop: (_) {
-        if (selectedRules.isNotEmpty) {
-          ref.read(itemsProvider(_key).notifier).value = {};
-          return false;
-        }
-        Navigator.of(context).pop();
-        return false;
-      },
-
+      onPop: isSelecting
+          ? (_) {
+              ref.read(itemsProvider(_key).notifier).value = {};
+              return false;
+            }
+          : null,
       child: CommonScaffold(
         title: appLocalizations.addedRules,
         searchState: AppBarSearchState(onSearch: _handleSearch),
@@ -185,7 +182,7 @@ class _AddedRulesViewState extends ConsumerState<AddedRulesView> {
     16,
     context.contentTopPadding,
     16,
-    16 + BottomInsetScope.of(context),
+    16 + context.bottomInset,
   );
 
   Widget _buildRuleItem(List<Rule> rules, int index, Set<dynamic> selected) {

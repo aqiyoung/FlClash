@@ -1,6 +1,6 @@
-import 'package:fl_clash/models/profile.dart';
-import 'package:fl_clash/pages/editor.dart';
-import 'package:fl_clash/providers/action.dart';
+import 'package:skyward/models/profile.dart';
+import 'package:skyward/pages/editor.dart';
+import 'package:skyward/providers/action.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -13,8 +13,11 @@ class PreviewProfileView extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return EditorPage(
       title: profile.realLabel,
-      load: () =>
-          ref.read(setupActionProvider.notifier).getProfileWithId(profile.id),
+      load: () async => CodeForgeDocument.fromText(
+        await ref
+            .read(setupActionProvider.notifier)
+            .getProfileWithId(profile.id),
+      ),
     );
   }
 }

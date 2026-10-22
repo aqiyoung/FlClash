@@ -1,11 +1,11 @@
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/features/form/form.dart';
-import 'package:fl_clash/models/clash_config.dart';
-import 'package:fl_clash/providers/providers.dart';
-import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/views/config/rules.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/features/form/form.dart';
+import 'package:skyward/models/clash_config.dart';
+import 'package:skyward/providers/providers.dart';
+import 'package:skyward/ui/icons/icons.dart';
+import 'package:skyward/views/config/rules.dart';
+import 'package:skyward/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -124,14 +124,12 @@ class _StandardContentState extends ConsumerState<StandardContent> {
     final addedRules = ref.watch(profileRulesProvider(_profileId)).value ?? [];
     final selectedRules = ref.watch(itemsProvider(_key));
     return CommonPopScope(
-      onPop: (_) {
-        if (selectedRules.isNotEmpty) {
-          ref.read(itemsProvider(_key).notifier).value = {};
-          return false;
-        }
-        Navigator.of(context).pop();
-        return false;
-      },
+      onPop: selectedRules.isEmpty
+          ? null
+          : (_) {
+              ref.read(itemsProvider(_key).notifier).value = {};
+              return false;
+            },
       child: SliverMainAxisGroup(
         slivers: [
           const SliverToBoxAdapter(child: SizedBox(height: 24)),
@@ -393,7 +391,7 @@ class _EditGlobalAddedRulesState extends ConsumerState<_EditGlobalAddedRules> {
                   ),
                 ),
                 SliverToBoxAdapter(
-                  child: SizedBox(height: 12 + BottomInsetScope.of(context)),
+                  child: SizedBox(height: 12 + context.bottomInset),
                 ),
               ],
             ),

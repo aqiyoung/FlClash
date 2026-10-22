@@ -2,21 +2,21 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:dynamic_color/dynamic_color.dart';
-import 'package:fl_clash/common/boot_guard.dart';
-import 'package:fl_clash/common/boot_record.dart';
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/common/launch.dart';
-import 'package:fl_clash/common/migration.dart';
-import 'package:fl_clash/common/tray.dart';
-import 'package:fl_clash/common/window.dart';
-import 'package:fl_clash/database/database.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/l10n/l10n.dart';
-import 'package:fl_clash/models/models.dart';
-import 'package:fl_clash/providers/providers.dart';
-import 'package:fl_clash/state.dart';
-import 'package:fl_clash/views/disclaimer.dart';
-import 'package:fl_clash/views/navigation.dart';
+import 'package:skyward/common/boot_guard.dart';
+import 'package:skyward/common/boot_record.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/common/launch.dart';
+import 'package:skyward/common/migration.dart';
+import 'package:skyward/common/tray.dart';
+import 'package:skyward/common/window.dart';
+import 'package:skyward/database/database.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/l10n/l10n.dart';
+import 'package:skyward/models/models.dart';
+import 'package:skyward/providers/providers.dart';
+import 'package:skyward/state.dart';
+import 'package:skyward/views/disclaimer.dart';
+import 'package:skyward/views/navigation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -235,6 +235,12 @@ class Bootstrap {
     await _container.read(systemActionProvider.notifier).handleExit(false);
   }
 
+  /// Unattended desktop installs, such as a container nobody watches, accept
+  /// up front: the core only starts after the disclaimer is accepted.
+  bool get _isDisclaimerAcceptedByEnvironment =>
+      system.isDesktop &&
+      Platform.environment['FLCLASH_ACCEPT_DISCLAIMER'] == '1';
+
   /// Android's exit only finishes the activity, so Dart keeps running after
   /// [SystemAction.handleExit] returns and must not go on to start the app.
   Future<bool> _handlerDisclaimer() async {
@@ -244,7 +250,8 @@ class Bootstrap {
     if (acceptedVersion >= disclaimerVersion) {
       return true;
     }
-    final isDisclaimerAccepted = await requestDisclaimerConsent();
+    final isDisclaimerAccepted =
+        _isDisclaimerAcceptedByEnvironment || await requestDisclaimerConsent();
     if (!isDisclaimerAccepted) {
       await _container.read(systemActionProvider.notifier).handleExit();
       return false;

@@ -47,8 +47,8 @@ Read these only when the task touches their area:
   `flutter test` are off limits locally, because each of them compiles the Go core and the Rust plugin on the
   user's machine. Locally the agent only edits files, runs `dart format` and `flutter analyze`; the test suites
   run in CI. See [.agents/rules.md](.agents/rules.md).
-- Start FlClash on the host only as a safe mode build, and end only processes you started, by recorded pid. Never
-  kill a FlClash instance by name; the user's own instance is not yours to close. See
+- Start Skyward on the host only as a safe mode build, and end only processes you started, by recorded pid. Never
+  kill a Skyward instance by name; the user's own instance is not yours to close. See
   [.agents/rules.md](.agents/rules.md).
 - Use `flutter test`, not `dart test`, because models pull in Flutter types.
 - Run code generation after modifying models, providers, or database schema.

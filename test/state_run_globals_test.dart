@@ -1,14 +1,14 @@
-import 'package:fl_clash/bootstrap.dart';
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/providers/app.dart';
-import 'package:fl_clash/providers/config.dart';
-import 'package:fl_clash/state.dart';
+import 'package:skyward/bootstrap.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/providers/app.dart';
+import 'package:skyward/providers/config.dart';
+import 'package:skyward/state.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:riverpod/riverpod.dart';
 
 final _packageInfo = PackageInfo(
-  appName: 'FlClash',
+  appName: 'Skyward',
   packageName: 'com.threely.skyward',
   version: '1.2.3',
   buildNumber: '1',
@@ -44,7 +44,7 @@ void main() {
       setGlobalUa('');
 
       expect(globalState.ua, _packageInfo.ua);
-      expect(globalState.ua, contains('FlClash/v1.2.3'));
+      expect(globalState.ua, contains('Skyward/v1.2.3'));
     });
 
     test('prefers the configured global user agent', () {

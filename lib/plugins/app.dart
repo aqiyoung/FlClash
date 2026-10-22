@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:fl_clash/common/boot_record.dart';
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/models/models.dart';
+import 'package:skyward/common/boot_record.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/models/models.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
@@ -73,6 +73,15 @@ class App {
   Future<bool> requestInstalledAppsPermission() async {
     return await methodChannel.invokeMethod<bool>(
           'requestInstalledAppsPermission',
+        ) ??
+        false;
+  }
+
+  /// Android 17 drops traffic between the app and the local network until the
+  /// user grants this; earlier versions answer true.
+  Future<bool> requestLocalNetworkPermission() async {
+    return await methodChannel.invokeMethod<bool>(
+          'requestLocalNetworkPermission',
         ) ??
         false;
   }

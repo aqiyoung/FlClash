@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:fl_clash/core/desktop/launcher.dart';
-import 'package:fl_clash/core/desktop/model.dart';
-import 'package:fl_clash/core/desktop/transport.dart';
+import 'package:skyward/core/desktop/launcher.dart';
+import 'package:skyward/core/desktop/model.dart';
+import 'package:skyward/core/desktop/transport.dart';
 
 final class FakeDesktopCoreTransport implements DesktopCoreTransport {
   @override

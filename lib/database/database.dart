@@ -5,9 +5,9 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/models/models.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/models/models.dart';
 import 'package:flutter/foundation.dart' show visibleForTesting;
 
 part 'clash_providers.dart';
@@ -17,6 +17,7 @@ part 'dialers.dart';
 part 'generated/database.g.dart';
 part 'groups.dart';
 part 'icons.dart';
+part 'ip_qualities.dart';
 part 'profiles.dart';
 part 'rules.dart';
 part 'scripts.dart';
@@ -33,6 +34,7 @@ part 'scripts.dart';
     ClashProviders,
     CustomProxies,
     ProxyDialers,
+    IpQualities,
   ],
   daos: [
     ProfilesDao,
@@ -44,13 +46,14 @@ part 'scripts.dart';
     ClashProvidersDao,
     CustomProxiesDao,
     ProxyDialersDao,
+    IpQualitiesDao,
   ],
 )
 class Database extends _$Database {
   Database([QueryExecutor? executor]) : super(executor ?? _openConnection());
 
   @override
-  int get schemaVersion => 20;
+  int get schemaVersion => 21;
 
   static LazyDatabase _openConnection() {
     return LazyDatabase(() async {
@@ -110,6 +113,9 @@ class Database extends _$Database {
             customProxies,
             customProxies.emptyOptions,
           );
+        }
+        if (from < 21) {
+          await _createTableIfMissing(m, ipQualities);
         }
       }),
       beforeOpen: (_) => customStatement('PRAGMA foreign_keys = ON'),

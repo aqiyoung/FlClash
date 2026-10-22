@@ -1,17 +1,17 @@
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/l10n/l10n.dart';
-import 'package:fl_clash/models/models.dart';
-import 'package:fl_clash/providers/providers.dart';
-import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/views/about.dart';
-import 'package:fl_clash/views/access.dart';
-import 'package:fl_clash/views/backup_and_restore.dart';
-import 'package:fl_clash/views/config/diagnostics.dart';
-import 'package:fl_clash/views/config/general.dart';
-import 'package:fl_clash/views/config/storage.dart';
-import 'package:fl_clash/views/hotkey.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/l10n/l10n.dart';
+import 'package:skyward/models/models.dart';
+import 'package:skyward/providers/providers.dart';
+import 'package:skyward/ui/icons/icons.dart';
+import 'package:skyward/views/about.dart';
+import 'package:skyward/views/access.dart';
+import 'package:skyward/views/backup_and_restore.dart';
+import 'package:skyward/views/config/diagnostics.dart';
+import 'package:skyward/views/config/general.dart';
+import 'package:skyward/views/config/storage.dart';
+import 'package:skyward/views/hotkey.dart';
+import 'package:skyward/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -106,8 +106,8 @@ class _ToolViewState extends ConsumerState<ToolsView> {
           padding: EdgeInsets.only(
             left: 16,
             right: 16,
-            top: context.appBarInset,
-            bottom: 20 + BottomInsetScope.of(context),
+            top: context.contentTopPadding,
+            bottom: 20 + context.bottomInset,
           ),
         ),
       ),

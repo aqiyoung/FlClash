@@ -1,6 +1,6 @@
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/ui/ui.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/ui/icons/icons.dart';
+import 'package:skyward/ui/ui.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'custom_issue.dart';
@@ -40,9 +40,10 @@ class FormPage extends StatelessWidget {
       ),
       body: ListView(
         shrinkWrap: true,
-        padding: const EdgeInsets.symmetric(
-          horizontal: 16,
-        ).copyWith(top: context.contentTopPadding, bottom: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 16).copyWith(
+          top: context.contentTopPadding,
+          bottom: 20 + context.bottomInset,
+        ),
         children: [
           ErrorBanner(message: error),
           ...children,

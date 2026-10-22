@@ -18,13 +18,19 @@ add_library(${PLUGIN_NAME} SHARED
 
 apply_standard_settings(${PLUGIN_NAME})
 
+# C++/WinRT still drives these headers through <experimental/coroutine> when it
+# is built for arm64, which MSVC 14.51 rejects unless the deprecation is
+# silenced.
+target_compile_definitions(${PLUGIN_NAME} PRIVATE
+  _SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS)
+
 set_target_properties(${PLUGIN_NAME} PROPERTIES
   CXX_VISIBILITY_PRESET hidden)
 target_compile_definitions(${PLUGIN_NAME} PRIVATE FLUTTER_PLUGIN_IMPL)
 
 target_include_directories(${PLUGIN_NAME} INTERFACE
   "${CMAKE_CURRENT_SOURCE_DIR}/include")
-target_link_libraries(${PLUGIN_NAME} PRIVATE flutter flutter_wrapper_plugin)
+target_link_libraries(${PLUGIN_NAME} PRIVATE flutter flutter_wrapper_plugin WindowsApp)
 
 set(wifi_ssid_bundled_libraries
   ""

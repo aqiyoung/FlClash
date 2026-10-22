@@ -1,9 +1,9 @@
-import 'package:fl_clash/ui/color.dart';
-import 'package:fl_clash/ui/inherited.dart';
-import 'package:fl_clash/ui/metrics.dart';
-import 'package:fl_clash/ui/scaffold.dart';
-import 'package:fl_clash/ui/typography.dart';
-import 'package:fl_clash/ui/view_scope.dart';
+import 'package:skyward/ui/color.dart';
+import 'package:skyward/ui/inherited.dart';
+import 'package:skyward/ui/metrics.dart';
+import 'package:skyward/ui/scaffold.dart';
+import 'package:skyward/ui/typography.dart';
+import 'package:skyward/ui/view_scope.dart';
 import 'package:material_ui/material_ui.dart';
 
 extension BuildContextExtension on BuildContext {
@@ -35,6 +35,12 @@ extension BuildContextExtension on BuildContext {
   double get contentTopPadding =>
       TopInsetScope.of(this) ??
       (isInCompactSheet ? sheetAppBarHeight : appBarInset + 12);
+
+  /// What the end of a body scrolls clear of: the system bar the body runs
+  /// under and what floats over its foot. A docked search only counts below
+  /// the scaffold that docks it.
+  double get bottomInset =>
+      BottomInsetScope.of(this) + MediaQuery.paddingOf(this).bottom;
 
   ColorScheme get colorScheme => Theme.of(this).colorScheme;
 

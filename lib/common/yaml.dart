@@ -1,4 +1,4 @@
-import 'package:fl_clash/common/yaml_writer.dart';
+import 'package:skyward/common/yaml_writer.dart';
 import 'package:yaml/yaml.dart';
 
 class Yaml {

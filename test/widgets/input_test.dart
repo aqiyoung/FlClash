@@ -1,10 +1,10 @@
 import 'dart:ui' as ui;
 
-import 'package:fl_clash/features/form/form.dart';
-import 'package:fl_clash/models/common.dart';
-import 'package:fl_clash/providers/app.dart';
-import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:skyward/features/form/form.dart';
+import 'package:skyward/models/common.dart';
+import 'package:skyward/providers/app.dart';
+import 'package:skyward/ui/icons/icons.dart';
+import 'package:skyward/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -51,7 +51,7 @@ void main() {
     );
 
     final tile = tester.widget<ListTile>(find.byType(ListTile));
-    final control = tester.widget<Switch>(find.byType(Switch));
+    final control = tester.widget<CommonSwitch>(find.byType(CommonSwitch));
 
     expect(tile.onTap, isNull);
     expect(control.onChanged, isNull);
@@ -537,6 +537,54 @@ void main() {
     await tester.tap(find.widgetWithText(TextButton, 'Delete'));
     await tester.pumpAndSettle();
     expect(find.text('No data'), findsOneWidget);
+  });
+
+  testWidgets('ListEditView hands its items back to a drag back', (
+    tester,
+  ) async {
+    Object? result;
+    await tester.pumpWidget(
+      ProviderScope(
+        child: TestApp(
+          overrides: [_viewSizeOverride],
+          child: Scaffold(
+            body: Builder(
+              builder: (context) => TextButton(
+                onPressed: () async {
+                  result = await Navigator.of(context).push<Object?>(
+                    CommonRoute<Object?>(
+                      builder: (_) => const ListEditView(
+                        title: 'Items',
+                        items: ['a', 'b'],
+                        titleBuilder: _textBuilder,
+                      ),
+                    ),
+                  );
+                },
+                child: const Text('open'),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('Add'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextFormField), 'c');
+    await tester.tap(find.text('Confirm'));
+    await tester.pumpAndSettle();
+
+    await tester.timedDrag(
+      find.text('a'),
+      const Offset(800, 0),
+      const Duration(seconds: 1),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('open'), findsOneWidget);
+    expect(result, ['a', 'b', 'c']);
   });
 
   testWidgets('MapEditView adds, reorders, selects, and deletes entries', (

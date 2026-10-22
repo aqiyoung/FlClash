@@ -1,9 +1,10 @@
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/providers/app.dart';
-import 'package:fl_clash/providers/config.dart';
-import 'package:fl_clash/providers/database.dart';
-import 'package:fl_clash/state.dart';
-import 'package:fl_clash/views/config/general.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/providers/app.dart';
+import 'package:skyward/providers/config.dart';
+import 'package:skyward/providers/database.dart';
+import 'package:skyward/state.dart';
+import 'package:skyward/ui/switch.dart';
+import 'package:skyward/views/config/general.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -46,7 +47,7 @@ void main() {
     await tester.tap(
       find.descendant(
         of: find.widgetWithText(ListTile, 'External controller'),
-        matching: find.byType(Switch),
+        matching: find.byType(CommonSwitch),
       ),
     );
     await tester.pumpAndSettle();

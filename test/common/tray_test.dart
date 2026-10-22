@@ -1,4 +1,4 @@
-import 'package:fl_clash/common/tray.dart';
+import 'package:skyward/common/tray.dart';
 import 'package:test/test.dart';
 
 void main() {
@@ -50,6 +50,25 @@ void main() {
             safeMode: false,
           ),
           'assets/images/tray/macos/status_1.png',
+        );
+      }
+    });
+
+    test('macOS shows the color icons once monochrome is off', () {
+      for (final (isStart, tunEnable, safeMode, status) in [
+        (false, false, false, 1),
+        (true, false, false, 2),
+        (true, true, false, 3),
+        (true, true, true, 4),
+      ]) {
+        expect(
+          macOS.getTrayIcon(
+            isStart: isStart,
+            tunEnable: tunEnable,
+            safeMode: safeMode,
+            monochrome: false,
+          ),
+          'assets/images/tray/unix/status_$status.png',
         );
       }
     });

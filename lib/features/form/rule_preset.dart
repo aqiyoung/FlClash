@@ -1,8 +1,8 @@
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/l10n/l10n.dart';
-import 'package:fl_clash/models/clash_config.dart';
-import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/l10n/l10n.dart';
+import 'package:skyward/models/clash_config.dart';
+import 'package:skyward/ui/icons/icons.dart';
+import 'package:skyward/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 
 enum RulePreset {
@@ -95,9 +95,10 @@ class _RulePresetSheetState extends State<RulePresetSheet> {
               tooltip: appLocalizations.confirm,
             ),
       body: ListView.builder(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 16,
-        ).copyWith(top: context.contentTopPadding, bottom: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 16).copyWith(
+          top: context.contentTopPadding,
+          bottom: 20 + context.bottomInset,
+        ),
         itemCount: presets.length,
         itemBuilder: (context, index) {
           final preset = presets[index];

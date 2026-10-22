@@ -1,11 +1,10 @@
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/models/models.dart';
-import 'package:fl_clash/providers/providers.dart';
-import 'package:fl_clash/views/proxies/detail.dart';
-import 'package:fl_clash/state.dart';
-import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/models/models.dart';
+import 'package:skyward/providers/providers.dart';
+import 'package:skyward/state.dart';
+import 'package:skyward/ui/icons/icons.dart';
+import 'package:skyward/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -31,6 +30,14 @@ void selectGroupProxy(
     currentAppLocalizations.notSelectedTip,
     level: MessageLevel.warning,
   );
+}
+
+/// Built-ins and groups have no definition, and a custom profile's own proxies
+/// are the local proxies already.
+bool _isAddableToLocal(Proxy proxy, {required bool isCustomProfile}) {
+  return (proxy.providerName != null || !isCustomProfile) &&
+      !reservedCustomProxyNames.contains(proxy.name) &&
+      GroupTypeExtension.getGroupType(proxy.type) == null;
 }
 
 class ProxyCard extends ConsumerWidget {
@@ -73,6 +80,52 @@ class ProxyCard extends ConsumerWidget {
         ),
       );
     }
+  }
+
+  void _handleSelect(WidgetRef ref) {
+    selectGroupProxy(
+      ref,
+      groupName: groupName,
+      groupType: groupType,
+      proxyName: proxy.name,
+    );
+  }
+
+  void _handleAddToLocalProxies(WidgetRef ref) {
+    final proxiesAction = ref.read(proxiesActionProvider.notifier);
+    globalState.safeRun(() => proxiesAction.addToLocalProxies(proxy.name));
+  }
+
+  List<CommonPopupMenuItem> _menuItems(
+    BuildContext context,
+    WidgetRef ref, {
+    required bool inUse,
+    required bool pinned,
+    required bool addable,
+  }) {
+    final appLocalizations = context.appLocalizations;
+    return [
+      if (groupType == GroupType.Selector)
+        CommonPopupMenuItem(
+          glyph: AppGlyphs.checkCircle,
+          label: appLocalizations.select,
+          checked: inUse,
+          onPressed: () => _handleSelect(ref),
+        )
+      else if (groupType.isComputedSelected)
+        CommonPopupMenuItem(
+          glyph: AppGlyphs.pin,
+          label: appLocalizations.preferred,
+          checked: pinned,
+          onPressed: () => _handleSelect(ref),
+        ),
+      if (addable)
+        CommonPopupMenuItem(
+          glyph: AppGlyphs.listAdd,
+          label: appLocalizations.addToLocalProxies,
+          onPressed: () => _handleAddToLocalProxies(ref),
+        ),
+    ];
   }
 
   @override
@@ -131,23 +184,24 @@ class ProxyCard extends ConsumerWidget {
             ref.watch(
               proxyNameProvider(groupName).select((name) => name == proxy.name),
             );
-        return GestureDetector(
-          onLongPress: () => showExtend(
+        final isCustomProfile = ref.watch(
+          currentProfileProvider.select(
+            (profile) => profile?.type == ProfileType.custom,
+          ),
+        );
+        return ContextMenuRegion(
+          menuItems: _menuItems(
             context,
-            builder: (_) => ProxyDetailSheet(proxy: proxy, testUrl: testUrl),
+            ref,
+            inUse: inUse,
+            pinned: pinned,
+            addable: _isAddableToLocal(proxy, isCustomProfile: isCustomProfile),
           ),
           child: CommonCard(
             radius: AppCorner.lg,
             enterActionsOnRight: true,
             key: key,
-            onPressed: () {
-              selectGroupProxy(
-                ref,
-                groupName: groupName,
-                groupType: groupType,
-                proxyName: proxy.name,
-              );
-            },
+            onPressed: () => _handleSelect(ref),
             isSelected: inUse,
             child: Container(
               alignment: Alignment.centerLeft,
@@ -319,12 +373,16 @@ class _DelayTextState extends ConsumerState<_DelayText> {
                         size: measure.textHeight(AppTextStyle.caption2),
                         color: context.colorScheme.onSurfaceVariant.opacity38,
                       ),
-                      null => IconButton(
-                        tooltip: context.appLocalizations.delayTest,
-                        icon: const GlyphIcon(AppGlyphs.bolt),
-                        iconSize: measure.textHeight(AppTextStyle.caption2),
-                        padding: EdgeInsets.zero,
-                        onPressed: _handleTestCurrentDelay,
+                      null => Tooltip(
+                        message: context.appLocalizations.delayTest,
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.opaque,
+                          onTap: _handleTestCurrentDelay,
+                          child: GlyphIcon(
+                            AppGlyphs.bolt,
+                            size: measure.textHeight(AppTextStyle.caption2),
+                          ),
+                        ),
                       ),
                     }),
                   )

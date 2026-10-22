@@ -1,25 +1,25 @@
 import 'dart:async';
 
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/common/service_probe.dart';
-import 'package:fl_clash/core/controller.dart';
-import 'package:fl_clash/core/interface.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/models/models.dart';
-import 'package:fl_clash/providers/app.dart';
-import 'package:fl_clash/providers/config.dart';
-import 'package:fl_clash/providers/core.dart';
-import 'package:fl_clash/providers/ip_quality.dart';
-import 'package:fl_clash/providers/route_state.dart';
-import 'package:fl_clash/providers/routed_probe.dart';
-import 'package:fl_clash/providers/service_status.dart';
-import 'package:fl_clash/providers/state.dart';
-import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/views/dashboard/layout.dart';
-import 'package:fl_clash/views/dashboard/widget_registry.dart';
-import 'package:fl_clash/views/dashboard/widgets/card.dart';
-import 'package:fl_clash/views/dashboard/widgets/service_status.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/common/service_probe.dart';
+import 'package:skyward/core/controller.dart';
+import 'package:skyward/core/interface.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/models/models.dart';
+import 'package:skyward/providers/app.dart';
+import 'package:skyward/providers/config.dart';
+import 'package:skyward/providers/core.dart';
+import 'package:skyward/providers/ip_quality.dart';
+import 'package:skyward/providers/route_state.dart';
+import 'package:skyward/providers/routed_probe.dart';
+import 'package:skyward/providers/service_status.dart';
+import 'package:skyward/providers/state.dart';
+import 'package:skyward/ui/icons/icons.dart';
+import 'package:skyward/views/dashboard/layout.dart';
+import 'package:skyward/views/dashboard/widget_registry.dart';
+import 'package:skyward/views/dashboard/widgets/card.dart';
+import 'package:skyward/views/dashboard/widgets/service_status.dart';
+import 'package:skyward/widgets/widgets.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -782,7 +782,7 @@ void main() {
 
   Finder switchOf(ServiceTarget target) => find.descendant(
     of: find.widgetWithText(DecorationListItem, target.label),
-    matching: find.byType(Switch),
+    matching: find.byType(CommonSwitch),
   );
 
   testWidgets('the tile and the sheet follow the saved order', (tester) async {
@@ -897,11 +897,11 @@ void main() {
     await openManage(tester);
 
     expect(
-      tester.widget<Switch>(switchOf(ServiceTarget.google)).onChanged,
+      tester.widget<CommonSwitch>(switchOf(ServiceTarget.google)).onChanged,
       isNull,
     );
     expect(
-      tester.widget<Switch>(switchOf(ServiceTarget.github)).onChanged,
+      tester.widget<CommonSwitch>(switchOf(ServiceTarget.github)).onChanged,
       isNotNull,
     );
   });
@@ -1028,7 +1028,7 @@ void main() {
 
     setStarted(tester, true);
     await tester.pump();
-    await tester.pump(commonDuration);
+    await tester.pump(probeSettleDuration);
     expect(checkPhase(tester), ProbePhase.failed);
     expect(find.text('Check failed'), findsNothing);
     expect(find.byType(SkeletonText), findsWidgets);
@@ -1037,7 +1037,7 @@ void main() {
     containerOf(tester)
         .read(routeTrackerProvider.notifier)
         .applySnapshot(const RouteSnapshot(coreEpoch: 2, picksVersion: 1));
-    await tester.pump();
+    await tester.pump(probeSettleDuration);
     await tester.pump(commonDuration);
     expect(find.text('Available'), findsOneWidget);
     expect(find.byType(SkeletonText), findsNothing);
@@ -1085,12 +1085,12 @@ void main() {
 
     setStarted(tester, true);
     await tester.pump();
-    await tester.pump(commonDuration);
+    await tester.pump(probeSettleDuration);
     expect(checkPhase(tester), ProbePhase.failed);
     expect(find.text('Check failed'), findsNothing);
 
     setStarted(tester, false);
-    await tester.pump();
+    await tester.pump(probeSettleDuration);
     await tester.pump(commonDuration);
     expect(find.text('Check failed'), findsOneWidget);
   });

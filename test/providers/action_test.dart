@@ -1,17 +1,17 @@
 import 'dart:async';
 
-import 'package:fl_clash/core/controller.dart';
-import 'package:fl_clash/core/desktop/model.dart';
-import 'package:fl_clash/core/interface.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/l10n/l10n.dart';
-import 'package:fl_clash/models/models.dart';
-import 'package:fl_clash/providers/action.dart';
-import 'package:fl_clash/providers/app.dart';
-import 'package:fl_clash/providers/config.dart';
-import 'package:fl_clash/providers/core.dart';
-import 'package:fl_clash/providers/database.dart';
-import 'package:fl_clash/providers/state.dart';
+import 'package:skyward/core/controller.dart';
+import 'package:skyward/core/desktop/model.dart';
+import 'package:skyward/core/interface.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/l10n/l10n.dart';
+import 'package:skyward/models/models.dart';
+import 'package:skyward/providers/action.dart';
+import 'package:skyward/providers/app.dart';
+import 'package:skyward/providers/config.dart';
+import 'package:skyward/providers/core.dart';
+import 'package:skyward/providers/database.dart';
+import 'package:skyward/providers/state.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -262,6 +262,32 @@ void main() {
   });
 
   group('CoreAction', () {
+    test(
+      'clears the DNS cache on a network change only while connected',
+      () async {
+        final core = _MockCoreHandlerInterface();
+        when(core.clearDnsCache).thenAnswer((_) async => true);
+        final container = ProviderContainer(
+          overrides: [
+            coreHandlerProvider.overrideWithValue(CoreController.scoped(core)),
+          ],
+        );
+        addTearDown(container.dispose);
+        final action = container.read(coreActionProvider.notifier);
+
+        await action.clearDnsCacheOnNetworkChange();
+        verifyNever(core.clearDnsCache);
+
+        container.read(coreStatusProvider.notifier).value =
+            CoreStatus.connected;
+        await action.clearDnsCacheOnNetworkChange();
+        verify(core.clearDnsCache).called(1);
+
+        when(core.clearDnsCache).thenThrow(StateError('disconnected'));
+        await expectLater(action.clearDnsCacheOnNetworkChange(), completes);
+      },
+    );
+
     test('applies the profile after restarting a stopped core', () async {
       final container = ProviderContainer(
         overrides: [

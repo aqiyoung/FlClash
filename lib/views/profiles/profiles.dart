@@ -1,14 +1,14 @@
 import 'dart:async';
 
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/models/models.dart';
-import 'package:fl_clash/providers/providers.dart';
-import 'package:fl_clash/state.dart';
-import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/views/profiles/custom/custom.dart';
-import 'package:fl_clash/views/profiles/extend/extend.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/models/models.dart';
+import 'package:skyward/providers/providers.dart';
+import 'package:skyward/state.dart';
+import 'package:skyward/ui/icons/icons.dart';
+import 'package:skyward/views/profiles/custom/custom.dart';
+import 'package:skyward/views/profiles/extend/extend.dart';
+import 'package:skyward/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -206,7 +206,7 @@ class _ProfilesGridState extends ConsumerState<_ProfilesGrid> {
     left: _horizontalPadding,
     right: _horizontalPadding,
     top: context.contentTopPadding,
-    bottom: 16 + BottomInsetScope.of(context),
+    bottom: 16 + context.bottomInset,
   );
 
   int _columnsFor(double width) => getProfilesColumns(
@@ -480,6 +480,18 @@ class ProfileItem extends ConsumerWidget {
                   _handleCopyLink(context);
                 },
               ),
+            if (isUrl)
+              CommonPopupMenuItem(
+                glyph: AppGlyphs.qrCode,
+                label: appLocalizations.qrcode,
+                onPressed: () {
+                  dialogs.showQrCode(
+                    title: profile.realLabel,
+                    data: profile.url,
+                    message: appLocalizations.shareQrcodeTip,
+                  );
+                },
+              ),
             CommonPopupMenuItem(
               glyph: AppGlyphs.export,
               label: appLocalizations.exportFile,
@@ -694,26 +706,24 @@ class _ReorderableProfilesSheetState
         onPressed: _handleSave,
         tooltip: context.appLocalizations.save,
       ),
-      body: Padding(
-        padding: const EdgeInsets.only(bottom: 32),
-        child: ReorderableListView.builder(
-          buildDefaultDragHandles: false,
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16,
-          ).copyWith(top: context.contentTopPadding),
-          proxyDecorator: (child, index, animation) {
-            return commonProxyDecorator(_buildItem(index), index, animation);
-          },
-          onReorderItem: (oldIndex, newIndex) {
-            setState(() {
-              profiles = profiles.copyAndReorder(oldIndex, newIndex);
-            });
-          },
-          itemBuilder: (_, index) {
-            return _buildItem(index);
-          },
-          itemCount: profiles.length,
+      body: ReorderableListView.builder(
+        buildDefaultDragHandles: false,
+        padding: const EdgeInsets.symmetric(horizontal: 16).copyWith(
+          top: context.contentTopPadding,
+          bottom: 32 + context.bottomInset,
         ),
+        proxyDecorator: (child, index, animation) {
+          return commonProxyDecorator(_buildItem(index), index, animation);
+        },
+        onReorderItem: (oldIndex, newIndex) {
+          setState(() {
+            profiles = profiles.copyAndReorder(oldIndex, newIndex);
+          });
+        },
+        itemBuilder: (_, index) {
+          return _buildItem(index);
+        },
+        itemCount: profiles.length,
       ),
       title: appLocalizations.profilesSort,
     );

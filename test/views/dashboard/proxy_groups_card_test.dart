@@ -1,13 +1,13 @@
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/models/models.dart';
-import 'package:fl_clash/providers/providers.dart';
-import 'package:fl_clash/state.dart';
-import 'package:fl_clash/views/dashboard/layout.dart';
-import 'package:fl_clash/views/dashboard/widgets/card.dart';
-import 'package:fl_clash/views/dashboard/widgets/proxy_groups.dart';
-import 'package:fl_clash/views/proxies/proxies.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/models/models.dart';
+import 'package:skyward/providers/providers.dart';
+import 'package:skyward/state.dart';
+import 'package:skyward/views/dashboard/layout.dart';
+import 'package:skyward/views/dashboard/widgets/card.dart';
+import 'package:skyward/views/dashboard/widgets/proxy_groups.dart';
+import 'package:skyward/views/proxies/proxies.dart';
+import 'package:skyward/widgets/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -315,7 +315,7 @@ void main() {
       ProxiesType.tab,
       ['Search', 'Delay test', 'Close'],
       ['Clear search', 'Delay test'],
-      ['Delay test', 'Close'],
+      ['Close', 'Delay test'],
     ),
   ]) {
     testWidgets('the sheet bar of the ${type.name} layout keeps search and '

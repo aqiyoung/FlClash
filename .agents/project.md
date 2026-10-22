@@ -1,6 +1,6 @@
 # Project Context
 
-FlClash is a multi-platform proxy client based on ClashMeta (mihomo), built with Flutter. It supports Android, Windows, macOS, and Linux, using Material You from `material_ui` as the base with Apple's Human Interface interaction conventions layered on top.
+Skyward is a multi-platform proxy client based on ClashMeta (mihomo), built with Flutter. It supports Android, Windows, macOS, and Linux, using Material You from `material_ui` as the base with Apple's Human Interface interaction conventions layered on top.
 
 ## Version Notes
 
@@ -43,7 +43,7 @@ now, see the window plugin section of `architecture.md`.
 - Migrates `win32_registry` from `^2.0.0` to `^3.0.3`, which is a breaking rename
   across the whole Windows implementation (`Registry.openPath` → `CURRENT_USER.open`,
   `createValue` → `setValue`, `getStringValue` → `getString`).
-- This one is not optional while it lasts: FlClash depends on `win32_registry: ^3.0.3`
+- This one is not optional while it lasts: Skyward depends on `win32_registry: ^3.0.3`
   directly, and upstream's `^2.0.0` constraint cannot co-resolve with it.
 - Drop the fork when upstream publishes a release that accepts `win32_registry` 3.x.
 
@@ -55,7 +55,7 @@ and the Core applies the merge.
 
 The `code_forge` fork (`chen08209/code_forge`) is frozen: its Dart code now lives
 in the in-repo `plugins/code_forge` package and its Rust code in the `editor/`
-module of `plugins/rust_api`, both trimmed to what FlClash uses.
+module of `plugins/rust_api`, both trimmed to what Skyward uses.
 `plugins/code_forge/README.md` records what was kept and what was removed;
 upstream's MIT notice stays in `plugins/code_forge/LICENSE`.
 

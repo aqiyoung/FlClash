@@ -4,9 +4,9 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
-import 'package:fl_clash/common/constant.dart';
-import 'package:fl_clash/common/print.dart';
-import 'package:fl_clash/enum/enum.dart';
+import 'package:skyward/common/constant.dart';
+import 'package:skyward/common/print.dart';
+import 'package:skyward/enum/enum.dart';
 import 'package:path/path.dart' as p;
 import 'package:win32_registry/win32_registry.dart';
 

@@ -1,15 +1,15 @@
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/core/controller.dart';
-import 'package:fl_clash/core/interface.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/features/form/form.dart';
-import 'package:fl_clash/l10n/l10n.dart';
-import 'package:fl_clash/models/models.dart';
-import 'package:fl_clash/providers/providers.dart';
-import 'package:fl_clash/state.dart';
-import 'package:fl_clash/views/profiles/custom/groups.dart';
-import 'package:fl_clash/views/profiles/custom/members.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/core/controller.dart';
+import 'package:skyward/core/interface.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/features/form/form.dart';
+import 'package:skyward/l10n/l10n.dart';
+import 'package:skyward/models/models.dart';
+import 'package:skyward/providers/providers.dart';
+import 'package:skyward/state.dart';
+import 'package:skyward/views/profiles/custom/groups.dart';
+import 'package:skyward/views/profiles/custom/members.dart';
+import 'package:skyward/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -103,6 +103,8 @@ final _optionSheet = find.byWidgetPredicate(
 Future<void> _addOption(WidgetTester tester, String label) async {
   await _openOptions(tester);
   final option = find.descendant(of: _optionSheet, matching: find.text(label));
+  await tester.ensureVisible(option);
+  await tester.pump();
   await tester.tap(option);
   await tester.pumpAndSettle();
   expect(option, findsNothing);
@@ -873,10 +875,10 @@ void main() {
       await pumpGroupSheet(tester);
       await _addOption(tester, currentAppLocalizations.testWhenUsed);
 
-      final lazy = tester.widget<Switch>(
+      final lazy = tester.widget<CommonSwitch>(
         find.descendant(
           of: _rowOf(currentAppLocalizations.testWhenUsed),
-          matching: find.byType(Switch),
+          matching: find.byType(CommonSwitch),
         ),
       );
       expect(lazy.value, isTrue);

@@ -1,19 +1,19 @@
 import 'dart:math' as math;
 
 import 'package:collection/collection.dart';
-import 'package:fl_clash/common/input_limits.dart';
-import 'package:fl_clash/ui/context.dart';
-import 'package:fl_clash/ui/dialog.dart';
-import 'package:fl_clash/ui/focus.dart';
-import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/ui/inherited.dart';
-import 'package:fl_clash/ui/input.dart';
-import 'package:fl_clash/ui/item_position.dart';
-import 'package:fl_clash/ui/measure.dart';
-import 'package:fl_clash/ui/metrics.dart';
-import 'package:fl_clash/ui/models.dart';
-import 'package:fl_clash/ui/shape.dart';
-import 'package:fl_clash/ui/typography.dart';
+import 'package:skyward/common/input_limits.dart';
+import 'package:skyward/ui/context.dart';
+import 'package:skyward/ui/dialog.dart';
+import 'package:skyward/ui/focus.dart';
+import 'package:skyward/ui/icons/icons.dart';
+import 'package:skyward/ui/inherited.dart';
+import 'package:skyward/ui/input.dart';
+import 'package:skyward/ui/item_position.dart';
+import 'package:skyward/ui/measure.dart';
+import 'package:skyward/ui/metrics.dart';
+import 'package:skyward/ui/models.dart';
+import 'package:skyward/ui/shape.dart';
+import 'package:skyward/ui/typography.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:material_ui/material_ui.dart';
@@ -26,6 +26,7 @@ import 'popup.dart';
 import 'scaffold.dart';
 import 'sheet.dart';
 import 'sortable.dart';
+import 'switch.dart';
 
 part 'list_row_separator.dart';
 part 'list_selected.dart';
@@ -439,7 +440,7 @@ class ListItem<T> extends StatelessWidget {
                 : () {
                     toggleAction.onChanged!(!toggleAction.value);
                   },
-            trailing: Switch(
+            trailing: CommonSwitch(
               value: toggleAction.value,
               onChanged: toggleAction.onChanged,
             ),
@@ -581,26 +582,43 @@ class ListFooter extends StatelessWidget {
   }
 }
 
+class ListSectionGap extends StatelessWidget {
+  const ListSectionGap({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(height: listHeaderPaddingOf(context).top);
+  }
+}
+
+/// A section's rows alone, for a group under a header its caller lays out.
+Widget generateGroup(Iterable<Widget> items) {
+  return Column(
+    crossAxisAlignment: CrossAxisAlignment.stretch,
+    children: [
+      ...items.mapIndexed<Widget>(
+        (index, item) => ItemPositionProvider(
+          position: ItemPosition.get(index, items.length),
+          child: item,
+        ),
+      ),
+    ],
+  );
+}
+
 Widget generateSection({
   String? title,
   required Iterable<Widget> items,
   List<IconButtonData> actions = const [],
   String? footer,
 }) {
-  final genItems = items.mapIndexed<Widget>(
-    (index, item) => ItemPositionProvider(
-      position: ItemPosition.get(index, items.length),
-      child: item,
-    ),
-  );
   return Column(
     children: [
-      if (items.isNotEmpty && title != null)
-        ListHeader(title: title, actions: actions),
-      Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [...genItems],
-      ),
+      if (items.isNotEmpty)
+        title != null
+            ? ListHeader(title: title, actions: actions)
+            : const ListSectionGap(),
+      generateGroup(items),
       if (items.isNotEmpty && footer != null) ListFooter(text: footer),
     ],
   );

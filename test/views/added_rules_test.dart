@@ -1,11 +1,11 @@
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/models/models.dart';
-import 'package:fl_clash/providers/providers.dart';
-import 'package:fl_clash/state.dart';
-import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/views/config/rules.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/models/models.dart';
+import 'package:skyward/providers/providers.dart';
+import 'package:skyward/state.dart';
+import 'package:skyward/ui/icons/icons.dart';
+import 'package:skyward/views/config/rules.dart';
+import 'package:skyward/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -48,7 +48,11 @@ void main() {
   late ProviderContainer container;
   late _RecordingGlobalRules rules;
 
-  Future<void> pumpRules(WidgetTester tester, List<Rule> initial) async {
+  Future<void> pumpRules(
+    WidgetTester tester,
+    List<Rule> initial, {
+    bool pushed = false,
+  }) async {
     tester.view.physicalSize = const Size(1200, 2400);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.resetPhysicalSize);
@@ -67,10 +71,29 @@ void main() {
     await tester.pumpWidget(
       UncontrolledProviderScope(
         container: container,
-        child: const TestApp(child: AddedRulesView()),
+        child: TestApp(
+          child: pushed
+              ? Scaffold(
+                  body: Builder(
+                    builder: (context) => TextButton(
+                      onPressed: () => Navigator.of(context).push(
+                        CommonRoute<void>(
+                          builder: (_) => const AddedRulesView(),
+                        ),
+                      ),
+                      child: const Text('open'),
+                    ),
+                  ),
+                )
+              : const AddedRulesView(),
+        ),
       ),
     );
     await tester.pumpAndSettle();
+    if (pushed) {
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+    }
   }
 
   testWidgets('shows the empty state without any rule', (tester) async {
@@ -149,6 +172,31 @@ void main() {
     expect(rules.deleted, [
       [2],
     ]);
+  });
+
+  testWidgets('drags back to its opener unless rules are selected', (
+    tester,
+  ) async {
+    await pumpRules(tester, [_rule(1, 'a.com')], pushed: true);
+    Future<void> dragBack() async {
+      await tester.timedDrag(
+        find.text('a.com'),
+        const Offset(800, 0),
+        const Duration(seconds: 1),
+      );
+      await tester.pumpAndSettle();
+    }
+
+    await tester.tap(find.byType(CommonCheckBox));
+    await tester.pumpAndSettle();
+    await dragBack();
+    expect(find.text('a.com'), findsOneWidget);
+
+    await tester.tap(find.byType(CommonCheckBox));
+    await tester.pumpAndSettle();
+    await dragBack();
+    expect(find.text('a.com'), findsNothing);
+    expect(find.text('open'), findsOneWidget);
   });
 
   group('search', () {

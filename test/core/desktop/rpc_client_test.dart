@@ -3,10 +3,10 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:fl_clash/core/desktop/rpc_client.dart';
-import 'package:fl_clash/core/event.dart';
-import 'package:fl_clash/core/method.dart';
-import 'package:fl_clash/core/spill.dart';
+import 'package:skyward/core/desktop/rpc_client.dart';
+import 'package:skyward/core/event.dart';
+import 'package:skyward/core/method.dart';
+import 'package:skyward/core/spill.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:path/path.dart';
 

@@ -1,10 +1,10 @@
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/common/ip_quality.dart';
-import 'package:fl_clash/models/models.dart';
-import 'package:fl_clash/providers/config.dart';
-import 'package:fl_clash/providers/ip_quality.dart';
-import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/common/ip_quality.dart';
+import 'package:skyward/models/models.dart';
+import 'package:skyward/providers/config.dart';
+import 'package:skyward/providers/ip_quality.dart';
+import 'package:skyward/ui/icons/icons.dart';
+import 'package:skyward/widgets/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -65,7 +65,7 @@ class _HideIpItem extends ConsumerWidget {
     return DecorationListItem(
       title: Text(context.appLocalizations.hideIp),
       onPressed: () => update(!hideIp),
-      trailing: Switch(value: hideIp, onChanged: update),
+      trailing: CommonSwitch(value: hideIp, onChanged: update),
     );
   }
 }
@@ -87,9 +87,10 @@ class _IpQualityDetail extends ConsumerWidget {
     final failed = quality == null && !result.isLoading;
     return ListView(
       shrinkWrap: true,
-      padding: const EdgeInsets.symmetric(
-        horizontal: 16,
-      ).copyWith(bottom: 20, top: context.contentTopPadding),
+      padding: const EdgeInsets.symmetric(horizontal: 16).copyWith(
+        bottom: 20 + context.bottomInset,
+        top: context.contentTopPadding,
+      ),
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(_tipInset, 8, _tipInset, 0),

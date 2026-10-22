@@ -2,20 +2,20 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/features/form/form.dart';
-import 'package:fl_clash/l10n/l10n.dart';
-import 'package:fl_clash/models/models.dart';
-import 'package:fl_clash/providers/providers.dart';
-import 'package:fl_clash/state.dart';
-import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/views/config/dns.dart';
-import 'package:fl_clash/views/config/ntp.dart';
-import 'package:fl_clash/views/config/sniffer.dart';
-import 'package:fl_clash/views/config/tun.dart';
-import 'package:fl_clash/views/profiles/edit.dart';
-import 'package:fl_clash/views/profiles/preview.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/features/form/form.dart';
+import 'package:skyward/l10n/l10n.dart';
+import 'package:skyward/models/models.dart';
+import 'package:skyward/providers/providers.dart';
+import 'package:skyward/state.dart';
+import 'package:skyward/ui/icons/icons.dart';
+import 'package:skyward/views/config/dns.dart';
+import 'package:skyward/views/config/ntp.dart';
+import 'package:skyward/views/config/sniffer.dart';
+import 'package:skyward/views/config/tun.dart';
+import 'package:skyward/views/profiles/edit.dart';
+import 'package:skyward/views/profiles/preview.dart';
+import 'package:skyward/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -52,8 +52,23 @@ Widget _sectionRow(
   return ListItem(
     leading: GlyphIcon(glyph),
     title: Text(title),
-    subtitle: state,
-    trailing: const GlyphIcon(AppGlyphs.chevronForward),
+    trailing: Row(
+      mainAxisSize: MainAxisSize.min,
+      spacing: 4,
+      children: [
+        Flexible(
+          child: DefaultTextStyle.merge(
+            style: context.listTitleStyle.copyWith(
+              color: context.colorScheme.onSurfaceVariant,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            child: state,
+          ),
+        ),
+        const GlyphIcon(AppGlyphs.chevronForward),
+      ],
+    ),
     onTap: () => _push(context, view),
   );
 }
@@ -315,7 +330,7 @@ class _CustomProfileViewState extends ConsumerState<CustomProfileView> {
                   SliverPadding(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
-                    ).copyWith(bottom: 24),
+                    ).copyWith(bottom: 24 + context.bottomInset),
                     sliver: SliverMainAxisGroup(
                       slivers: [
                         SliverToBoxAdapter(child: _overview),
@@ -516,9 +531,10 @@ class _MoreSectionsView extends ConsumerWidget {
     return CommonScaffold(
       title: appLocalizations.more,
       body: ListView(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 16,
-        ).copyWith(top: context.contentTopPadding, bottom: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 16).copyWith(
+          top: context.contentTopPadding,
+          bottom: 16 + context.bottomInset,
+        ),
         children: [
           generateSection(
             items: [

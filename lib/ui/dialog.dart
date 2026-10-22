@@ -1,14 +1,14 @@
 import 'dart:math' as math;
 
-import 'package:fl_clash/ui/color.dart';
-import 'package:fl_clash/ui/context.dart';
-import 'package:fl_clash/ui/input.dart';
-import 'package:fl_clash/ui/liquid_glass.dart';
-import 'package:fl_clash/ui/motion.dart';
-import 'package:fl_clash/ui/navigation_dock.dart';
-import 'package:fl_clash/ui/shape.dart';
-import 'package:fl_clash/ui/surface.dart';
-import 'package:fl_clash/ui/typography.dart';
+import 'package:skyward/ui/color.dart';
+import 'package:skyward/ui/context.dart';
+import 'package:skyward/ui/input.dart';
+import 'package:skyward/ui/liquid_glass.dart';
+import 'package:skyward/ui/motion.dart';
+import 'package:skyward/ui/navigation_dock.dart';
+import 'package:skyward/ui/shape.dart';
+import 'package:skyward/ui/surface.dart';
+import 'package:skyward/ui/typography.dart';
 import 'package:flutter/foundation.dart' show listEquals;
 import 'package:flutter/rendering.dart';
 import 'package:material_ui/material_ui.dart';

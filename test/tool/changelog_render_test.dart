@@ -311,7 +311,7 @@ void main() {
   group('readPubspecVersion', () {
     test('reads the app version without the build number', () {
       expect(
-        readPubspecVersion('name: fl_clash\nversion: 0.8.96+2026081501\n'),
+        readPubspecVersion('name: skyward\nversion: 0.8.96+2026081501\n'),
         '0.8.96',
       );
     });

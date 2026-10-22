@@ -1,4 +1,4 @@
-import 'package:fl_clash/common/input_entries.dart';
+import 'package:skyward/common/input_entries.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -213,6 +213,30 @@ void main() {
 
       expect(Map.fromEntries(parsed.entries), {'a': '1', 'c': '4'});
       expect(parsed.skippedExisting, 1);
+    });
+
+    test('compares keys case-insensitively when asked', () {
+      final parsed = parseMapInput(
+        'host x\nAccept y\naccept z\nHost w',
+        existingKeys: {'Host'},
+        ignoreKeyCase: true,
+      );
+
+      expect(Map.fromEntries(parsed.entries), {'Accept': 'y'});
+      expect(parsed.skippedExisting, 1);
+    });
+
+    test('keeps key comparison case-sensitive by default', () {
+      final parsed = parseMapInput(
+        'host x\nAccept y\naccept z',
+        existingKeys: {'Host'},
+      );
+
+      expect(Map.fromEntries(parsed.entries), {
+        'host': 'x',
+        'Accept': 'y',
+        'accept': 'z',
+      });
     });
   });
 }

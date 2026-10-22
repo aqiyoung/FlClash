@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:fl_clash/core/desktop/launcher.dart';
-import 'package:fl_clash/core/desktop/model.dart';
+import 'package:skyward/core/desktop/launcher.dart';
+import 'package:skyward/core/desktop/model.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

@@ -1,6 +1,6 @@
-import 'package:fl_clash/ui/builder.dart';
-import 'package:fl_clash/ui/inherited.dart';
-import 'package:fl_clash/widgets/active_polling.dart';
+import 'package:skyward/ui/builder.dart';
+import 'package:skyward/ui/inherited.dart';
+import 'package:skyward/widgets/active_polling.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 

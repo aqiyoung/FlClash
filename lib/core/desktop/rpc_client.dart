@@ -2,11 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/core/event.dart';
-import 'package:fl_clash/core/method.dart';
-import 'package:fl_clash/core/spill.dart';
-import 'package:fl_clash/enum/enum.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/core/event.dart';
+import 'package:skyward/core/method.dart';
+import 'package:skyward/core/spill.dart';
+import 'package:skyward/enum/enum.dart';
 import 'package:flutter/foundation.dart' show visibleForTesting;
 
 import 'transport.dart';

@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/models/models.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/models/models.dart';
+import 'package:skyward/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -89,6 +89,40 @@ class Dialogs {
     return showSheet(
       context: _context,
       builder: (_) => _FailureDetailsSheet(failures: failures),
+    );
+  }
+
+  Future<void> showQrCode({
+    required String title,
+    required String data,
+    String? message,
+  }) {
+    return showCommonDialog<void>(
+      child: Builder(
+        builder: (context) => CommonDialog(
+          title: title,
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(context.appLocalizations.close),
+            ),
+          ],
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            spacing: 16,
+            children: [
+              if (QrCodeView.fits(data)) ...[
+                QrCodeView(data: data),
+                if (message != null) Text(message, textAlign: TextAlign.center),
+              ] else
+                Text(
+                  context.appLocalizations.qrcodeTooLongTip,
+                  textAlign: TextAlign.center,
+                ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -203,12 +237,12 @@ class _FailureDetailsSheet extends StatelessWidget {
     return CommonScaffold(
       title: context.appLocalizations.errorDetails,
       body: SelectionArea(
-        child: ListView.separated(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16,
-          ).copyWith(top: context.contentTopPadding, bottom: 20),
+        child: ListView.builder(
+          padding: const EdgeInsets.symmetric(horizontal: 16).copyWith(
+            top: context.contentTopPadding,
+            bottom: 20 + context.bottomInset,
+          ),
           itemCount: groups.length,
-          separatorBuilder: (_, _) => SizedBox(height: 24.mAp(context)),
           itemBuilder: (_, index) {
             final MapEntry(key: message, value: labels) = groups[index];
             return generateSection(

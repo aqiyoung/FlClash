@@ -1,11 +1,11 @@
 import 'dart:async';
 
-import 'package:fl_clash/providers/providers.dart';
-import 'package:fl_clash/providers/routed_probe.dart';
+import 'package:skyward/providers/providers.dart';
+import 'package:skyward/providers/routed_probe.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 mixin ProbeStartHold<T extends ConsumerStatefulWidget> on ConsumerState<T> {
-  // A start's own probes often fail; its config re-apply asks again.
+  // A start's own probes often fail; the route epoch it moves asks again.
   static const _duration = Duration(seconds: 5);
 
   Timer? _hold;

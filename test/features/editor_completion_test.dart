@@ -1,6 +1,6 @@
 import 'package:code_forge/code_forge.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/features/editor/editor.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/features/editor/editor.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 CodeForgeCompletion? _complete(

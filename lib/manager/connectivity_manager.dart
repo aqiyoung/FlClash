@@ -1,11 +1,11 @@
 import 'dart:async';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/providers/app.dart';
-import 'package:fl_clash/providers/config.dart';
-import 'package:fl_clash/providers/on_demand.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/providers/app.dart';
+import 'package:skyward/providers/config.dart';
+import 'package:skyward/providers/on_demand.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:wifi_ssid/wifi_ssid.dart';
@@ -74,7 +74,8 @@ class _ConnectivityManagerState extends ConsumerState<ConnectivityManager> {
   Future<void> _updateSsid() async {
     final requestId = ++_ssidRequestId;
     // The SSID costs a blocking platform call and a location permission on
-    // Android and macOS, and nothing reads it until a network is excluded.
+    // Android, macOS and Windows, and nothing reads it until a network is
+    // excluded.
     if (!_onWifi ||
         ref.read(safeModeProvider) ||
         ref.read(excludeSSIDsProvider).isEmpty) {

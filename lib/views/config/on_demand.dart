@@ -1,21 +1,23 @@
 import 'dart:async';
 
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/plugins/app.dart';
-import 'package:fl_clash/providers/providers.dart';
-import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/plugins/app.dart';
+import 'package:skyward/providers/providers.dart';
+import 'package:skyward/ui/icons/icons.dart';
+import 'package:skyward/widgets/widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:wifi_ssid/wifi_ssid.dart';
 
 class OnDemandView extends ConsumerStatefulWidget {
-  const OnDemandView({super.key, this.isAndroid, this.isMacOS});
+  const OnDemandView({super.key, this.isAndroid, this.isMacOS, this.isWindows});
 
   final bool? isAndroid;
   final bool? isMacOS;
+  final bool? isWindows;
 
   @override
   ConsumerState createState() => _OnDemandViewState();
@@ -30,6 +32,10 @@ class _OnDemandViewState extends ConsumerState<OnDemandView>
 
   bool get _isMacOS => widget.isMacOS ?? system.isMacOS;
 
+  bool get _isWindows => widget.isWindows ?? system.isWindows;
+
+  bool get _needsLocationPermission => _isAndroid || _isMacOS || _isWindows;
+
   void _handlePermanentlyDeniedLocationPermission() {
     if (_isMacOS) {
       final appLocalizations = context.appLocalizations;
@@ -43,11 +49,29 @@ class _OnDemandViewState extends ConsumerState<OnDemandView>
       );
     } else if (_isAndroid) {
       app?.openAppSettings();
+    } else if (_isWindows) {
+      unawaited(_promptLocationSettings());
+    }
+  }
+
+  Future<void> _promptLocationSettings() async {
+    final appLocalizations = context.appLocalizations;
+    final needGo = await dialogs.showMessage(
+      title: appLocalizations.locationPermissionRequired,
+      message: TextSpan(text: appLocalizations.locationPermissionDeniedMessage),
+      confirmText: appLocalizations.go,
+    );
+    if (needGo != true) {
+      return;
+    }
+    if (_isWindows) {
+      unawaited(launchUrl(Uri.parse('ms-settings:privacy-location')));
+    } else {
+      unawaited(app?.openAppSettings());
     }
   }
 
   Future<void> _handleRequestLocationPermission() async {
-    final appLocalizations = context.appLocalizations;
     final permission = ref.read(locationPermissionsProvider);
     if (permission == WifiSsidPermission.granted) {
       return;
@@ -73,17 +97,8 @@ class _OnDemandViewState extends ConsumerState<OnDemandView>
         _handlePermanentlyDeniedLocationPermission();
         return;
       case WifiSsidPermission.denied:
-        break;
+        await _promptLocationSettings();
     }
-    final needGo = await dialogs.showMessage(
-      title: appLocalizations.locationPermissionRequired,
-      message: TextSpan(text: appLocalizations.locationPermissionDeniedMessage),
-      confirmText: appLocalizations.go,
-    );
-    if (needGo != true) {
-      return;
-    }
-    unawaited(app?.openAppSettings());
   }
 
   void _handleRequestIgnoreBatteryOptimization() {
@@ -285,11 +300,11 @@ class _OnDemandViewState extends ConsumerState<OnDemandView>
       title: appLocalizations.prerequisites,
       items: [
         if (_isAndroid) _buildBatteryOptimizationItem(),
-        if (_isAndroid || _isMacOS) _buildLocationPermissionItem(),
+        if (_needsLocationPermission) _buildLocationPermissionItem(),
       ],
       footer: [
         if (_isAndroid) appLocalizations.batteryOptimizationDesc,
-        if (_isAndroid || _isMacOS) appLocalizations.locationPermissionDesc,
+        if (_needsLocationPermission) appLocalizations.locationPermissionDesc,
       ].join('\n'),
     );
   }
@@ -368,7 +383,7 @@ class _OnDemandViewState extends ConsumerState<OnDemandView>
           SliverPadding(
             padding: const EdgeInsets.symmetric(
               horizontal: 16,
-            ).copyWith(top: context.appBarInset),
+            ).copyWith(top: context.contentTopPadding),
             sliver: SliverToBoxAdapter(child: _buildPrerequisites()),
           ),
           SliverPadding(
@@ -379,7 +394,7 @@ class _OnDemandViewState extends ConsumerState<OnDemandView>
           SliverPadding(
             padding: const EdgeInsets.symmetric(
               horizontal: 16,
-            ).copyWith(bottom: 16),
+            ).copyWith(bottom: 16 + context.bottomInset),
             sliver: SliverToBoxAdapter(
               child: ListFooter(
                 text: context.appLocalizations.excludeSsidsDesc,

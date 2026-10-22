@@ -1,13 +1,13 @@
 import 'dart:convert';
 
-import 'package:fl_clash/manager/android_manager.dart';
-import 'package:fl_clash/models/models.dart';
-import 'package:fl_clash/plugins/service.dart';
-import 'package:fl_clash/providers/action.dart';
-import 'package:fl_clash/providers/config.dart';
-import 'package:fl_clash/providers/database.dart';
-import 'package:fl_clash/providers/state.dart';
-import 'package:fl_clash/state.dart';
+import 'package:skyward/manager/android_manager.dart';
+import 'package:skyward/models/models.dart';
+import 'package:skyward/plugins/service.dart';
+import 'package:skyward/providers/action.dart';
+import 'package:skyward/providers/config.dart';
+import 'package:skyward/providers/database.dart';
+import 'package:skyward/providers/state.dart';
+import 'package:skyward/state.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

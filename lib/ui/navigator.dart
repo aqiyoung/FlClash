@@ -1,12 +1,12 @@
 import 'dart:async';
 
 import 'package:animations/animations.dart';
-import 'package:fl_clash/ui/context.dart';
-import 'package:fl_clash/ui/deferred_push.dart';
-import 'package:fl_clash/ui/drag_back.dart';
-import 'package:fl_clash/ui/keyboard_inset_hold.dart';
-import 'package:fl_clash/ui/page_transition.dart';
-import 'package:fl_clash/ui/sheet_navigator.dart';
+import 'package:skyward/ui/context.dart';
+import 'package:skyward/ui/deferred_push.dart';
+import 'package:skyward/ui/drag_back.dart';
+import 'package:skyward/ui/keyboard_inset_hold.dart';
+import 'package:skyward/ui/page_transition.dart';
+import 'package:skyward/ui/sheet_navigator.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -105,6 +105,15 @@ bool isRouteArriving(BuildContext context) => routesCarrying(
   context,
 ).any((route) => route.offstage || (route.animation?.isAnimating ?? false));
 
+/// Completes once the route [context] is on stops moving under the route
+/// above it, as while that route still leaves after its pop.
+Future<void> whenRouteUncovered(BuildContext context) async {
+  final animation = ModalRoute.of(context)?.secondaryAnimation;
+  if (animation != null) {
+    await _whenStill(animation);
+  }
+}
+
 Future<void> _whenSettled(ModalRoute<Object?> route) async {
   // HeroController builds a pushed route offstage for its first frame, with
   // the animation pinned to completed, so it only tells the truth after that.
@@ -112,8 +121,14 @@ Future<void> _whenSettled(ModalRoute<Object?> route) async {
     await SchedulerBinding.instance.endOfFrame;
   }
   final animation = route.animation;
-  if (animation == null || !animation.isAnimating) {
-    return;
+  if (animation != null) {
+    await _whenStill(animation);
+  }
+}
+
+Future<void> _whenStill(Animation<double> animation) {
+  if (!animation.isAnimating) {
+    return Future.value();
   }
   final completer = Completer<void>();
   void handleStatus(AnimationStatus status) {

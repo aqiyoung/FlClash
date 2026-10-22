@@ -53,8 +53,8 @@ does. `CircleBorder` and `BoxShape.circle` are fine for something that is always
 
 APIs that accept only a `Radius`, such as `ScrollbarThemeData.radius`, keep circular corners; supply the superellipse
 with an enclosing clip or shape where it shows. Framework widgets that paint their own circular corners with no shape or
-decoration to override, such as the `Switch` track, are left as Material draws them. Tooltips take theirs from
-`withAppShapes`, which sets `tooltipTheme.decoration`.
+decoration to override are left as Material draws them; switches are `CommonSwitch`, drawn by the app. Tooltips take
+theirs from `withAppShapes`, which sets `tooltipTheme.decoration`.
 
 ### Typography
 
@@ -173,8 +173,8 @@ leaving a repo-wide policy as a comment reaches only the reader of that one file
 
 - `core/Clash.Meta` is a fork of mihomo, and changes to it are budgeted for features, not repairs. Fixing a bug there is
   low priority even when the bug is real and the fix is small: every patch is one more thing to carry across an upstream
-  rebase. Solve it on the FlClash side of the boundary and note the mihomo behaviour you are working around. Reach into
-  the submodule only for a feature that has nowhere else to live, or when the problem is one the FlClash patches
+  rebase. Solve it on the Skyward side of the boundary and note the mihomo behaviour you are working around. Reach into
+  the submodule only for a feature that has nowhere else to live, or when the problem is one the Skyward patches
   themselves introduced — and say which of the two it is in the commit message.
 - Do not expose direct filesystem deletion APIs through Core or helper IPC; use
   a scope-specific cleanup API instead.
@@ -238,7 +238,7 @@ leaving a repo-wide policy as a comment reaches only the reader of that one file
   `invalidateAllProxies` on `tunnel.UpdateProxies` and validated against each provider's `Version()`, so a rebuild
   costs one read per provider rather than one per proxy. Anything else added to `tunnel/patch.go` that derives from the
   proxy set needs both signals: the external controller can reload the config through `hub/route/configs.go` without
-  going through FlClash's `applyConfig`, so a hook on the FlClash side alone would miss a profile switch.
+  going through Skyward's `applyConfig`, so a hook on the Skyward side alone would miss a profile switch.
 - Core state that mirrors mihomo state goes stale at the next `applyConfig`, which replaces every proxy, provider and
   rule. Read the tunnel instead of caching a snapshot of it: `lookupExternalProvider` kept one that was rebuilt only
   when the host asked for the provider list, and the host asks after a successful setup and not after a failed one, so
@@ -264,7 +264,7 @@ leaving a repo-wide policy as a comment reaches only the reader of that one file
   `downloadTimeoutDuration` matches mihomo's `resource.DefaultHttpTimeout`, which bounds the Core's provider downloads
   end to end. `shareLinkSchemes` are the schemes mihomo's `ConvertsV2Ray` reads, less http(s), which is a subscription.
 - Anything on the mihomo side that is reached from both a user-triggered core method and mihomo's own background
-  scheduler needs its in-flight guard on the FlClash side. `updater.UpdateMMDB` and its siblings have none — only the
+  scheduler needs its in-flight guard on the Skyward side. `updater.UpdateMMDB` and its siblings have none — only the
   batch `UpdateGeoDatabases` does — and two concurrent runs close the mmap'd database twice, so `handleUpdateGeoData`
   claims per resource and `updater.GeoUpdateHook` releases.
 - A failed `applyConfig` rolls the tunnel back to the default config, and that rollback is the whole recovery:
@@ -344,10 +344,14 @@ leaving a repo-wide policy as a comment reaches only the reader of that one file
   authorization, because CoreWLAN reaches `wifid` over XPC and a wedged daemon would freeze the window. Windows is the
   outstanding exception: `WlanQueryInterface` still runs inline, since replying off-thread there needs a window-message
   hop that the plugin API does not provide.
-- The delayed DNS re-check `NetworkObserveModule.onLosing` posts is deliberately left un-deduplicated. The runnable
-  re-reads `networkInfos` and does nothing when `onLost` already dropped the network, `updateDns` calls into the Core
-  only when the resolved list or the preferred network changed, and `stop()` clears the handler queue, so a network that
-  reports `onLosing` repeatedly costs two comparisons per event. Holding the pending `Runnable` to `removeCallbacks` it changes no behaviour and adds
+- Android's `system` nameserver resolves only through the DNS `NetworkObserver` reports; mihomo builds it with no
+  fallback, so with no list every lookup through it fails at once. The Core tests delays and updates providers with no
+  service running, so the observer lives for the process from the first `init` or native `quickSetup` and never sends
+  an empty list on a service stop.
+- The delayed DNS re-check `NetworkObserver.onLosing` posts is deliberately left un-deduplicated. The runnable
+  re-reads `networkInfos` and does nothing when `onLost` already dropped the network, and `updateDns` calls into the
+  Core only when the resolved list or the preferred network changed, so a network that reports `onLosing` repeatedly
+  costs two comparisons per event. Holding the pending `Runnable` to `removeCallbacks` it changes no behaviour and adds
   state that has to stay in sync with the map.
 
 ## UI Isolate Work
@@ -370,6 +374,8 @@ it there is.
   costs the UI isolate on every emission, and any write to that table makes it emit again.
 - Bounded work stays where it is: a provider recompute that reuses a cache, a single-item update, a search filter over
   a list sized for scrolling.
+- An editor document stays in the Rust rope. Open a file for `EditorPage` with `openEditorFile` rather than reading it
+  into a string, and read an edited one through `EditorContent`; a profile can be tens of megabytes.
 - Decide on measurements taken at the expected maximum. A `flutter test` probe that counts provider recomputes, times
   the provider body and hooks `debugOnRebuildDirtyWidget` shows what reruns and how it scales; its JIT timings are not
   device numbers, so a case near the line is settled with a profile build. No gate checks this rule.
@@ -509,11 +515,17 @@ A public top-level declaration that nothing outside its own file references is d
 riverpod notifier is reached through its generated provider) and barrels as neither. Files publishing only extensions or
 typedefs are skipped: those are reached through the types they attach to, never by name.
 
-`CommonScaffold` adds the height of its docked search to `BottomInsetScope` around its body, so a page that reads
-`BottomInsetScope.of(context)` with the context it builds the scaffold from gets the inset without it, and the end of
-its content stays under the search field. Read it below the scaffold,
-inside `body: Builder(builder: (context) => ...)`. `test/lint/scaffold_bottom_inset_test.dart` enforces this by
-scanning `lib/`.
+`CommonScaffold` runs its body under the system bar at the foot of the window, as Android's edge-to-edge guidance
+asks, and only the end of the content clears it. A three-button bar is no exception: `ThemeManager` leaves it
+Android's translucent scrim (`systemNavigationBarContrastEnforced`). Telling the two apart by the side back-swipe
+zones Flutter reports reserved a gesture handle again on a real phone, so no page asks which bar it has. A scroll view
+ends, and anything fixed at the foot of a body stands, `context.bottomInset` above the edge: `BottomInsetScope` (the
+home dock, a docked search) plus the system bar `MediaQuery` still carries. The home shell takes the system bar out of
+`MediaQuery` for its tabs because the dock's inset already counts it. A bare `BottomInsetScope.of` leaves the system
+bar out, so code outside `lib/ui` never reads it. The scaffold adds its docked search to the scope around its body, so a page with a `searchState` reads
+`context.bottomInset` below the scaffold, inside `body: Builder(builder: (context) => ...)`; read with the context the
+scaffold is built from, it leaves the end of the content under the search field.
+`test/lint/scaffold_bottom_inset_test.dart` enforces both by scanning `lib/`.
 
 Every reorderable list builds its drag proxy with `commonProxyDecorator`, which tells `DecorationListItem` it is lifted:
 the row drops its separator and rounds from its corners in the run to a card of its own as it lifts, and back as it
@@ -557,9 +569,9 @@ to GitHub Actions:
 
 ## Running the App Locally
 
-- An agent starts FlClash on the host only as a safe mode build (`--dart-define=SAFE_MODE=true`, see
+- An agent starts Skyward on the host only as a safe mode build (`--dart-define=SAFE_MODE=true`, see
   `.agents/commands.md`). A normal build takes over the host network, so the user runs it, never the agent.
-- Never end a FlClash process the agent did not start, and never kill by name (`pkill`, `killall`, a pattern on the
+- Never end a Skyward process the agent did not start, and never kill by name (`pkill`, `killall`, a pattern on the
   executable path): the user's own instance matches too. Record the pid of every process you launch, check with
   `ps -o pid,command -p <pid>` that its executable is your own build output, and end only that pid.
 - Only a macOS or Android debug build has its own data directory; every other build shares the installed app's data

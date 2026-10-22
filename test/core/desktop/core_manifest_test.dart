@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:fl_clash/core/desktop/core_manifest.dart';
+import 'package:skyward/core/desktop/core_manifest.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

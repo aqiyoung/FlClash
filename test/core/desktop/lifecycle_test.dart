@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:fl_clash/core/desktop/lifecycle.dart';
-import 'package:fl_clash/core/desktop/model.dart';
-import 'package:fl_clash/core/desktop/transport.dart';
+import 'package:skyward/core/desktop/lifecycle.dart';
+import 'package:skyward/core/desktop/model.dart';
+import 'package:skyward/core/desktop/transport.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'fakes.dart';

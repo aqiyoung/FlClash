@@ -1,7 +1,7 @@
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/features/editor/clash_schema.dart';
-import 'package:fl_clash/features/editor/relaxed_yaml.dart';
-import 'package:fl_clash/models/models.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/features/editor/clash_schema.dart';
+import 'package:skyward/features/editor/relaxed_yaml.dart';
+import 'package:skyward/models/models.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yaml/yaml.dart';
 

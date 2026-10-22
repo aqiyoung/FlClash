@@ -1,13 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:fl_clash/l10n/intl/messages_en.dart' as messages_en;
-import 'package:fl_clash/l10n/intl/messages_es.dart' as messages_es;
-import 'package:fl_clash/l10n/intl/messages_fr.dart' as messages_fr;
-import 'package:fl_clash/l10n/intl/messages_ja.dart' as messages_ja;
-import 'package:fl_clash/l10n/intl/messages_ko.dart' as messages_ko;
-import 'package:fl_clash/l10n/intl/messages_ru.dart' as messages_ru;
-import 'package:fl_clash/l10n/intl/messages_zh_CN.dart' as messages_zh_cn;
+import 'package:skyward/l10n/intl/messages_en.dart' as messages_en;
+import 'package:skyward/l10n/intl/messages_es.dart' as messages_es;
+import 'package:skyward/l10n/intl/messages_fr.dart' as messages_fr;
+import 'package:skyward/l10n/intl/messages_ja.dart' as messages_ja;
+import 'package:skyward/l10n/intl/messages_ko.dart' as messages_ko;
+import 'package:skyward/l10n/intl/messages_ru.dart' as messages_ru;
+import 'package:skyward/l10n/intl/messages_zh_CN.dart' as messages_zh_cn;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/message_lookup_by_library.dart';
 

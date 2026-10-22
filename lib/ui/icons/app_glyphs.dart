@@ -1,7 +1,7 @@
 import 'dart:math' as math;
 import 'dart:ui' show lerpDouble;
 
-import 'package:fl_clash/ui/icons/glyph.dart';
+import 'package:skyward/ui/icons/glyph.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:material_ui/material_ui.dart';
 
@@ -1077,6 +1077,11 @@ abstract final class AppGlyphs {
   static const toggle = Glyph([
     GlyphBox(2.9, 6.5, 21.1, 17.5, 5.5),
     GlyphCircle(8.4, 12, 2.8, role: GlyphRole.detail, solid: true),
+  ]);
+
+  static const toggleOn = Glyph([
+    GlyphBox(2.9, 6.5, 21.1, 17.5, 5.5),
+    GlyphCircle(15.6, 12, 2.8, role: GlyphRole.detail, solid: true),
   ]);
 
   static const pin = Glyph([

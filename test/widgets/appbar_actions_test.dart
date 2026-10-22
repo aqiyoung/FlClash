@@ -1,6 +1,6 @@
-import 'package:fl_clash/providers/app.dart';
-import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:skyward/providers/app.dart';
+import 'package:skyward/ui/icons/icons.dart';
+import 'package:skyward/widgets/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -319,6 +319,64 @@ void main() {
       }
       expect(bar.right - action.right, appBarActionInset(compact));
     });
+  }
+
+  for (final (name, scaffold) in [
+    (
+      'nothing',
+      const CommonScaffold(
+        title: 'Title',
+        body: SizedBox(width: double.infinity, height: 200),
+      ),
+    ),
+    (
+      'a primary action',
+      const CommonScaffold(
+        title: 'Title',
+        primaryAction: IconButtonData(
+          glyph: AppGlyphs.sync,
+          onPressed: _noop,
+          tooltip: 'Sync',
+        ),
+        body: SizedBox(width: double.infinity, height: 200),
+      ),
+    ),
+    (
+      'icon actions',
+      const CommonScaffold(
+        title: 'Title',
+        iconActions: [
+          IconButtonData(glyph: AppGlyphs.sync, onPressed: _noop, tooltip: 'A'),
+          IconButtonData(glyph: AppGlyphs.edit, onPressed: _noop, tooltip: 'B'),
+        ],
+        body: SizedBox(width: double.infinity, height: 200),
+      ),
+    ),
+  ]) {
+    for (final type in [SheetType.bottomSheet, SheetType.sideSheet]) {
+      testWidgets('a ${type.name} leads its bar with close beside $name', (
+        tester,
+      ) async {
+        final bar = await _pumpBar(
+          tester,
+          view: type == SheetType.bottomSheet ? _mobile : _desktop,
+          platform: TargetPlatform.android,
+          child: SheetProvider(type: type, child: scaffold),
+        );
+        final close = tester.getRect(
+          _container(find.widgetWithGlyph(IconButton, AppGlyphs.close)),
+        );
+        final title = tester.getRect(
+          find.descendant(
+            of: find.byType(AppBar),
+            matching: find.text('Title'),
+          ),
+        );
+
+        expect(close.center.dx, lessThan(bar.center.dx));
+        expect(close.right, lessThanOrEqualTo(title.left));
+      });
+    }
   }
 
   for (final (name, view, compact, scaffold) in [

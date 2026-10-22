@@ -1,14 +1,14 @@
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/features/form/form.dart';
-import 'package:fl_clash/models/models.dart';
-import 'package:fl_clash/pages/editor.dart';
-import 'package:fl_clash/providers/app.dart';
-import 'package:fl_clash/providers/database.dart';
-import 'package:fl_clash/providers/state.dart';
-import 'package:fl_clash/state.dart';
-import 'package:fl_clash/views/config/ntp.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/features/form/form.dart';
+import 'package:skyward/models/models.dart';
+import 'package:skyward/pages/editor.dart';
+import 'package:skyward/providers/app.dart';
+import 'package:skyward/providers/database.dart';
+import 'package:skyward/providers/state.dart';
+import 'package:skyward/state.dart';
+import 'package:skyward/views/config/ntp.dart';
+import 'package:skyward/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -196,7 +196,7 @@ void main() {
     await tester.pump();
 
     expect(find.text(currentAppLocalizations.status), findsOneWidget);
-    await tester.tap(find.byType(Switch).last);
+    await tester.tap(find.byType(CommonSwitch).last);
     await tester.pump();
     expect(config().ntp.enable, isTrue);
 
@@ -334,7 +334,11 @@ void main() {
     expect(editor.readOnly, isFalse);
 
     final context = tester.element(find.byType(EditorPage));
-    final popped = await editor.onPop!(context, 'NTP', 'port: 1230');
+    final popped = await editor.onPop!(
+      context,
+      'NTP',
+      const EditorContent.text('port: 1230'),
+    );
     expect(popped, isTrue);
     expect(config().ntpOverrideKeys, {NtpOverrideKey.port});
     expect(config().ntp.port, 1230);
@@ -362,7 +366,11 @@ void main() {
     final editor = await openQuickEdit(tester);
     final context = tester.element(find.byType(EditorPage));
     expect(
-      await editor.onPop!(context, 'NTP', "enable: true\nserver: ''\n"),
+      await editor.onPop!(
+        context,
+        'NTP',
+        const EditorContent.text("enable: true\nserver: ''\n"),
+      ),
       isTrue,
     );
     expect(config().ntpOverrideKeys, {NtpOverrideKey.enable});
@@ -378,7 +386,14 @@ void main() {
     expect(editor.content, isNot(contains('dialer-proxy')));
 
     final context = tester.element(find.byType(EditorPage));
-    expect(await editor.onPop!(context, 'NTP', 'enable: true'), isTrue);
+    expect(
+      await editor.onPop!(
+        context,
+        'NTP',
+        const EditorContent.text('enable: true'),
+      ),
+      isTrue,
+    );
     expect(config().ntpOverrideKeys, {
       NtpOverrideKey.enable,
       NtpOverrideKey.dialerProxy,
@@ -393,7 +408,12 @@ void main() {
     final editor = await openQuickEdit(tester);
     final context = tester.element(find.byType(EditorPage));
 
-    final popped = editor.onPop!(context, 'NTP', 'bogus: 1');
+    final popped = editor.onPop!(
+      context,
+      'NTP',
+      const EditorContent.text('bogus: 1'),
+    );
+    await tester.pump();
     await tester.pump();
     expect(
       find.textContaining(currentAppLocalizations.discardChanges),

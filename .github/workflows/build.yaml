@@ -537,8 +537,8 @@ jobs:
         if: ${{ env.IS_STABLE == 'true' }}
         run: |
           version=$(echo "${{ github.ref_name }}" | sed 's/^v//')
-          arm_sha=$(sha256sum "./dist/FlClash-${version}-macos-arm64.dmg" | awk '{print $1}')
-          amd_sha=$(sha256sum "./dist/FlClash-${version}-macos-amd64.dmg" | awk '{print $1}')
+          arm_sha=$(sha256sum "./dist/Skyward-${version}-macos-arm64.dmg" | awk '{print $1}')
+          amd_sha=$(sha256sum "./dist/Skyward-${version}-macos-amd64.dmg" | awk '{print $1}')
 
           mkdir -p ./brew/Casks
           sed \

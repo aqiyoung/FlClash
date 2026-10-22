@@ -1,11 +1,11 @@
-import 'package:fl_clash/common/input_limits.dart';
-import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/ui/inherited.dart';
-import 'package:fl_clash/ui/l10n.dart';
-import 'package:fl_clash/ui/measure.dart';
-import 'package:fl_clash/ui/shape.dart';
-import 'package:fl_clash/ui/surface.dart';
-import 'package:fl_clash/ui/typography.dart';
+import 'package:skyward/common/input_limits.dart';
+import 'package:skyward/ui/icons/icons.dart';
+import 'package:skyward/ui/inherited.dart';
+import 'package:skyward/ui/l10n.dart';
+import 'package:skyward/ui/measure.dart';
+import 'package:skyward/ui/shape.dart';
+import 'package:skyward/ui/surface.dart';
+import 'package:skyward/ui/typography.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// Below this many items a sheet is short enough to scan without a search.

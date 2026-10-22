@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:fl_clash/common/boot_record.dart';
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/common/system_dns.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/models/models.dart';
+import 'package:skyward/common/boot_record.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/common/system_dns.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/models/models.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -59,6 +59,22 @@ class Preferences {
   Future<void> saveShareState(SharedState shareState) async {
     final preferences = await _store.value;
     await preferences?.setString('sharedState', json.encode(shareState));
+  }
+
+  /// The md5 of the config.yaml the Core last accepted, which is also what
+  /// the Android service applies when it starts without Flutter.
+  Future<String?> getAppliedConfigMd5() async {
+    final preferences = await _store.value;
+    return preferences?.getString(appliedConfigMd5Key);
+  }
+
+  Future<void> saveAppliedConfigMd5(String? md5) async {
+    final preferences = await _store.value;
+    if (md5 == null) {
+      await preferences?.remove(appliedConfigMd5Key);
+    } else {
+      await preferences?.setString(appliedConfigMd5Key, md5);
+    }
   }
 
   Future<Map<String, Object?>?> getConfigMap() async {
@@ -147,6 +163,20 @@ class Preferences {
   Future<void> clearSystemDnsRecord() async {
     final sharedPreferencesIns = await _store.value;
     await sharedPreferencesIns?.remove(systemDnsRecordKey);
+  }
+
+  Future<bool> getSystemProxyApplied() async {
+    final sharedPreferencesIns = await _store.value;
+    return sharedPreferencesIns?.getBool(systemProxyAppliedKey) ?? false;
+  }
+
+  Future<void> saveSystemProxyApplied(bool applied) async {
+    final sharedPreferencesIns = await _store.value;
+    if (applied) {
+      await sharedPreferencesIns?.setBool(systemProxyAppliedKey, true);
+    } else {
+      await sharedPreferencesIns?.remove(systemProxyAppliedKey);
+    }
   }
 
   Future<BootRecord?> getBootRecord() async {

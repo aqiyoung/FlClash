@@ -1,9 +1,9 @@
 import 'dart:convert';
 
-import 'package:fl_clash/common/boot_record.dart';
-import 'package:fl_clash/common/constant.dart';
-import 'package:fl_clash/common/preferences.dart';
-import 'package:fl_clash/models/models.dart';
+import 'package:skyward/common/boot_record.dart';
+import 'package:skyward/common/constant.dart';
+import 'package:skyward/common/preferences.dart';
+import 'package:skyward/models/models.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -26,6 +26,18 @@ void main() {
   setUp(() async {
     await mockPreferences();
     store = await SharedPreferences.getInstance();
+  });
+
+  group('applied config md5', () {
+    test('round-trips a written md5 and forgets a cleared one', () async {
+      expect(await preferences.getAppliedConfigMd5(), isNull);
+
+      await preferences.saveAppliedConfigMd5('abc');
+      expect(await preferences.getAppliedConfigMd5(), 'abc');
+
+      await preferences.saveAppliedConfigMd5(null);
+      expect(store.containsKey(appliedConfigMd5Key), isFalse);
+    });
   });
 
   group('version', () {

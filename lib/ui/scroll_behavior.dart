@@ -1,8 +1,7 @@
-import 'dart:io';
 import 'dart:math';
 import 'dart:ui';
 
-import 'package:fl_clash/ui/scroll.dart';
+import 'package:skyward/ui/scroll.dart';
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -26,8 +25,7 @@ class BaseScrollBehavior extends MaterialScrollBehavior {
     PointerDeviceKind.stylus,
     PointerDeviceKind.invertedStylus,
     PointerDeviceKind.trackpad,
-    if (Platform.isWindows || Platform.isMacOS || Platform.isLinux)
-      PointerDeviceKind.mouse,
+    PointerDeviceKind.mouse,
     PointerDeviceKind.unknown,
   };
 

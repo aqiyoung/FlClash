@@ -1,6 +1,6 @@
 import 'package:emoji_regex/emoji_regex.dart';
-import 'package:fl_clash/ui/measure.dart';
-import 'package:fl_clash/ui/text_style.dart';
+import 'package:skyward/ui/measure.dart';
+import 'package:skyward/ui/text_style.dart';
 import 'package:material_ui/material_ui.dart';
 
 class TooltipText extends StatelessWidget {
@@ -94,6 +94,27 @@ class EmojiText extends StatelessWidget {
     }
 
     return TextSpan(children: spans);
+  }
+
+  /// The width [EmojiText] lays [text] out at on one line under [style].
+  static double widthOf(BuildContext context, String text, TextStyle style) {
+    final painter = TextPainter(
+      text: TextSpan(
+        style: MediaQuery.boldTextOf(context)
+            ? style.merge(const TextStyle(fontWeight: FontWeight.bold))
+            : style,
+        children: [spanOf(text, null)],
+      ),
+      textDirection: Directionality.of(context),
+      textScaler: MediaQuery.textScalerOf(context),
+      locale: Localizations.maybeLocaleOf(context),
+      maxLines: 1,
+    )..layout();
+    try {
+      return painter.maxIntrinsicWidth;
+    } finally {
+      painter.dispose();
+    }
   }
 
   @override

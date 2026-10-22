@@ -3,14 +3,14 @@ import 'dart:math' as math;
 import 'dart:ui' as ui show Image;
 import 'dart:ui' show ImageFilter, lerpDouble;
 
-import 'package:fl_clash/ui/color.dart';
-import 'package:fl_clash/ui/context.dart';
-import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/ui/metrics.dart';
-import 'package:fl_clash/ui/motion.dart';
-import 'package:fl_clash/ui/shape.dart';
-import 'package:fl_clash/ui/surface.dart';
-import 'package:fl_clash/ui/typography.dart';
+import 'package:skyward/ui/color.dart';
+import 'package:skyward/ui/context.dart';
+import 'package:skyward/ui/icons/icons.dart';
+import 'package:skyward/ui/metrics.dart';
+import 'package:skyward/ui/motion.dart';
+import 'package:skyward/ui/shape.dart';
+import 'package:skyward/ui/surface.dart';
+import 'package:skyward/ui/typography.dart';
 import 'package:flutter/foundation.dart' show ValueListenable, listEquals;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/physics.dart' show SpringSimulation;
@@ -1527,19 +1527,32 @@ class _PopupPressRecognizer extends OneSequenceGestureRecognizer {
 class CommonPopupMenuItem {
   const CommonPopupMenuItem({
     required this.label,
+    this.subtitle,
     this.glyph,
     this.onPressed,
     this.danger = false,
     this.checked,
+    this.section,
     this.subItems = const [],
   });
 
   final String label;
+  final String? subtitle;
   final Glyph? glyph;
   final VoidCallback? onPressed;
   final bool danger;
   final bool? checked;
+
+  /// Sets this item and those after it apart from the items above, as an
+  /// inline section of an iOS menu does.
+  final CommonPopupMenuSection? section;
   final List<CommonPopupMenuItem> subItems;
+}
+
+class CommonPopupMenuSection {
+  const CommonPopupMenuSection({this.title});
+
+  final String? title;
 }
 
 const _menuMinWidth = 160.0;
@@ -1688,7 +1701,12 @@ class _CommonPopupMenuState extends State<CommonPopupMenu>
   bool _buildsLazily(_MenuLevel level) =>
       widget.maxVisibleItems != null &&
       level.owner == null &&
-      level.items.every((item) => item.subItems.isEmpty);
+      level.items.every(
+        (item) =>
+            item.subItems.isEmpty &&
+            item.subtitle == null &&
+            item.section == null,
+      );
 
   void _revealChecked() {
     final row = _checkedKey.currentContext;
@@ -1716,7 +1734,7 @@ class _CommonPopupMenuState extends State<CommonPopupMenu>
     return 2 * _cardInset + (_maxVisibleItems + 0.5) * _rowExtentOf(context);
   }
 
-  static final _labelWidths = <(String, TextStyle, TextScaler), double>{};
+  static final _labelWidths = <(String, TextStyle, TextScaler, bool), double>{};
 
   /// What the rows would take at their intrinsic width, measured from the
   /// labels as the rows lay them out.
@@ -1724,31 +1742,15 @@ class _CommonPopupMenuState extends State<CommonPopupMenu>
     final style = AppTextStyle.subheadline.of(context);
     final root = DefaultTextStyle.of(context).style.merge(style);
     final textScaler = MediaQuery.textScalerOf(context);
-    final textDirection = Directionality.of(context);
-    final locale = Localizations.maybeLocaleOf(context);
+    final boldText = MediaQuery.boldTextOf(context);
     const limit = _menuMaxWidth - 2 * _cardInset;
     var width = 0.0;
     for (final item in items) {
       if (_labelWidths.length >= 1024) {
         _labelWidths.clear();
       }
-      final label = _labelWidths[(item.label, root, textScaler)] ??= () {
-        final painter = TextPainter(
-          text: TextSpan(
-            style: root,
-            children: [EmojiText.spanOf(item.label, style)],
-          ),
-          textDirection: textDirection,
-          textScaler: textScaler,
-          locale: locale,
-          maxLines: 1,
-        )..layout();
-        try {
-          return painter.maxIntrinsicWidth;
-        } finally {
-          painter.dispose();
-        }
-      }();
+      final label = _labelWidths[(item.label, root, textScaler, boldText)] ??=
+          EmojiText.widthOf(context, item.label, root);
       final checked = item.checked == true;
       final row =
           (checked ? _itemArrowPadding : _itemPadding).horizontal +
@@ -2078,13 +2080,32 @@ class _CommonPopupMenuState extends State<CommonPopupMenu>
                 const SizedBox(width: 12),
               ],
               Expanded(
-                child: EmojiText(
-                  item.label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyle.subheadline
-                      .of(context)
-                      .copyWith(color: foregroundColor),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    EmojiText(
+                      item.label,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: AppTextStyle.subheadline
+                          .of(context)
+                          .copyWith(color: foregroundColor),
+                    ),
+                    if (item.subtitle case final subtitle?)
+                      EmojiText(
+                        subtitle,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppTextStyle.footnote
+                            .of(context)
+                            .copyWith(
+                              color: enabled
+                                  ? colorScheme.onSurfaceVariant
+                                  : colorScheme.onSurfaceVariant.opacity30,
+                            ),
+                      ),
+                  ],
                 ),
               ),
               if (arrow != null) ...[const SizedBox(width: 8), arrow],
@@ -2138,6 +2159,23 @@ class _CommonPopupMenuState extends State<CommonPopupMenu>
     );
   }
 
+  Widget _buildSectionTitle(BuildContext context, String title) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 2),
+      child: Semantics(
+        header: true,
+        child: EmojiText(
+          title,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: AppTextStyle.footnote
+              .of(context)
+              .copyWith(color: context.colorScheme.onSurfaceVariant),
+        ),
+      ),
+    );
+  }
+
   Widget _buildContent(
     BuildContext context,
     _MenuLevel level, {
@@ -2149,7 +2187,12 @@ class _CommonPopupMenuState extends State<CommonPopupMenu>
         ? level.items.indexWhere((item) => item.checked == true)
         : -1;
     final items = [
-      for (var index = 0; index < level.items.length; index++)
+      for (var index = 0; index < level.items.length; index++) ...[
+        if (level.items[index].section case final section?) ...[
+          if (index > 0) const Divider(height: _dividerHeight, thickness: 1),
+          if (section.title case final title?)
+            _buildSectionTitle(context, title),
+        ],
         // The item a sub menu stands on hides under its header, which draws
         // it again; on glass the two would show through each other.
         Opacity(
@@ -2157,6 +2200,7 @@ class _CommonPopupMenuState extends State<CommonPopupMenu>
           opacity: index == covered ? 0 : 1,
           child: _buildItem(context, level.items[index], index, active: active),
         ),
+      ],
     ];
     if (owner == null) {
       return Column(

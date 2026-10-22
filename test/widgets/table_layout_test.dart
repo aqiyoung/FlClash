@@ -1,4 +1,4 @@
-import 'package:fl_clash/ui/table_layout.dart';
+import 'package:skyward/ui/table_layout.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 const _columns = [

@@ -1,5 +1,5 @@
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/ui/color.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/ui/color.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -57,6 +57,7 @@ abstract class TrayState with _$TrayState {
     required List<Group> groups,
     required Map<String, String> selectedMap,
     required bool showTrayTitle,
+    @Default(true) bool monochromeTrayIcon,
     required bool safeMode,
     @Default({}) Map<HotAction, HotKeyAction> hotKeys,
   }) = _TrayState;

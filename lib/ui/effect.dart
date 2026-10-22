@@ -1,8 +1,8 @@
 import 'dart:math';
 import 'dart:ui';
 
-import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/ui/inherited.dart';
+import 'package:skyward/ui/icons/icons.dart';
+import 'package:skyward/ui/inherited.dart';
 import 'package:material_ui/material_ui.dart';
 
 class CommonExpandIcon extends StatefulWidget {

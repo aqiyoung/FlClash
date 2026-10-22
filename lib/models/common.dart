@@ -3,9 +3,9 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:collection/collection.dart';
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/ui/icons/glyph.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/ui/icons/glyph.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 
@@ -21,7 +21,6 @@ abstract class NavigationItem with _$NavigationItem {
     required Glyph glyph,
     required PageLabel label,
     required WidgetBuilder builder,
-    @Default(true) bool keep,
     String? path,
     @Default([NavigationItemMode.mobile, NavigationItemMode.desktop])
     List<NavigationItemMode> modes,
@@ -579,14 +578,6 @@ abstract class IpInfo with _$IpInfo {
     };
   }
 
-  static IpInfo fromIpAPIJson(Map<String, dynamic> json) {
-    return switch (json) {
-      {'query': final String ip, 'countryCode': final String countryCode} =>
-        IpInfo(ip: ip, countryCode: countryCode),
-      _ => throw const FormatException('invalid json'),
-    };
-  }
-
   static IpInfo fromIdentMeJson(Map<String, dynamic> json) {
     return switch (json) {
       {'ip': final String ip, 'cc': final String countryCode} => IpInfo(
@@ -795,8 +786,6 @@ extension ClashProviderExt on ClashProvider {
   Future<String> get corePath => isCompiled ? compiledPath : path;
 
   Future<FileInfo?> get fileInfo async => File(await path).getFileInfo();
-
-  Future<String?> get content async => readTextFileTask(await path);
 
   ClashProvider withInfo(RuleSetInfo info) {
     return copyWith(behavior: info.behavior, format: info.format);

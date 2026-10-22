@@ -1,9 +1,9 @@
 import 'dart:async';
 
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/pages/editor.dart';
-import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/ui/ui.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/pages/editor.dart';
+import 'package:skyward/ui/icons/icons.dart';
+import 'package:skyward/ui/ui.dart';
 import 'package:material_ui/material_ui.dart';
 
 IconButtonData customQuickEditAction(
@@ -48,7 +48,8 @@ Future<void> showCustomQuickEdit(
     content: content,
     readOnly: false,
     schema: schema,
-    onPop: (_, _, next) async {
+    onPop: (_, _, edited) async {
+      final next = await edited.readText();
       if (next == content) {
         return true;
       }

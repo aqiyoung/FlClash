@@ -1,25 +1,32 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:fl_clash/common/constant.dart';
-import 'package:fl_clash/common/feature.dart';
-import 'package:fl_clash/common/system_fonts.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/models/models.dart';
-import 'package:fl_clash/providers/app.dart';
-import 'package:fl_clash/providers/config.dart';
-import 'package:fl_clash/providers/database.dart';
-import 'package:fl_clash/state.dart';
-import 'package:fl_clash/views/font_family.dart';
-import 'package:fl_clash/views/theme.dart';
-import 'package:fl_clash/views/theme_preview.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:skyward/common/constant.dart';
+import 'package:skyward/common/system_fonts.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/models/models.dart';
+import 'package:skyward/providers/app.dart';
+import 'package:skyward/providers/config.dart';
+import 'package:skyward/providers/database.dart';
+import 'package:skyward/state.dart';
+import 'package:skyward/views/font_family.dart';
+import 'package:skyward/views/theme.dart';
+import 'package:skyward/views/theme_preview.dart';
+import 'package:skyward/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../helpers/test_app.dart';
 import '../helpers/test_profiles.dart';
+
+/// The text scale row, which shares its slider shape with the dock's.
+Finder _textScaleSection() => find
+    .ancestor(of: find.text('Text scaling'), matching: find.byType(Column))
+    .first;
+
+Finder _textScaleSlider() =>
+    find.descendant(of: _textScaleSection(), matching: find.byType(Slider));
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -99,9 +106,9 @@ void main() {
     testWidgets('picks a color and the style of its scheme', (tester) async {
       await pumpThemeView(tester);
 
-      await tester.tap(swatch(0xFFAF52DE));
+      await tester.tap(swatch(0xFFCB30E0));
       await tester.pumpAndSettle();
-      expect(readTheme().primaryColor, 0xFFAF52DE);
+      expect(readTheme().primaryColor, 0xFFCB30E0);
 
       await tester.tap(
         find.byWidgetPredicate(
@@ -121,19 +128,19 @@ void main() {
 
     testWidgets('deletes a color from its context menu', (tester) async {
       await pumpThemeView(tester);
-      await tester.tap(swatch(0xFFFF9500));
+      await tester.tap(swatch(0xFFFF8D28));
       await tester.pumpAndSettle();
 
-      await tester.longPress(swatch(0xFFFF9500));
+      await tester.longPress(swatch(0xFFFF8D28));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Delete'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Delete'));
       await tester.pumpAndSettle();
 
-      expect(readTheme().primaryColors, isNot(contains(0xFFFF9500)));
+      expect(readTheme().primaryColors, isNot(contains(0xFFFF8D28)));
       expect(readTheme().primaryColor, defaultPrimaryColor);
-      expect(swatch(0xFFFF9500), findsNothing);
+      expect(swatch(0xFFFF8D28), findsNothing);
     });
 
     Future<void> editColor(WidgetTester tester, int color, String hex) async {
@@ -155,13 +162,13 @@ void main() {
 
     testWidgets('edits a color in place from its context menu', (tester) async {
       await pumpThemeView(tester);
-      await tester.tap(swatch(0xFFFF9500));
+      await tester.tap(swatch(0xFFFF8D28));
       await tester.pumpAndSettle();
-      final index = readTheme().primaryColors.indexOf(0xFFFF9500);
+      final index = readTheme().primaryColors.indexOf(0xFFFF8D28);
 
-      await editColor(tester, 0xFFFF9500, '123456');
+      await editColor(tester, 0xFFFF8D28, '123456');
 
-      expect(readTheme().primaryColors, isNot(contains(0xFFFF9500)));
+      expect(readTheme().primaryColors, isNot(contains(0xFFFF8D28)));
       expect(readTheme().primaryColors[index], 0xFF123456);
       expect(readTheme().primaryColor, 0xFF123456);
       expect(swatch(0xFF123456), findsOneWidget);
@@ -175,10 +182,10 @@ void main() {
       await tester.pumpAndSettle();
       final count = readTheme().primaryColors.length;
 
-      await editColor(tester, 0xFFAF52DE, '007AFF');
+      await editColor(tester, 0xFFCB30E0, '007AFF');
 
       expect(readTheme().primaryColors, hasLength(count - 1));
-      expect(readTheme().primaryColors, isNot(contains(0xFFAF52DE)));
+      expect(readTheme().primaryColors, isNot(contains(0xFFCB30E0)));
       expect(readTheme().primaryColor, 0xFF007AFF);
       expect(swatch(0xFF007AFF), findsOneWidget);
     });
@@ -247,21 +254,13 @@ void main() {
   });
 
   group('sidebar blur', () {
-    testWidgets('stays hidden while the feature is off', (tester) async {
-      await pumpThemeView(tester);
-
-      expect(find.text('Sidebar blur'), findsNothing);
-    });
-
-    testWidgets('shows a working toggle only on supported platforms', (
+    testWidgets('starts off, with a working toggle on supported platforms', (
       tester,
     ) async {
-      feature = const Feature(sidebarBlur: true);
-      addTearDown(() => feature = const Feature());
       await pumpThemeView(tester);
-      final toggle = find.text('Sidebar blur');
+      final toggle = find.text('Background blur');
 
-      expect(readTheme().sidebarBlur, isTrue);
+      expect(readTheme().sidebarBlur, isFalse);
       if (!Platform.isMacOS && !Platform.isWindows) {
         expect(toggle, findsNothing);
         return;
@@ -270,7 +269,7 @@ void main() {
       expect(toggle, findsOneWidget);
       await tester.tap(toggle);
       await tester.pumpAndSettle();
-      expect(readTheme().sidebarBlur, isFalse);
+      expect(readTheme().sidebarBlur, isTrue);
     });
   });
 
@@ -334,15 +333,15 @@ void main() {
     testWidgets('picks a sliding or fading tab switch', (tester) async {
       await pumpThemeView(tester);
 
-      expect(readSetting().tabAnimation, TabAnimation.slide);
-
-      await tester.tap(find.text('Fade'));
-      await tester.pumpAndSettle();
       expect(readSetting().tabAnimation, TabAnimation.fade);
 
       await tester.tap(find.text('Slide'));
       await tester.pumpAndSettle();
       expect(readSetting().tabAnimation, TabAnimation.slide);
+
+      await tester.tap(find.text('Fade'));
+      await tester.pumpAndSettle();
+      expect(readSetting().tabAnimation, TabAnimation.fade);
     });
 
     testWidgets('the preview switches to the destination tapped', (
@@ -538,13 +537,13 @@ void main() {
       await pumpThemeView(tester);
 
       expect(readTheme().textScale.enable, isFalse);
-      expect(tester.widget<Slider>(find.byType(Slider)).onChanged, isNull);
+      expect(tester.widget<Slider>(_textScaleSlider()).onChanged, isNull);
 
       await tester.tap(find.text('Custom'));
       await tester.pumpAndSettle();
 
       expect(readTheme().textScale.enable, isTrue);
-      expect(tester.widget<Slider>(find.byType(Slider)).onChanged, isNotNull);
+      expect(tester.widget<Slider>(_textScaleSlider()).onChanged, isNotNull);
 
       await tester.tap(find.text('Follow system'));
       await tester.pumpAndSettle();
@@ -558,7 +557,7 @@ void main() {
       await tester.pumpAndSettle();
       final before = readTheme().textScale.scale;
 
-      final slider = find.byType(Slider);
+      final slider = _textScaleSlider();
       final gesture = await tester.startGesture(tester.getCenter(slider));
       await gesture.moveBy(const Offset(120, 0));
       await tester.pump();
@@ -584,7 +583,11 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(readTheme().textScale.scale, 1);
-      expect(find.text('100%'), findsOneWidget);
+      // The dock keeps a percentage of its own; this one is the text scale's.
+      expect(
+        find.descendant(of: _textScaleSection(), matching: find.text('100%')),
+        findsOneWidget,
+      );
     });
   });
 }

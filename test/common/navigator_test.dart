@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:fl_clash/providers/app.dart';
-import 'package:fl_clash/ui/navigator.dart';
-import 'package:fl_clash/ui/surface.dart';
+import 'package:skyward/providers/app.dart';
+import 'package:skyward/ui/navigator.dart';
+import 'package:skyward/ui/surface.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -161,6 +161,32 @@ void main() {
 
       expect(find.text('pushed page'), findsNothing);
       expect(find.text('open'), findsOneWidget);
+    });
+  });
+
+  group('whenRouteUncovered', () {
+    testWidgets('waits for the page above to finish leaving', (tester) async {
+      setViewWidth(400);
+      await pumpHost(tester);
+      await tester.tap(find.text('open'));
+      await tester.pumpAndSettle();
+      final pageContext = tester.element(find.text('pushed page'));
+      unawaited(
+        BaseNavigator.push(pageContext, const Scaffold(body: Text('top'))),
+      );
+      await tester.pumpAndSettle();
+
+      Navigator.of(tester.element(find.text('top'))).pop();
+      var uncovered = false;
+      unawaited(whenRouteUncovered(pageContext).then((_) => uncovered = true));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(uncovered, isFalse);
+
+      await tester.pumpAndSettle();
+
+      expect(uncovered, isTrue);
     });
   });
 

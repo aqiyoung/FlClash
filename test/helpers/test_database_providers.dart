@@ -1,5 +1,5 @@
-import 'package:fl_clash/models/models.dart';
-import 'package:fl_clash/providers/providers.dart';
+import 'package:skyward/models/models.dart';
+import 'package:skyward/providers/providers.dart';
 
 class TestScripts extends Scripts {
   final List<Script> initial;

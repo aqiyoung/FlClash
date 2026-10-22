@@ -1,13 +1,12 @@
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/l10n/l10n.dart';
-import 'package:fl_clash/providers/app.dart';
-import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/l10n/l10n.dart';
+import 'package:skyward/providers/app.dart';
+import 'package:skyward/ui/icons/icons.dart';
+import 'package:skyward/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// True only after "Agree" and acknowledging the statement; any other way out
-/// declines.
+/// True only after "Agree" and the restatement; any other way out declines.
 Future<bool> requestDisclaimerConsent() async {
   return await BaseNavigator.push<bool>(
         rootNavigatorKey.currentContext!,
@@ -75,9 +74,11 @@ class DisclaimerView extends StatelessWidget {
     final appLocalizations = context.appLocalizations;
     final terms = _buildTerms(appLocalizations);
     final body = _buildBody(
-      padding: const EdgeInsets.symmetric(
-        horizontal: _mobileGutter,
-      ).copyWith(top: context.contentTopPadding, bottom: 32),
+      padding: const EdgeInsets.symmetric(horizontal: _mobileGutter).copyWith(
+        top: context.contentTopPadding,
+        // Below the terms the consent bar takes the system bar itself.
+        bottom: 32 + (requireConsent ? 0 : context.bottomInset),
+      ),
       children: terms,
     );
     if (!requireConsent) {
@@ -437,22 +438,22 @@ class _RestateDialogState extends State<_RestateDialog> {
   @override
   Widget build(BuildContext context) {
     final appLocalizations = context.appLocalizations;
+    // Typing the statement out takes hundreds of presses on a remote, so the
+    // dialog asks for a check instead (the fork's take, see FORK.md).
     return _buildDialog(
       title: appLocalizations.disclaimerAcknowledgeTitle,
       tip: appLocalizations.disclaimerAcknowledgeTip,
       statement: appLocalizations.disclaimerNoServiceStatement,
       canConfirm: _acknowledged,
-      confirmation: generateSection(
-        items: [
-          ListItem.checkbox(
-            title: Text(appLocalizations.disclaimerAcknowledgeLabel),
-            value: _acknowledged,
-            onChanged: (value) {
-              setState(() => _acknowledged = value ?? false);
-            },
-          ),
-        ],
-      ),
+      confirmation: generateGroup([
+        ListItem.checkbox(
+          title: Text(appLocalizations.disclaimerAcknowledgeLabel),
+          value: _acknowledged,
+          onChanged: (value) {
+            setState(() => _acknowledged = value ?? false);
+          },
+        ),
+      ]),
     );
   }
 }

@@ -2,17 +2,17 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/common/window.dart';
-import 'package:fl_clash/bootstrap.dart';
-import 'package:fl_clash/common/system_dns.dart';
-import 'package:fl_clash/l10n/l10n.dart';
-import 'package:fl_clash/manager/hotkey_manager.dart';
-import 'package:fl_clash/manager/manager.dart';
-import 'package:fl_clash/plugins/app.dart';
-import 'package:fl_clash/providers/providers.dart';
-import 'package:fl_clash/state.dart';
-import 'package:fl_clash/ui/ui.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/common/window.dart';
+import 'package:skyward/bootstrap.dart';
+import 'package:skyward/common/system_dns.dart';
+import 'package:skyward/l10n/l10n.dart';
+import 'package:skyward/manager/hotkey_manager.dart';
+import 'package:skyward/manager/manager.dart';
+import 'package:skyward/plugins/app.dart';
+import 'package:skyward/providers/providers.dart';
+import 'package:skyward/state.dart';
+import 'package:skyward/ui/ui.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -152,6 +152,12 @@ class ApplicationState extends ConsumerState<Application>
     commonPrint.log('connectivityChanged ${results.toString()}');
     unawaited(systemDnsCoordinator?.resync() ?? Future.value());
     unawaited(ref.read(systemActionProvider.notifier).updateLocalIp());
+    // Android's NetworkObserver tells the Core about a new network itself.
+    if (system.isDesktop) {
+      unawaited(
+        ref.read(coreActionProvider.notifier).clearDnsCacheOnNetworkChange(),
+      );
+    }
     final hasVpn = results.contains(ConnectivityResult.vpn);
     if (_preHasVpn == hasVpn) {
       ref.read(routeTrackerProvider.notifier).bumpHostEpoch();

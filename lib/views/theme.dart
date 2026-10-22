@@ -1,15 +1,15 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/models/models.dart';
-import 'package:fl_clash/providers/config.dart';
-import 'package:fl_clash/providers/state.dart';
-import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/views/font_family.dart';
-import 'package:fl_clash/views/theme_preview.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/models/models.dart';
+import 'package:skyward/providers/config.dart';
+import 'package:skyward/providers/state.dart';
+import 'package:skyward/ui/icons/icons.dart';
+import 'package:skyward/views/font_family.dart';
+import 'package:skyward/views/theme_preview.dart';
+import 'package:skyward/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -22,29 +22,35 @@ class ThemeView extends StatelessWidget {
     return BaseScaffold(
       title: appLocalizations.theme,
       body: ListView(
-        padding: EdgeInsets.only(top: context.appBarInset, bottom: 32),
-        children: const [
-          ThemeLivePreview(),
-          SizedBox(height: 16),
-          _ThemeModeItem(),
-          SizedBox(height: 16),
-          _PureBlackItem(),
-          SizedBox(height: 16),
-          _PrimaryColorItem(),
-          SizedBox(height: 16),
-          _NavigationBarItem(),
-          SizedBox(height: 16),
-          _DockScaleItem(),
-          _DockLabelItem(),
-          SizedBox(height: 16),
-          _TabAnimationItem(),
-          SizedBox(height: 16),
-          _LiquidGlassItem(),
-          SizedBox(height: 16),
-          _SidebarBlurItem(),
-          _FontFamilyItem(),
-          SizedBox(height: 16),
-          _TextScaleFactorItem(),
+        padding: EdgeInsets.only(
+          top: context.appBarInset,
+          bottom: 32 + context.bottomInset,
+        ),
+        children: [
+          const ThemeLivePreview(),
+          const SizedBox(height: 16),
+          const _ThemeModeItem(),
+          const SizedBox(height: 16),
+          const _PureBlackItem(),
+          const SizedBox(height: 16),
+          const _PrimaryColorItem(),
+          const SizedBox(height: 16),
+          const _NavigationBarItem(),
+          const SizedBox(height: 16),
+          const _DockScaleItem(),
+          const _DockLabelItem(),
+          const SizedBox(height: 16),
+          const _TabAnimationItem(),
+          const SizedBox(height: 16),
+          const _LiquidGlassItem(),
+          const SizedBox(height: 16),
+          if (system.isMacOS || system.isWindows) ...const [
+            _SidebarBlurItem(),
+            SizedBox(height: 16),
+          ],
+          const _FontFamilyItem(),
+          const SizedBox(height: 16),
+          const _TextScaleFactorItem(),
         ],
       ),
     );
@@ -271,20 +277,18 @@ class _PrimaryColorItem extends ConsumerWidget {
                 onDelete: (color) => _handleDelete(context, ref, color),
                 onAdd: () => _handleAdd(context, ref),
               ),
-              generateSection(
-                items: [
-                  ListItem<ColorStyle>.options(
-                    title: Text(appLocalizations.colorStyle),
-                    options: ColorStyle.values,
-                    value: themeColors.colorStyle,
-                    textBuilder: (style) => style.label,
-                    onChanged: (style) => _update(
-                      ref,
-                      (state) => state.copyWith(colorStyle: style),
-                    ),
+              generateGroup([
+                ListItem<ColorStyle>.options(
+                  title: Text(appLocalizations.colorStyle),
+                  options: ColorStyle.values,
+                  value: themeColors.colorStyle,
+                  textBuilder: (style) => style.label,
+                  onChanged: (style) => _update(
+                    ref,
+                    (state) => state.copyWith(colorStyle: style),
                   ),
-                ],
-              ),
+                ),
+              ]),
             ],
           ),
         ),
@@ -886,34 +890,39 @@ class _LiquidGlassItem extends ConsumerWidget {
   }
 }
 
-class _SidebarBlurItem extends ConsumerWidget {
+class _SidebarBlurItem extends StatelessWidget {
   const _SidebarBlurItem();
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    if (!feature.sidebarBlur || (!system.isMacOS && !system.isWindows)) {
-      return const SizedBox.shrink();
-    }
+  Widget build(BuildContext context) {
     final appLocalizations = context.appLocalizations;
-    final sidebarBlur = ref.watch(
-      themeSettingProvider.select((state) => state.sidebarBlur),
-    );
-    return ListItem.toggle(
-      leading: const GlyphIcon(AppGlyphs.blur),
-      horizontalTitleGap: 12,
-      title: Text(
-        appLocalizations.sidebarBlur,
-        style: AppTextStyle.subheadline
-            .of(context, emphasized: true)
-            .copyWith(color: context.colorScheme.onSurfaceVariant),
-      ),
-      subtitle: Text(appLocalizations.sidebarBlurDesc),
-      value: sidebarBlur,
-      onChanged: (value) {
-        ref
-            .read(themeSettingProvider.notifier)
-            .update((state) => state.copyWith(sidebarBlur: value));
-      },
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        InfoHeader(
+          info: Info(label: appLocalizations.sidebar, glyph: AppGlyphs.blur),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              generateGroup([
+                ConfigToggleItem(
+                  title: (l) => l.backgroundBlur,
+                  selector: themeSettingProvider.select(
+                    (state) => state.sidebarBlur,
+                  ),
+                  onChanged: (ref, value) => ref
+                      .read(themeSettingProvider.notifier)
+                      .update((state) => state.copyWith(sidebarBlur: value)),
+                ),
+              ]),
+              ListFooter(text: appLocalizations.sidebarBlurDesc),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
@@ -1252,7 +1261,7 @@ class _CustomColorSheetState extends State<_CustomColorSheet> {
           max(16, gestureInsets.left),
           context.contentTopPadding,
           max(16, gestureInsets.right),
-          20,
+          20 + context.bottomInset,
         ),
         children: [
           ValueListenableBuilder(

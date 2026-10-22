@@ -1,12 +1,12 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/core/core.dart';
-import 'package:fl_clash/core/interface.dart';
-import 'package:fl_clash/core/spill.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/models/models.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/core/core.dart';
+import 'package:skyward/core/interface.dart';
+import 'package:skyward/core/spill.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/models/models.dart';
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter/services.dart';
 import 'package:path/path.dart';
@@ -158,10 +158,10 @@ class CoreController {
     return _interface.decodeShareLinks(lines);
   }
 
-  Future<String> validateConfigWithData(String data) async {
+  Future<String> validateConfigWithData(List<int> data) async {
     final path = await appPath.tempFilePath;
     final file = File(path);
-    await file.safeWriteAsString(data);
+    await file.safeWriteAsBytes(data);
     final res = await _interface.validateConfig(path);
     await File(path).safeDelete();
     return res;
@@ -231,6 +231,10 @@ class CoreController {
     await _interface.resetConnections();
   }
 
+  Future<bool> clearDnsCache() async {
+    return _interface.clearDnsCache();
+  }
+
   Future<List<ExternalProvider>> getExternalProviders() async {
     return _interface.getExternalProviders();
   }
@@ -275,8 +279,12 @@ class CoreController {
     return _interface.stopListener();
   }
 
-  Future<Delay?> getDelay(String url, String proxyName) async {
-    return _interface.asyncTestDelay(url, proxyName);
+  Future<Delay?> getDelay(
+    String url,
+    String proxyName,
+    Duration timeout,
+  ) async {
+    return _interface.asyncTestDelay(url, proxyName, timeout);
   }
 
   Future<ProbeResult?> probe(ProbeParams params) => _interface.probe(params);
@@ -302,6 +310,10 @@ class CoreController {
     return _interface.getProfileOutbounds(
       await appPath.getProfilePath(id.toString()),
     );
+  }
+
+  Future<Map<String, dynamic>?> getProxyDefinition(String name) {
+    return _interface.getProxyDefinition(name);
   }
 
   Future<String> buildProfile(SetupBase base) async {

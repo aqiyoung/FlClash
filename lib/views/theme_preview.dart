@@ -1,10 +1,10 @@
 import 'dart:math' as math;
 import 'dart:ui' show ImageFilter;
 
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/providers/config.dart';
-import 'package:fl_clash/providers/state.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/providers/config.dart';
+import 'package:skyward/providers/state.dart';
+import 'package:skyward/widgets/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -42,20 +42,16 @@ class PreviewChoiceGroup<T> extends StatelessWidget {
         InfoHeader(info: info),
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-          child: generateSection(
-            items: [
-              for (final choice in choices)
-                DecorationListItem(
-                  leading: ExcludeSemantics(child: choice.pictogram),
-                  title: Text(choice.label),
-                  isSelected: choice.value == value,
-                  trailing: choice.value == value
-                      ? const SelectionCheck()
-                      : null,
-                  onPressed: () => onChanged(choice.value),
-                ),
-            ],
-          ),
+          child: generateGroup([
+            for (final choice in choices)
+              DecorationListItem(
+                leading: ExcludeSemantics(child: choice.pictogram),
+                title: Text(choice.label),
+                isSelected: choice.value == value,
+                trailing: choice.value == value ? const SelectionCheck() : null,
+                onPressed: () => onChanged(choice.value),
+              ),
+          ]),
         ),
       ],
     );

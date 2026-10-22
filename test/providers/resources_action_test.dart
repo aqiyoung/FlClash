@@ -1,11 +1,11 @@
 import 'package:drift/native.dart';
-import 'package:fl_clash/core/controller.dart';
-import 'package:fl_clash/core/interface.dart';
-import 'package:fl_clash/database/database.dart' as db;
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/l10n/l10n.dart';
-import 'package:fl_clash/providers/action.dart';
-import 'package:fl_clash/providers/core.dart';
+import 'package:skyward/core/controller.dart';
+import 'package:skyward/core/interface.dart';
+import 'package:skyward/database/database.dart' as db;
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/l10n/l10n.dart';
+import 'package:skyward/providers/action.dart';
+import 'package:skyward/providers/core.dart';
 import 'package:flutter/widgets.dart' show Locale;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';

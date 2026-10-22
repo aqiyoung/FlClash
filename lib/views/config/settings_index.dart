@@ -1,15 +1,15 @@
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/l10n/l10n.dart';
-import 'package:fl_clash/views/config/advanced.dart';
-import 'package:fl_clash/views/config/diagnostics.dart';
-import 'package:fl_clash/views/config/dns.dart';
-import 'package:fl_clash/views/config/general.dart';
-import 'package:fl_clash/views/config/network.dart';
-import 'package:fl_clash/views/config/rules.dart';
-import 'package:fl_clash/views/config/scripts.dart';
-import 'package:fl_clash/views/config/storage.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/l10n/l10n.dart';
+import 'package:skyward/views/config/advanced.dart';
+import 'package:skyward/views/config/diagnostics.dart';
+import 'package:skyward/views/config/dns.dart';
+import 'package:skyward/views/config/general.dart';
+import 'package:skyward/views/config/network.dart';
+import 'package:skyward/views/config/rules.dart';
+import 'package:skyward/views/config/scripts.dart';
+import 'package:skyward/views/config/storage.dart';
+import 'package:skyward/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// One row a reader can find by typing part of its name.

@@ -1,16 +1,16 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/models/models.dart';
-import 'package:fl_clash/providers/action.dart';
-import 'package:fl_clash/providers/app.dart';
-import 'package:fl_clash/providers/config.dart';
-import 'package:fl_clash/providers/database.dart';
-import 'package:fl_clash/state.dart';
-import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/models/models.dart';
+import 'package:skyward/providers/action.dart';
+import 'package:skyward/providers/app.dart';
+import 'package:skyward/providers/config.dart';
+import 'package:skyward/providers/database.dart';
+import 'package:skyward/state.dart';
+import 'package:skyward/ui/icons/icons.dart';
+import 'package:skyward/widgets/widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -160,6 +160,9 @@ class _ResourcesViewState extends ConsumerState<ResourcesView> {
     final autoUpdate = ref.watch(
       patchClashConfigProvider.select((state) => state.geoAutoUpdate),
     );
+    final updateInterval = ref.watch(
+      patchClashConfigProvider.select((state) => state.geoUpdateInterval),
+    );
     final resources = _resources;
     final (:iconSets, :ruleProviders, :scripts) = resources ?? _noResources;
     final resourceKeys = [
@@ -182,39 +185,32 @@ class _ResourcesViewState extends ConsumerState<ResourcesView> {
           onPressed: _updateAll,
         ),
       ],
-      menuItems: [
-        CommonPopupMenuItem(
-          glyph: AppGlyphs.toggle,
-          label: appLocalizations.autoUpdate,
-          subItems: [
-            CommonPopupMenuItem(
-              label: appLocalizations.turnOn,
-              checked: autoUpdate,
-              onPressed: () => _updateAutoUpdate(true),
-            ),
-            CommonPopupMenuItem(
-              label: appLocalizations.turnOff,
-              checked: !autoUpdate,
-              onPressed: () => _updateAutoUpdate(false),
-            ),
-          ],
-        ),
-        CommonPopupMenuItem(
-          glyph: AppGlyphs.clock,
-          label: appLocalizations.resourceUpdateInterval,
-          onPressed: _updateInterval,
-        ),
-      ],
       body: NullStatusSwitcher(
         isLoading: resources == null,
         loadingStatus: const NullStatus(
           illustration: NullStatusIllustration.data,
         ),
         child: ListView(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16,
-          ).copyWith(top: context.appBarInset, bottom: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 16).copyWith(
+            top: context.contentTopPadding,
+            bottom: 16 + context.bottomInset,
+          ),
           children: [
+            generateSection(
+              items: [
+                ListItem.toggle(
+                  title: Text(appLocalizations.autoUpdate),
+                  value: autoUpdate,
+                  onChanged: _updateAutoUpdate,
+                ),
+                if (autoUpdate)
+                  ListItem(
+                    title: Text(appLocalizations.resourceUpdateInterval),
+                    subtitle: Text('$updateInterval ${appLocalizations.hours}'),
+                    onTap: _updateInterval,
+                  ),
+              ],
+            ),
             generateSection(
               title: appLocalizations.geoResources,
               items: [

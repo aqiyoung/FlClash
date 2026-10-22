@@ -1,11 +1,11 @@
 import 'dart:math';
 
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/models/models.dart';
-import 'package:fl_clash/providers/providers.dart';
-import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/models/models.dart';
+import 'package:skyward/providers/providers.dart';
+import 'package:skyward/ui/icons/icons.dart';
+import 'package:skyward/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -263,9 +263,7 @@ class _ProxiesListViewState extends ConsumerState<ProxiesListView> {
                             ),
                     ),
                     SliverToBoxAdapter(
-                      child: SizedBox(
-                        height: 16 + BottomInsetScope.of(context),
-                      ),
+                      child: SizedBox(height: 16 + context.bottomInset),
                     ),
                   ],
                 ),
@@ -508,49 +506,66 @@ class _GroupSliverState extends ConsumerState<_GroupSliver>
   /// Rounds the header and lifts it as its own rows scroll under it, and lets
   /// the shadow go before the end of the group pushes it out. The page color
   /// behind its upper half hides the rows that went under it, which would
-  /// otherwise show around its top corners and above it.
+  /// otherwise show around its top corners and above it. Every header is laid
+  /// out on every pass, so one beyond the cache area builds nothing.
   Widget _buildPinnedHeader(
     bool isExpand,
     Widget Function({double floating, double lift}) buildHeader,
   ) {
     final columns = widget.columns;
-    final rowsExtent = isExpand
-        ? _rowsExtent(
-            (widget.group.all.length + columns - 1) ~/ columns,
-            _rowExtent,
-          )
-        : 0.0;
+    final rowCount = (widget.group.all.length + columns - 1) ~/ columns;
+    final rowsExtent = isExpand ? _rowsExtent(rowCount, _rowExtent) : 0.0;
+    final groupExtent =
+        listHeaderHeight +
+        (_controller.isDismissed
+            ? 0.0
+            : _rowsExtent(rowCount, getRowExtent(widget.cardType)));
     (double, double, double, Color)? headerState;
     Widget? header;
     return SliverLayoutBuilder(
       builder: (context, constraints) {
+        final beyondCache =
+            constraints.remainingCacheExtent <= 0 ||
+            constraints.scrollOffset + constraints.cacheOrigin >= groupExtent;
         final under = isExpand
             ? constraints.scrollOffset + constraints.overlap
             : 0.0;
-        final state = (
-          (under / _liftDistance).clamp(0.0, 1.0),
-          (min(under, rowsExtent - under) / _liftDistance).clamp(0.0, 1.0),
-          isExpand ? constraints.overlap : 0.0,
-          context.surfaceLevel.colorOf(context.colorScheme),
-        );
-        if (state == headerState) {
+        final state = beyondCache
+            ? null
+            : (
+                (under / _liftDistance).clamp(0.0, 1.0),
+                (min(under, rowsExtent - under) / _liftDistance).clamp(
+                  0.0,
+                  1.0,
+                ),
+                isExpand ? constraints.overlap : 0.0,
+                context.surfaceLevel.colorOf(context.colorScheme),
+              );
+        if (header != null && state == headerState) {
           return header!;
         }
         headerState = state;
+        if (state == null) {
+          return header = PinnedHeaderSliver(
+            child: SizedBox(height: listHeaderHeight),
+          );
+        }
         final (floating, lift, cover, pageColor) = state;
         return header = PinnedHeaderSliver(
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Positioned(
-                top: -cover,
-                left: 0,
-                right: 0,
-                height: cover + listHeaderHeight / 2,
-                child: ColoredBox(color: pageColor),
-              ),
-              buildHeader(floating: floating, lift: lift),
-            ],
+          child: RepaintBoundary(
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Positioned(
+                  top: -cover,
+                  left: 0,
+                  right: 0,
+                  height: cover + listHeaderHeight / 2,
+                  child: ColoredBox(color: pageColor),
+                ),
+                buildHeader(floating: floating, lift: lift),
+              ],
+            ),
           ),
         );
       },

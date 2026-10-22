@@ -1,12 +1,12 @@
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/models/models.dart';
-import 'package:fl_clash/pages/editor.dart';
-import 'package:fl_clash/providers/app.dart';
-import 'package:fl_clash/providers/database.dart';
-import 'package:fl_clash/state.dart';
-import 'package:fl_clash/views/config/sniffer.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/models/models.dart';
+import 'package:skyward/pages/editor.dart';
+import 'package:skyward/providers/app.dart';
+import 'package:skyward/providers/database.dart';
+import 'package:skyward/state.dart';
+import 'package:skyward/views/config/sniffer.dart';
+import 'package:skyward/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -106,7 +106,7 @@ void main() {
     await tester.pump();
 
     expect(find.text(currentAppLocalizations.status), findsOneWidget);
-    await tester.tap(find.byType(Switch).last);
+    await tester.tap(find.byType(CommonSwitch).last);
     await tester.pump();
     expect(config().sniffer.enable, isTrue);
 
@@ -193,7 +193,7 @@ void main() {
     final popped = await editor.onPop!(
       context,
       currentAppLocalizations.sniffer,
-      'sniff:\n  http:\n    ports: [80]\n',
+      const EditorContent.text('sniff:\n  http:\n    ports: [80]\n'),
     );
     expect(popped, isTrue);
     expect(config().snifferOverrideKeys, {SnifferOverrideKey.sniffHttp});

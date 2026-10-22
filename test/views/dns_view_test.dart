@@ -1,14 +1,14 @@
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/features/form/form.dart';
-import 'package:fl_clash/models/models.dart';
-import 'package:fl_clash/pages/editor.dart';
-import 'package:fl_clash/providers/app.dart';
-import 'package:fl_clash/providers/config.dart';
-import 'package:fl_clash/providers/database.dart';
-import 'package:fl_clash/state.dart';
-import 'package:fl_clash/views/config/dns.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/features/form/form.dart';
+import 'package:skyward/models/models.dart';
+import 'package:skyward/pages/editor.dart';
+import 'package:skyward/providers/app.dart';
+import 'package:skyward/providers/config.dart';
+import 'package:skyward/providers/database.dart';
+import 'package:skyward/state.dart';
+import 'package:skyward/views/config/dns.dart';
+import 'package:skyward/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -200,7 +200,7 @@ void main() {
     await tester.pump();
 
     expect(find.text('IPv6'), findsOneWidget);
-    await tester.tap(find.byType(Switch).last);
+    await tester.tap(find.byType(CommonSwitch).last);
     await tester.pump();
     expect(config().dns.ipv6, isTrue);
 
@@ -449,7 +449,11 @@ void main() {
       expect(editor.onSave, isNull);
 
       final context = tester.element(find.byType(EditorPage));
-      final popped = await editor.onPop!(context, 'DNS', 'listen: :53');
+      final popped = await editor.onPop!(
+        context,
+        'DNS',
+        const EditorContent.text('listen: :53'),
+      );
       expect(popped, isTrue);
       expect(overrides().dnsOverrideKeys, {DnsOverrideKey.listen});
       expect(overrides().dns.listen, ':53');
@@ -462,7 +466,12 @@ void main() {
       final editor = await openQuickEdit(tester);
       final context = tester.element(find.byType(EditorPage));
 
-      final popped = editor.onPop!(context, 'DNS', 'bogus: 1');
+      final popped = editor.onPop!(
+        context,
+        'DNS',
+        const EditorContent.text('bogus: 1'),
+      );
+      await tester.pump();
       await tester.pump();
       expect(
         find.textContaining(currentAppLocalizations.discardChanges),

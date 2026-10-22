@@ -4,9 +4,9 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:collection/collection.dart';
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/models/models.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/models/models.dart';
 import 'package:material_ui/material_ui.dart';
 
 const appName = 'Skyward';
@@ -55,16 +55,22 @@ double systemTextScaleOf(BuildContext context) {
   return WidgetsBinding.instance.platformDispatcher.textScaleFactor;
 }
 
-/// How long the Core may spend on one delay test. It spends this twice in the
-/// worst case - once queueing for a slot, once on the probe itself - so the
-/// guard below has to outlast twice this value.
-const delayTestTimeoutDuration = Duration(seconds: 8);
+/// How long, in milliseconds, the Core may spend on one manual delay test. It
+/// spends this twice in the worst case - once queueing for a slot, once on the
+/// probe itself - so the guard below has to outlast twice the longest option.
+const delayTestTimeoutOptions = [500, 1000, 2000, 5000, 8000];
+
+const defaultDelayTestTimeout = 8000;
 
 const delayTestGuardDuration = Duration(seconds: 30);
 
 const delayTimedOutValue = -1;
 
 const probeTimeoutDuration = Duration(seconds: 10);
+
+/// Outlasts the Core's one-second pick poll (`routePollInterval` in
+/// core/route.go), so groups re-picking on neighbouring polls cost one probe.
+const probeSettleDuration = Duration(milliseconds: 1500);
 
 const downloadTimeoutDuration = Duration(seconds: 20);
 
@@ -97,9 +103,6 @@ const ASN = 'ASN.mmdb';
 const GEOIP = 'GEOIP.dat';
 const GEOSITE = 'GEOSITE.dat';
 
-/// The macOS sidebar material is the finished look; the Windows accent
-/// effects need a tint over them to keep the rail readable.
-final double kSidebarBlurOpacity = system.isMacOS ? 0 : 0.5;
 final double kHeaderHeight = getWindowHeaderHeight(
   isDesktop: system.isDesktop,
   isMacOS: system.isMacOS,
@@ -113,7 +116,9 @@ const localhost = '127.0.0.1';
 const clashConfigKey = 'clash_config';
 const configKey = 'config';
 const systemDnsRecordKey = 'system_dns_record';
+const systemProxyAppliedKey = 'system_proxy_applied';
 const bootRecordKey = 'boot_record';
+const appliedConfigMd5Key = 'applied_config_md5';
 const defaultSystemDnsFallback = '223.5.5.5';
 const repository = 'aqiyoung/Skyward';
 const maxMobileWidth = 600;
@@ -168,13 +173,14 @@ const pausedMaxDnsQueriesLength = maxDnsQueriesLength * 2;
 
 const trafficSampleLength = 30;
 
-// Apple's system colors, in the order of the macOS accent colors.
+// iOS 27's system colors but the deeper blue of earlier iOS, in the order of the
+// macOS accent colors.
 const defaultPrimaryColors = [
   defaultPrimaryColor,
-  0xFFAF52DE,
+  0xFFCB30E0,
   0xFFFF2D55,
-  0xFFFF3B30,
-  0xFFFF9500,
+  0xFFFF383C,
+  0xFFFF8D28,
   0xFFFFCC00,
   0xFF34C759,
   0xFF8E8E93,

@@ -1,18 +1,18 @@
 import 'dart:math';
 
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/common/service_probe.dart';
-import 'package:fl_clash/features/features.dart';
-import 'package:fl_clash/models/models.dart';
-import 'package:fl_clash/providers/outbound_ip.dart';
-import 'package:fl_clash/providers/providers.dart';
-import 'package:fl_clash/providers/routed_probe.dart';
-import 'package:fl_clash/providers/service_status.dart';
-import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/views/dashboard/probe_start_hold.dart';
-import 'package:fl_clash/views/dashboard/layout.dart';
-import 'package:fl_clash/views/dashboard/style.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/common/service_probe.dart';
+import 'package:skyward/features/features.dart';
+import 'package:skyward/models/models.dart';
+import 'package:skyward/providers/outbound_ip.dart';
+import 'package:skyward/providers/providers.dart';
+import 'package:skyward/providers/routed_probe.dart';
+import 'package:skyward/providers/service_status.dart';
+import 'package:skyward/ui/icons/icons.dart';
+import 'package:skyward/views/dashboard/probe_start_hold.dart';
+import 'package:skyward/views/dashboard/layout.dart';
+import 'package:skyward/views/dashboard/style.dart';
+import 'package:skyward/widgets/widgets.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -763,7 +763,7 @@ class ServiceStatusSheet extends ConsumerWidget {
             child: SizedBox(height: context.contentTopPadding),
           ),
           SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            padding: EdgeInsets.fromLTRB(16, 0, 16, 16 + context.bottomInset),
             sliver: SliverList.builder(
               itemCount: targets.length,
               itemBuilder: (context, index) {
@@ -849,7 +849,7 @@ class ServiceManageView extends ConsumerWidget {
                 commonProxyDecorator(itemAt(index), index, animation),
             onReorderItem: reorder,
           ),
-          const SliverToBoxAdapter(child: SizedBox(height: 16)),
+          SliverToBoxAdapter(child: SizedBox(height: 16 + context.bottomInset)),
         ],
       ),
     );
@@ -910,7 +910,7 @@ class _ServiceManageItem extends StatelessWidget {
             subtitle: shown
                 ? Text(context.appLocalizations.serviceShownOnDashboard)
                 : null,
-            trailing: Switch(value: enabled, onChanged: onChanged),
+            trailing: CommonSwitch(value: enabled, onChanged: onChanged),
           ),
         ),
       ),

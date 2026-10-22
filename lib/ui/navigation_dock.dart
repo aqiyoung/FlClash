@@ -1,10 +1,10 @@
 import 'dart:math' as math;
 
-import 'package:fl_clash/ui/context.dart';
-import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/ui/shape.dart';
-import 'package:fl_clash/ui/surface.dart';
-import 'package:fl_clash/ui/typography.dart';
+import 'package:skyward/ui/context.dart';
+import 'package:skyward/ui/icons/icons.dart';
+import 'package:skyward/ui/shape.dart';
+import 'package:skyward/ui/surface.dart';
+import 'package:skyward/ui/typography.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/physics.dart';
@@ -48,6 +48,8 @@ const double _jellyStretch = 0.2;
 const double _jellyBrake = 25;
 const double _jellySquash = 0.15;
 const double _jellyAspect = 1.4;
+// A fifth of a dp at each edge of the widest mobile lens, 134 dp lifted.
+const double _jellyRest = 3e-3;
 const double _glowReach = 28;
 const double _glowGrowth = 3;
 const double _glowPeak = 0.06;
@@ -157,9 +159,11 @@ Rect _lensRect({
 /// reads no elapsed time, so retargeting it on every pointer move holds the
 /// value still for as long as the finger keeps moving.
 class _Spring extends ChangeNotifier implements ValueListenable<double> {
-  _Spring(TickerProvider vsync, this._value) {
+  _Spring(TickerProvider vsync, this._value, {this.rest = 1e-3}) {
     _ticker = vsync.createTicker(_tick);
   }
+
+  final double rest;
 
   late final Ticker _ticker;
   double _value;
@@ -186,7 +190,16 @@ class _Spring extends ChangeNotifier implements ValueListenable<double> {
   }
 
   void springTo(double target, SpringDescription spring) {
-    _simulation = SpringSimulation(spring, _value, target, velocity);
+    _simulation = SpringSimulation(
+      spring,
+      _value,
+      target,
+      velocity,
+      tolerance: Tolerance(
+        distance: rest,
+        velocity: rest * math.sqrt(spring.stiffness / spring.mass),
+      ),
+    );
     _spring = spring;
     _target = target;
     if (_ticker.isActive) {
@@ -337,7 +350,9 @@ class NavigationDock extends StatelessWidget {
 
   static double heightOf(BuildContext context, [double scale = 1]) {
     final labelSize = _labelSize * scale;
-    return (_barHeight + MediaQuery.textScalerOf(context).scale(labelSize) - labelSize) *
+    return (_barHeight +
+            MediaQuery.textScalerOf(context).scale(labelSize) -
+            labelSize) *
         scale;
   }
 
@@ -835,7 +850,7 @@ class _FloatingNavigationBarState extends State<FloatingNavigationBar>
   late final _Spring _hoverShow = _Spring(this, 0);
   late final _Spring _swell = _Spring(this, 0);
   late final _Spring _stretch = _Spring(this, 0);
-  late final _Spring _jelly = _Spring(this, 0);
+  late final _Spring _jelly = _Spring(this, 0, rest: _jellyRest);
   late final _Spring _glow = _Spring(this, 0);
   late final _Spring _glowSpread = _Spring(this, 0);
   final ValueNotifier<LiquidGlassGlow> _touchGlow = ValueNotifier(
@@ -1268,7 +1283,8 @@ class _FloatingNavigationBarState extends State<FloatingNavigationBar>
                                 parallax: _parallax[index],
                                 lift: _lift,
                                 labelStyle: labelStyle.copyWith(
-                                  fontSize: _labelSize * labelScale * widget.scale,
+                                  fontSize:
+                                      _labelSize * labelScale * widget.scale,
                                 ),
                                 labelHeight: lineHeight,
                                 labelOverflows:
@@ -1486,7 +1502,9 @@ class _LensContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final textDirection = Directionality.of(context);
     final clipper = _LensClip(rect, textDirection);
-    if (!warp) {
+    // At rest the pane's every effect is scaled to nothing, so it would only
+    // cost a backdrop pass per frame.
+    if (!warp || lift <= 0) {
       return Positioned.fill(
         child: IgnorePointer(
           child: ExcludeSemantics(
@@ -2025,9 +2043,9 @@ class _RenderLensTint extends RenderProxyBox {
       }
       return;
     }
-    final reach = moved(rest).expandToInclude(bounds).inflate(
-      _labelInset * _scale,
-    );
+    final reach = moved(
+      rest,
+    ).expandToInclude(bounds).inflate(_labelInset * _scale);
     final lens = AppShape.full.getOuterPath(lensBounds);
     if (outside) {
       _outside.layer = context.pushClipPath(
@@ -2070,12 +2088,13 @@ class _RenderLensTint extends RenderProxyBox {
   ) {
     final filter = ColorFilter.mode(_color, BlendMode.srcIn);
     if (needsCompositing) {
-      _tint.layer = context.pushColorFilter(
-        offset,
-        filter,
+      final layer = _tint.layer ??= ColorFilterLayer();
+      layer.colorFilter = filter;
+      context.pushLayer(
+        layer,
         (context, offset) =>
             _paintMoved(context, offset, motion, _insideMotion),
-        oldLayer: _tint.layer,
+        offset,
       );
       return;
     }

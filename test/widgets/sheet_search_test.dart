@@ -1,6 +1,6 @@
-import 'package:fl_clash/providers/app.dart';
-import 'package:fl_clash/ui/icons/icons.dart';
-import 'package:fl_clash/ui/ui.dart';
+import 'package:skyward/providers/app.dart';
+import 'package:skyward/ui/icons/icons.dart';
+import 'package:skyward/ui/ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -50,7 +50,7 @@ void main() {
     expect(find.text('title'), findsOneWidget);
   });
 
-  testWidgets('a docked field leaves the close button at the trailing end', (
+  testWidgets('a docked field leaves the close button at the leading edge', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -69,7 +69,7 @@ void main() {
     expect(close, findsOneWidget);
     final rect = tester.getRect(bar);
     expect(rect.width, 600);
-    expect(tester.getCenter(close).dx, greaterThan(rect.center.dx));
+    expect(tester.getCenter(close).dx, lessThan(rect.center.dx));
   });
 
   testWidgets('a page and a side sheet keep the bar button', (tester) async {

@@ -3,12 +3,12 @@ import 'dart:io';
 
 import 'package:device_info_plus/device_info_plus.dart';
 import 'package:ffi/ffi.dart';
-import 'package:fl_clash/common/boot_record.dart';
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/common/system_dns.dart';
-import 'package:fl_clash/core/desktop/helper_client.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/plugins/app.dart';
+import 'package:skyward/common/boot_record.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/common/system_dns.dart';
+import 'package:skyward/core/desktop/helper_client.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/plugins/app.dart';
 import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter/services.dart';
 

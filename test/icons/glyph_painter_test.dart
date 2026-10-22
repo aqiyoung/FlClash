@@ -2,7 +2,7 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
-import 'package:fl_clash/ui/icons/icons.dart';
+import 'package:skyward/ui/icons/icons.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -81,6 +81,7 @@ final _glyphs = {
   'sliders': AppGlyphs.sliders,
   'wrench': AppGlyphs.wrench,
   'toggle': AppGlyphs.toggle,
+  'toggleOn': AppGlyphs.toggleOn,
   'pin': AppGlyphs.pin,
   'eye': AppGlyphs.eye,
   'eyeOff': AppGlyphs.eyeOff,

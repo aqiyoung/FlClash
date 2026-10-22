@@ -1,14 +1,14 @@
-import 'package:fl_clash/common/common.dart';
-import 'package:fl_clash/enum/enum.dart';
-import 'package:fl_clash/features/form/form.dart';
-import 'package:fl_clash/models/models.dart';
-import 'package:fl_clash/providers/app.dart';
-import 'package:fl_clash/providers/config.dart';
-import 'package:fl_clash/providers/database.dart';
-import 'package:fl_clash/providers/state.dart';
-import 'package:fl_clash/state.dart';
-import 'package:fl_clash/views/profiles/custom/rules.dart';
-import 'package:fl_clash/widgets/widgets.dart';
+import 'package:skyward/common/common.dart';
+import 'package:skyward/enum/enum.dart';
+import 'package:skyward/features/form/form.dart';
+import 'package:skyward/models/models.dart';
+import 'package:skyward/providers/app.dart';
+import 'package:skyward/providers/config.dart';
+import 'package:skyward/providers/database.dart';
+import 'package:skyward/providers/state.dart';
+import 'package:skyward/state.dart';
+import 'package:skyward/views/profiles/custom/rules.dart';
+import 'package:skyward/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -411,9 +411,9 @@ void main() {
 
     final l10n = currentAppLocalizations;
     expect(find.text(l10n.additionalParameters), findsOne);
-    final switches = find.byType(Switch);
+    final switches = find.byType(CommonSwitch);
     expect(switches, findsNWidgets(2));
-    expect(tester.widgetList<Switch>(switches).map((s) => s.value), [
+    expect(tester.widgetList<CommonSwitch>(switches).map((s) => s.value), [
       false,
       false,
     ]);
@@ -423,7 +423,7 @@ void main() {
     await tester.tap(switches.at(1));
     await tester.pumpAndSettle();
 
-    expect(tester.widgetList<Switch>(switches).map((s) => s.value), [
+    expect(tester.widgetList<CommonSwitch>(switches).map((s) => s.value), [
       true,
       true,
     ]);

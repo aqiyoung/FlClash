@@ -1,4 +1,4 @@
-import 'package:fl_clash/ui/line_chart.dart';
+import 'package:skyward/ui/line_chart.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 

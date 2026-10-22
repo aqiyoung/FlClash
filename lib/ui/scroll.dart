@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:fl_clash/ui/context.dart';
-import 'package:fl_clash/ui/scroll_behavior.dart';
-import 'package:fl_clash/ui/shape.dart';
-import 'package:fl_clash/ui/surface.dart';
-import 'package:fl_clash/ui/typography.dart';
+import 'package:skyward/ui/context.dart';
+import 'package:skyward/ui/scroll_behavior.dart';
+import 'package:skyward/ui/shape.dart';
+import 'package:skyward/ui/surface.dart';
+import 'package:skyward/ui/typography.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
@@ -544,7 +544,7 @@ class _FloatingScrollbarState extends State<FloatingScrollbar> {
 
   @override
   Widget build(BuildContext context) {
-    final bottomInset = BottomInsetScope.of(context);
+    final bottomInset = context.bottomInset;
     final behavior = ScrollConfiguration.of(context);
     final barPadding = behavior is BaseScrollBehavior
         ? behavior.scrollbarPadding
