@@ -222,14 +222,14 @@ void main() {
   group('a group that carries no icon', () {
     const own = 'https://example.com/own.png';
 
-    test('takes the flag, the mark or the picture its name is known by', () {
+    test('takes the picture, the flag or the mark its name is known by', () {
       expect(
         GroupIconSource.of(name: '香港', icon: ''),
         '${_groupDir}hong_kong.png',
       );
       expect(
         GroupIconSource.of(name: '香港-自动选择', icon: ''),
-        '${_groupDir}hong_kong.png',
+        '${_groupDir}auto.png',
       );
       expect(
         GroupIconSource.of(name: 'YouTube', icon: ''),
@@ -238,10 +238,15 @@ void main() {
       expect(GroupIconSource.of(name: 'mine', icon: ''), GroupIconSource.logo);
     });
 
-    test('wears the app mark on the routing groups over any picture the config '
-        'or the Core names', () {
-      expect(GroupIconSource.of(name: '自动选择', icon: own), GroupIconSource.logo);
-      expect(GroupIconSource.of(name: '漏网之鱼', icon: ''), GroupIconSource.logo);
+    test('takes the name over the picture its config names', () {
+      expect(
+        GroupIconSource.of(name: '自动选择', icon: own),
+        '${_groupDir}auto.png',
+      );
+      expect(
+        GroupIconSource.of(name: '漏网之鱼', icon: ''),
+        '${_groupDir}final.png',
+      );
       expect(
         GroupIconSource.of(name: '美国', icon: own),
         '${_groupDir}united_states.png',
