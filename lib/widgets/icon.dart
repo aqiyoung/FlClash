@@ -230,7 +230,7 @@ abstract final class GroupIconSource {
   static const _regions = {
     '香港': 'hong_kong.png',
     '日本': 'japan.png',
-    '美国': 'america_map.png',
+    '美国': 'united_states.png',
     '新加坡': 'singapore.png',
     '台湾': 'taiwan.png',
   };
