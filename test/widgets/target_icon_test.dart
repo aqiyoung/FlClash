@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
+import 'package:skyward/enum/enum.dart';
 import 'package:skyward/ui/icons/icons.dart';
 import 'package:skyward/widgets/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -203,6 +204,44 @@ void main() {
       await tester.pump();
 
       expect(find.text('P'), findsOne);
+    });
+  });
+
+  group('a group that carries no icon', () {
+    const set =
+        'https://cdn.jsdmirror.com/gh/Koolson/Qure@master/IconSet/'
+        'Color/';
+
+    test('takes the entry its name or its kind is known by', () {
+      expect(
+        GroupIconSource.of(name: '自动选择', type: GroupType.Selector, icon: ''),
+        '${set}Auto.png',
+      );
+      expect(
+        GroupIconSource.of(name: '漏网之鱼', type: GroupType.Selector, icon: ''),
+        '${set}Final.png',
+      );
+      expect(
+        GroupIconSource.of(name: 'mine', type: GroupType.Fallback, icon: ''),
+        '${set}Round_Robin.png',
+      );
+    });
+
+    test('keeps its own icon, its monogram in the Core GLOBAL, and its glyph '
+        'when the set has no entry for it', () {
+      const own = 'https://example.com/own.png';
+      expect(
+        GroupIconSource.of(name: '自动选择', type: GroupType.Selector, icon: own),
+        own,
+      );
+      expect(
+        GroupIconSource.of(name: 'GLOBAL', type: GroupType.Selector, icon: ''),
+        '',
+      );
+      expect(
+        GroupIconSource.of(name: 'mine', type: GroupType.Selector, icon: ''),
+        '',
+      );
     });
   });
 }

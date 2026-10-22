@@ -402,7 +402,11 @@ class _ProxyGroupItem extends ConsumerWidget {
         child: IconTheme.merge(
           data: const IconThemeData(size: 32),
           child: CommonTargetIcon(
-            src: proxyGroup.icon ?? '',
+            src: GroupIconSource.of(
+              name: proxyGroup.name,
+              type: proxyGroup.type,
+              icon: proxyGroup.icon ?? '',
+            ),
             fallback: GroupGlyph(name: proxyGroup.name, type: proxyGroup.type),
           ),
         ),

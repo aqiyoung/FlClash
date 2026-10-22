@@ -133,7 +133,11 @@ class _GroupIconState extends ConsumerState<_GroupIcon> {
             color: colorScheme.onSurfaceVariant,
           ),
           child: CommonTargetIcon(
-            src: group.icon,
+            src: GroupIconSource.of(
+              name: group.name,
+              type: group.type,
+              icon: group.icon,
+            ),
             fallback: GroupGlyph(
               name: group.name,
               type: group.type,

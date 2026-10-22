@@ -732,7 +732,11 @@ class _GroupIcon extends ConsumerWidget {
                     color: context.colorScheme.onSurfaceVariant,
                   ),
                   child: CommonTargetIcon(
-                    src: group.icon,
+                    src: GroupIconSource.of(
+                      name: group.name,
+                      type: group.type,
+                      icon: group.icon,
+                    ),
                     fallback: GroupGlyph(name: group.name, type: group.type),
                   ),
                 ),
@@ -751,7 +755,11 @@ class _GroupIcon extends ConsumerWidget {
                 color: context.colorScheme.primary,
               ),
               child: CommonTargetIcon(
-                src: group.icon,
+                src: GroupIconSource.of(
+                  name: group.name,
+                  type: group.type,
+                  icon: group.icon,
+                ),
                 fallback: GroupGlyph(name: group.name, type: group.type),
               ),
             );
