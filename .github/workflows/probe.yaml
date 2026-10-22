@@ -69,12 +69,12 @@ jobs:
           sed -i 's/applicationId = "com.threely.skyward"/applicationId = "com.follow.clash"/' android/app/build.gradle.kts
           grep -n 'applicationId' android/app/build.gradle.kts
 
-      # A probe draws its versionCode from the same counter ci.yaml uses
-      # (21<yyMMdd><sequence that day>, read back from today's releases), so it
-      # installs over the release already on the phone and the next day's
-      # release installs over the probe. Numbering probes above the releases
-      # ended with a release refused as a downgrade, which is why the counter is
-      # shared rather than offset.
+      # A probe draws its versionCode from the same counter ci.yaml uses --
+      # 2,090,000,000 plus a hundred per day since 2026-01-01 plus the sequence
+      # that day, read back from the releases already out -- so it installs over
+      # the release on the phone and the next release installs over it.
+      # Numbering probes above the releases ended with a release refused as a
+      # downgrade, which is why the counter is shared rather than offset.
       #
       # split-per-abi adds the ABI's own offset on top of this base (arm64-v8a
       # is +2000), so the value here is not what the APK ends up carrying; the
@@ -91,17 +91,20 @@ jobs:
             exit 1
           fi
           version="${base}.$((900000 + RUN_NUMBER))"
-          today=$(date -u +%Y%m%d)
-          stamp_prefix="21${today:2}"
+          now=$(date -u +%s)
+          origin=$(date -u -d 2026-01-01 +%s)
+          day_prefix=$(( 20900000 + (now - origin) / 86400 ))
           titles=$(gh api "repos/${GITHUB_REPOSITORY}/releases?per_page=100" \
             --jq '[.[] | .name, .body] | .[]' 2>/dev/null || true)
           highest_stamp=$(printf '%s\n' "$titles" \
-            | sed -n "s/.*${stamp_prefix}\([0-9][0-9]*\).*/\1/p" | sort -n | tail -1)
-          build_number="${stamp_prefix}$(printf '%02d' "$(( 10#${highest_stamp:-0} + 1 ))")"
+            | sed -n "s/.*${day_prefix}\([0-9][0-9]*\).*/\1/p" | sort -n | tail -1)
+          stamp=$(( 10#${highest_stamp:-0} + 1 ))
+          build_number=$(( day_prefix * 100 + stamp ))
           awk -v v="${base}+${build_number}" '/^version:/{ print "version: " v; next } { print }' \
             pubspec.yaml > pubspec.yaml.new
           mv pubspec.yaml.new pubspec.yaml
           echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "build_number=${build_number}" >> "$GITHUB_OUTPUT"
           echo "building ${version} from ${base}, base versionCode ${build_number}"
 
       - name: Set up Android release signing
@@ -318,6 +321,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.version.outputs.version }}
+          BASE_NUMBER: ${{ steps.version.outputs.build_number }}
           VERSION_CODE: ${{ steps.verify.outputs.version_code }}
           REF: ${{ inputs.ref }}
           RUN_NUMBER: ${{ github.run_number }}
@@ -336,11 +340,11 @@ jobs:
             echo "- 分支：\`${REF}\`"
             echo "- 版本：\`${VERSION}\`"
             echo "- 包名：\`${APPLICATION_ID}\`"
-            echo "- 构建号（versionCode）：\`${VERSION_CODE}\`"
+            echo "- 构建号：\`${BASE_NUMBER}\`（arm64-v8a APK 实际为 \`${VERSION_CODE}\`，含 ABI 偏移）"
             echo "- 提交：[\`${commit}\`](https://github.com/${GITHUB_REPOSITORY}/commit/${commit})"
             echo "- 构建日志：${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
             echo
-            echo "签名与本仓库正式版相同，版本号高于正式版，可以直接覆盖安装；装回正式版需要先卸载一次。这不是正式发布。"
+            echo "签名与本仓库正式版相同，和正式版共用同一套递增的构建号，可以直接互相覆盖安装。这不是正式发布。"
           } >> probe-notes.md
 
           # A retried run reuses its number, so the tag may already exist.
@@ -358,6 +362,7 @@ jobs:
         if: env.TELEGRAM_BOT_TOKEN != '' && env.TELEGRAM_CHAT_ID != ''
         env:
           VERSION: ${{ steps.version.outputs.version }}
+          BASE_NUMBER: ${{ steps.version.outputs.build_number }}
           VERSION_CODE: ${{ steps.verify.outputs.version_code }}
           REF: ${{ inputs.ref }}
           TAG: probe-${{ github.run_number }}
