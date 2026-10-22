@@ -404,10 +404,9 @@ class _ProxyGroupItem extends ConsumerWidget {
           child: CommonTargetIcon(
             src: GroupIconSource.of(
               name: proxyGroup.name,
-              type: proxyGroup.type,
               icon: proxyGroup.icon ?? '',
             ),
-            fallback: GroupGlyph(name: proxyGroup.name, type: proxyGroup.type),
+            fallback: GroupBadge(name: proxyGroup.name),
           ),
         ),
       ),

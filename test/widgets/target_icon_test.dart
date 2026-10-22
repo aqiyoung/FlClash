@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 
-import 'package:skyward/enum/enum.dart';
 import 'package:skyward/ui/icons/icons.dart';
 import 'package:skyward/widgets/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -211,7 +210,7 @@ void main() {
     ) async {
       await _pump(
         tester,
-        const CommonTargetIcon(src: 'assets/images/groups/auto.png'),
+        const CommonTargetIcon(src: 'assets/images/groups/hong_kong.png'),
       );
       await tester.pump();
 
@@ -221,57 +220,62 @@ void main() {
   });
 
   group('a group that carries no icon', () {
-    const dir = 'assets/images/groups/';
+    const own = 'https://example.com/own.png';
 
-    test('takes the entry its name or its kind is known by', () {
+    test('takes the flag, the mark or the picture its name is known by', () {
       expect(
-        GroupIconSource.of(name: '自动选择', type: GroupType.Selector, icon: ''),
-        '${dir}auto.png',
+        GroupIconSource.of(name: '香港', icon: ''),
+        '${_groupDir}hong_kong.png',
       );
       expect(
-        GroupIconSource.of(name: '漏网之鱼', type: GroupType.Selector, icon: ''),
-        '${dir}final.png',
+        GroupIconSource.of(name: '香港-自动选择', icon: ''),
+        '${_groupDir}hong_kong.png',
       );
       expect(
-        GroupIconSource.of(name: '香港', type: GroupType.Selector, icon: ''),
-        '${dir}hong_kong.png',
+        GroupIconSource.of(name: 'YouTube', icon: ''),
+        '${_groupDir}youtube.png',
       );
+      expect(GroupIconSource.of(name: 'mine', icon: ''), GroupIconSource.logo);
+    });
+
+    test('wears the app mark on the routing groups over any picture the config '
+        'or the Core names', () {
+      expect(GroupIconSource.of(name: '自动选择', icon: own), GroupIconSource.logo);
+      expect(GroupIconSource.of(name: '漏网之鱼', icon: ''), GroupIconSource.logo);
       expect(
-        GroupIconSource.of(name: '香港-自动选择', type: GroupType.URLTest, icon: ''),
-        '${dir}auto.png',
-      );
-      expect(
-        GroupIconSource.of(name: 'mine', type: GroupType.Fallback, icon: ''),
-        '${dir}round_robin.png',
+        GroupIconSource.of(name: '美国', icon: own),
+        '${_groupDir}america_map.png',
       );
     });
 
-    test('takes the name over the icon its config names, and keeps the config '
-        'icon otherwise', () {
-      const own = 'https://example.com/own.png';
-      expect(
-        GroupIconSource.of(name: '自动选择', type: GroupType.Selector, icon: own),
-        '${dir}auto.png',
-      );
-      expect(
-        GroupIconSource.of(name: 'mine', type: GroupType.Selector, icon: own),
-        own,
-      );
+    test('keeps the picture a config names for a group the set does not know, '
+        'and the monogram in the Core GLOBAL', () {
+      expect(GroupIconSource.of(name: 'mine', icon: own), own);
+      expect(GroupIconSource.of(name: 'GLOBAL', icon: ''), '');
     });
 
-    test('keeps its monogram in the Core GLOBAL and its glyph when no entry '
-        'suits it', () {
+    testWidgets('the badge shows the app mark, and the exit flag on GLOBAL', (
+      tester,
+    ) async {
+      await _pump(tester, const GroupBadge(name: 'mine'));
+
+      final image = tester.widget<Image>(find.byType(Image));
       expect(
-        GroupIconSource.of(name: 'GLOBAL', type: GroupType.Selector, icon: ''),
-        '',
+        (image.image as ResizeImage).imageProvider,
+        const AssetImage(GroupIconSource.logo),
       );
-      expect(
-        GroupIconSource.of(name: 'mine', type: GroupType.Selector, icon: ''),
-        '',
+
+      await _pump(
+        tester,
+        const GroupBadge(name: 'GLOBAL', exitCountryCode: 'HK'),
       );
+
+      expect(find.text('🇭🇰'), findsOne);
     });
   });
 }
+
+const _groupDir = 'assets/images/groups/';
 
 Future<Uint8List> _squarePng(int size) async {
   final recorder = ui.PictureRecorder();
