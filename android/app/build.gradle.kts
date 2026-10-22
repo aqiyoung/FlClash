@@ -42,12 +42,10 @@ android {
         targetSdk = libs.versions.targetSdk.get().toInt()
         versionCode = flutter.versionCode
         // Our revision over upstream rides in the versionCode and in the
-        // APP_VERSION the app shows; versionName stays three-part, because a
-        // four-part name reads like a test build to package scanners.
-        versionName = (System.getenv("APP_VERSION_NAME") ?: flutter.versionName)
-            .split('.')
-            .take(3)
-            .joinToString(".")
+        // versionName the app and Android both report, so the two always agree;
+        // the app still reads it back through APP_VERSION (see
+        // lib/common/package.dart).
+        versionName = System.getenv("APP_VERSION_NAME") ?: flutter.versionName
     }
 
     signingConfigs {

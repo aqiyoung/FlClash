@@ -238,6 +238,35 @@ void main() {
       expect(GroupIconSource.of(name: 'mine', icon: ''), GroupIconSource.logo);
     });
 
+    test('reads the words a subscription actually writes', () {
+      for (final (name, file) in [
+        ('🇭🇰 香港 01', 'hong_kong.png'),
+        ('香港节点', 'hong_kong.png'),
+        ('🇭🇰', 'hong_kong.png'),
+        ('US-01', 'united_states.png'),
+        ('日本 IEPL', 'japan.png'),
+        ('🚀 节点选择', 'rocket.png'),
+        ('♻️ 自动选择', 'auto.png'),
+        ('Netflix 媒体', 'netflix.png'),
+        ('OpenAI', 'chatgpt.png'),
+        ('广告拦截', 'adblock.png'),
+        ('剩余流量', 'world_map.png'),
+      ]) {
+        expect(
+          GroupIconSource.of(name: name, icon: ''),
+          '$_groupDir$file',
+          reason: name,
+        );
+      }
+    });
+
+    test('a two-letter code is a word, not a fragment', () {
+      expect(
+        GroupIconSource.of(name: 'Russia', icon: ''),
+        GroupIconSource.logo,
+      );
+    });
+
     test('takes the name over the picture its config names', () {
       expect(
         GroupIconSource.of(name: '自动选择', icon: own),

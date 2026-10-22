@@ -271,6 +271,10 @@ abstract final class GroupIconSource {
     if (GroupMonogram.isGlobal(name)) {
       return '';
     }
+    final guessed = _guess(name);
+    if (guessed != null) {
+      return '$_dir$guessed';
+    }
     return icon.isEmpty ? logo : icon;
   }
 
@@ -278,6 +282,97 @@ abstract final class GroupIconSource {
   /// builds beside each region, and it wears the same picture as the rest.
   static String? _regionAuto(String name) =>
       name.endsWith('-自动选择') ? 'auto.png' : null;
+
+  /// The same pictures for the names a subscription actually writes. The list
+  /// above is the fork's own default config; a provider is free to call the
+  /// group `🇭🇰 香港 01`, `香港节点` or `HK`, or to carry a group the fork
+  /// never names at all. Order matters: a service wins over the region it sits
+  /// behind, a region wins over the group's kind, and within a list the first
+  /// match wins.
+  static const _keywords = <String, List<String>>{
+    'youtube.png': ['youtube', '油管'],
+    'netflix.png': ['netflix', '奈飞', '网飞'],
+    'disney.png': ['disney', '迪士尼'],
+    'spotify.png': ['spotify'],
+    'chatgpt.png': ['chatgpt', 'openai'],
+    'github.png': ['github'],
+    'telegram.png': ['telegram', '电报'],
+    'twitter.png': ['twitter', '推特'],
+    'meta.png': ['meta', 'facebook', 'instagram'],
+    'line.png': ['line'],
+    'tiktok.png': ['tiktok', '抖音'],
+    'pikpak.png': ['pikpak'],
+    'crypto.png': ['crypto', 'binance', 'okx', 'coinbase'],
+    'adblock.png': ['adblock', 'adguard', '广告', '拦截'],
+    'apple.png': ['apple', 'icloud', '苹果'],
+    'microsoft.png': ['microsoft', '微软'],
+    'onedrive.png': ['onedrive'],
+    'google_search.png': ['google', '谷歌'],
+    'spark.png': ['fcm'],
+    'hong_kong.png': ['香港', 'hk', 'hongkong'],
+    'japan.png': ['日本', 'jp', 'japan', '东京', 'tokyo', '大阪', 'osaka'],
+    'united_states.png': ['美国', 'us', 'usa', 'america', '洛杉矶', '硅谷', '西雅图'],
+    'singapore.png': ['新加坡', 'sg', 'singapore', '狮城'],
+    'taiwan.png': ['台湾', 'tw', 'taiwan', '台北'],
+    'rocket.png': ['选择', 'select', 'proxy', '节点'],
+    'auto.png': ['自动', 'auto', 'urltest'],
+    'round_robin.png': ['故障转移', 'failover', 'fallback'],
+    'stack.png': ['负载', 'balance'],
+    'final.png': ['漏网', 'final', '兜底'],
+    'direct.png': ['直连', 'direct'],
+    'world_map.png': ['其他', 'other', '剩余', 'world'],
+  };
+
+  static String? _guess(String name) {
+    final words = _words(name);
+    for (final entry in _keywords.entries) {
+      if (entry.value.any((key) => _mentions(words, key))) {
+        return entry.key;
+      }
+    }
+    return null;
+  }
+
+  /// The words a name is worth matching on: a flag emoji becomes the two-letter
+  /// code it stands for, so `🇭🇰` alone still says Hong Kong; everything that
+  /// is not a letter or a digit splits words.
+  static List<String> _words(String name) {
+    final buffer = StringBuffer();
+    for (final rune in name.runes) {
+      if (rune >= 0x1F1E6 && rune <= 0x1F1FF) {
+        buffer.writeCharCode(0x61 + rune - 0x1F1E6);
+      } else if (_keeps(rune)) {
+        buffer.writeCharCode(rune);
+      } else {
+        buffer.write(' ');
+      }
+    }
+    return buffer
+        .toString()
+        .toLowerCase()
+        .split(' ')
+        .where((word) => word.isNotEmpty)
+        .toList();
+  }
+
+  static bool _keeps(int rune) =>
+      (rune >= 0x30 && rune <= 0x39) ||
+      (rune >= 0x41 && rune <= 0x5A) ||
+      (rune >= 0x61 && rune <= 0x7A) ||
+      (rune >= 0x4E00 && rune <= 0x9FFF) ||
+      (rune >= 0x3040 && rune <= 0x30FF) ||
+      (rune >= 0xAC00 && rune <= 0xD7AF);
+
+  /// A one- or two-letter code (`us`, `hk`) only counts as its own word, so
+  /// `Russia` does not read as `US`; longer keys and every CJK word match inside
+  /// the word they appear in, so `香港节点` counts as Hong Kong.
+  static bool _mentions(List<String> words, String key) {
+    final ascii = key.codeUnits.every((unit) => unit < 0x80);
+    if (ascii && key.length <= 2) {
+      return words.contains(key);
+    }
+    return words.any((word) => word.contains(key));
+  }
 }
 
 /// Stands in for a group whose picture is empty or unreadable: the app's own

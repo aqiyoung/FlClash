@@ -22,7 +22,7 @@ Android 一般下 `-arm64-v8a.apk`（绝大多数手机）或 `-armeabi-v7a.apk`
 - 前三段跟上游一致（取自上游 `pubspec.yaml`）。
 - 第四位是我们自己的迭代号：**一路往上数、不随上游版本重置**。每次发版（测试版或正式版）都 +1，把 beta 晋升成正式版时也拿一个新号——这样 beta 用户也会收到正式版的更新提示。预览版不占这个号，它走 `preview-*` tag。
 - **Release tag 就是这四段版本**（如 `v0.9.1.13`）：App 拿自己的版本名去比 tag，相等就不提示，第四位变大了才提示。所以"上游没动、只是我们重建"现在也能推送给用户。（2026-10-18 之前发的包版本名只有三段，它们不会因为第四位提示更新，需要手动来下载页看一眼。）
-- 桌面端（Linux / Windows / macOS）显示的也是四段：pub 不接受四段版本号，`pubspec.yaml` 里只能写三段，所以四段版本名在构建时以 `APP_VERSION` 注入（`setup.dart` 读 CI 的 `APP_VERSION_NAME`，写进 `env.json` 的 dart-define）。`PackageInfo.displayVersion` 优先用它，为空时回落到 `package_info_plus` 的三段。桌面端的「检查更新」也走这条，所以第四位变大同样能提示。
+- 装上去的包处处显示四段：pub 不接受四段版本号，`pubspec.yaml` 里只能写三段，所以四段版本名在构建时以 `APP_VERSION` 注入（`setup.dart` 读 CI 的 `APP_VERSION_NAME`，写进 `env.json` 的 dart-define），`PackageInfo.displayVersion` 优先用它、为空时回落到 `package_info_plus` 的三段；Android 的 `versionName` 也直接写这四段，所以「设置 → 应用 → Skyward」里看到的和 App 里的一致。「检查更新」同样走四段比较，第四位变大就能提示。
 - 每次构建另外带一个 `<YYYYMMDD><当天序号>` 的**构建号**，写进 `pubspec.yaml`（构建时注入、不提交），它就是 APK 的 `versionCode`，保证新包一定比手机里那个"更新"，否则 Android 会拒绝覆盖安装。构建号记在 Release 说明里。
 
 ## 三个渠道
