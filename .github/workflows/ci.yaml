@@ -148,14 +148,21 @@ jobs:
           # Promotion: the stable channel ships what beta has already run, so it
           # takes beta's tree wholesale.
           #
-          # A merge -- even with `-X theirs` -- is not an option: upstream's main
-          # and dev have diverged (each carries commits the other never got,
-          # upstream cherry-picks between them), so their common ancestor is far
-          # behind and merging would union both lines. The stable channel would
-          # then ship code beta never ran. Instead the index is reset onto beta's
-          # tree, the working tree follows it, and anything beta does not have is
-          # dropped. The workflow copies, which live on main and ci alone, are
-          # then taken from ci, their source of truth.
+          # A content merge -- even with `-X theirs` -- is not an option:
+          # upstream's main and dev have diverged (each carries commits the other
+          # never got, upstream cherry-picks between them), so their common
+          # ancestor is far behind and merging would union both lines. The stable
+          # channel would then ship code beta never ran. Instead the index is
+          # reset onto beta's tree, the working tree follows it, and anything
+          # beta does not have is dropped. The workflow copies, which live on
+          # main and ci alone, are then taken from ci, their source of truth.
+          #
+          # The commit still names beta as a second parent. Upstream force-pushes
+          # dev, so beta is rebased onto a tip main has never seen and the two
+          # branches share no ancestor; GitHub then reads every push to beta as
+          # an unmerged branch and offers a pull request carrying the whole tree
+          # against main. `-s ours` records the parents and leaves the tree
+          # alone -- the read-tree below is what ships.
           if [ "$PROMOTE" = true ]; then
             case " $channels " in
               *" stable "*) ;;
@@ -166,18 +173,23 @@ jobs:
             main_before=$(git rev-parse refs/remotes/origin/main)
             beta_tip=$(git rev-parse refs/heads/beta)
             git checkout --quiet -B main "$main_before"
-            git read-tree -u --reset beta
-            git clean --quiet -fd
-            git checkout --quiet refs/remotes/origin/ci -- \
-              .github/workflows/ci.yaml \
-              .github/workflows/build-channel.yaml \
-              .github/workflows/probe.yaml \
-              .github/workflows/publish-release.yaml
-            git add -A
-            if git diff --quiet --cached HEAD; then
+            if git merge-base --is-ancestor "$beta_tip" HEAD; then
               echo "main already carries beta; nothing to promote"
             else
-              git commit --quiet -m "promote: beta $(git rev-parse --short "$beta_tip") into main"
+              # Files beta leaves behind would block the merge, and beta's tree
+              # is what the promotion puts in place anyway.
+              git clean --quiet -fd
+              git merge --quiet --no-ff --allow-unrelated-histories -s ours \
+                -m "promote: beta $(git rev-parse --short "$beta_tip") into main" \
+                "$beta_tip"
+              git read-tree -u --reset "$beta_tip"
+              git checkout --quiet refs/remotes/origin/ci -- \
+                .github/workflows/ci.yaml \
+                .github/workflows/build-channel.yaml \
+                .github/workflows/probe.yaml \
+                .github/workflows/publish-release.yaml
+              git add -A
+              git commit --quiet --amend --no-edit
               # The stable channel has to build exactly what beta ran, so the
               # workflow copies are the only thing allowed to differ -- checked
               # rather than trusted.
