@@ -281,8 +281,8 @@ abstract final class GroupIconSource {
       if (picture != null) {
         return '$_dir$picture';
       }
-      // The flag is only a stand-in for a picture the bundle does not carry,
-      // so a config that names one of its own still wins.
+      // The flag stands in for a picture the bundle lacks, so a config that
+      // names one of its own still wins.
       return icon.isEmpty ? '' : icon;
     }
     final kind = _guess(name, _kindKeywords);
@@ -297,11 +297,9 @@ abstract final class GroupIconSource {
   static String? _regionAuto(String name) =>
       name.endsWith('-自动选择') ? 'auto.png' : null;
 
-  /// The same pictures for the names a subscription actually writes. The lists
-  /// above are the fork's own default config; a provider is free to call the
-  /// group `🇭🇰 香港 01`, `香港节点` or `HK`, or to carry a group the fork
-  /// never names at all. A service wins over the region it sits behind, a
-  /// region over the group's kind, and within a list the first match wins.
+  /// The same pictures for the names a subscription actually writes: the lists
+  /// above are the fork's own default config, a provider writes its own. A
+  /// service wins over a region, a region over the group's kind.
   static const _serviceKeywords = <String, List<String>>{
     'youtube.png': ['youtube', '油管', 'yt', '哔哩哔哩', 'bilibili'],
     'netflix.png': ['netflix', '奈飞', '网飞', '影视', '国外媒体', '电影'],
@@ -326,9 +324,7 @@ abstract final class GroupIconSource {
     'area.png': ['巴哈姆特', 'bahamut', '资讯站', '门户'],
   };
 
-  /// The kinds of group, by the words a config writes for them: a group that
-  /// picks, tests, fails over, balances, catches, connects or holds the rest
-  /// wears the picture of what it does.
+  /// The kinds of group, by the words a config writes for them.
   static const _kindKeywords = <String, List<String>>{
     'auto.png': ['自动', 'auto', 'urltest', '测速', '速度'],
     'round_robin.png': ['故障转移', 'failover', 'fallback', '容错'],
@@ -339,10 +335,9 @@ abstract final class GroupIconSource {
     'rocket.png': ['选择', 'select', 'proxy', '节点', '手动', 'manual', '策略', '默认'],
   };
 
-  /// The countries a subscription names its region groups after, by the words
-  /// those names use. The bundle carries a picture for a few of them; the rest
-  /// wear the flag the app already has the font for, so a region the fork
-  /// never heard of still shows where it goes.
+  /// The countries a subscription names its region groups after. The bundle has
+  /// a picture for a few; the rest wear the flag the app already has the font
+  /// for.
   static const _countries = <String, String>{
     '香港': 'HK',
     'hk': 'HK',
@@ -579,8 +574,7 @@ abstract final class GroupIconSource {
     'TW': 'taiwan.png',
   };
 
-  /// The flag a country group wears when the bundle has no picture for it, and
-  /// empty for a group that is not a country.
+  /// The flag a country group wears when the bundle has no picture for it.
   static String flagOf(String name) {
     final country = _country(name);
     if (country == null || _countryPictures.containsKey(country)) {
@@ -610,8 +604,7 @@ abstract final class GroupIconSource {
   }
 
   /// The words a name is worth matching on: a flag emoji becomes the two-letter
-  /// code it stands for, so `🇭🇰` alone still says Hong Kong; everything that
-  /// is not a letter or a digit splits words.
+  /// code it stands for, everything that is not a letter or a digit splits words.
   static List<String> _words(String name) {
     final buffer = StringBuffer();
     for (final rune in name.runes) {
@@ -640,9 +633,7 @@ abstract final class GroupIconSource {
       (rune >= 0xAC00 && rune <= 0xD7AF);
 
   /// A one- or two-letter code (`us`, `hk`) only counts as its own word, so
-  /// `Russia` does not read as `US`; a code with a node number behind it still
-  /// counts. Longer keys and every CJK word match inside the word they appear
-  /// in, so `香港节点` counts as Hong Kong.
+  /// `Russia` does not read as `US`; longer keys match inside the word.
   static bool _mentions(List<String> words, String key) {
     final ascii = key.codeUnits.every((unit) => unit < 0x80);
     if (!ascii || key.length > 2) {
