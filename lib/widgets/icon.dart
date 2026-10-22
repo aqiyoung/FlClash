@@ -190,9 +190,54 @@ class GroupMonogram extends StatelessWidget {
   }
 }
 
+/// The colour icon set the fork's default config dresses its groups in. A group
+/// that carries no picture of its own borrows the entry its kind is known by,
+/// so it keeps the same face as the config's own groups.
+abstract final class GroupIconSource {
+  static const _set =
+      'https://cdn.jsdmirror.com/gh/Koolson/Qure@master/IconSet/Color/';
+
+  /// The names the default config gives the groups it builds.
+  static const _named = {
+    '默认代理': 'Rocket.png',
+    '自动选择': 'Auto.png',
+    '故障转移': 'Round_Robin.png',
+    '负载均衡': 'Stack.png',
+    '漏网之鱼': 'Final.png',
+    '直连': 'Direct.png',
+    '其他节点': 'World_Map.png',
+  };
+
+  /// A group's own icon, or the set's entry for its kind, or empty for a
+  /// [GroupMonogram] to stand in. A selector without a name the set knows keeps
+  /// the monogram: which picture would suit an arbitrary group is a guess.
+  static String of({
+    required String name,
+    required GroupType type,
+    required String icon,
+  }) {
+    if (icon.isNotEmpty) {
+      return icon;
+    }
+    if (GroupMonogram.isGlobal(name)) {
+      return '';
+    }
+    final entry =
+        _named[name] ??
+        switch (type) {
+          GroupType.URLTest => 'Auto.png',
+          GroupType.Fallback => 'Round_Robin.png',
+          GroupType.LoadBalance => 'Stack.png',
+          GroupType.Selector || GroupType.Relay => null,
+        };
+    return entry == null ? '' : '$_set$entry';
+  }
+}
+
 /// Stands in for a group the config gave no icon: the glyph of what the group
-/// does. [GroupName.GLOBAL] keeps [GroupMonogram]'s flag, which says where
-/// traffic leaves rather than what the group is.
+/// does, in the hue that kind of group wears. [GroupName.GLOBAL] keeps
+/// [GroupMonogram]'s flag, which says where traffic leaves rather than what the
+/// group is.
 class GroupGlyph extends StatelessWidget {
   const GroupGlyph({
     super.key,
@@ -213,12 +258,30 @@ class GroupGlyph extends StatelessWidget {
     GroupType.Relay => AppGlyphs.link,
   };
 
+  /// Fixed rather than seeded: the kinds have to stay apart whatever colour the
+  /// theme takes. Each is a tone that reads on both a light and a dark surface.
+  static Color colorOf(BuildContext context, GroupType type) {
+    final dark = context.colorScheme.brightness == Brightness.dark;
+    return switch (type) {
+      GroupType.Selector =>
+        dark ? const Color(0xFF8AB4F8) : const Color(0xFF1A63C7),
+      GroupType.URLTest =>
+        dark ? const Color(0xFF7BD8A4) : const Color(0xFF1D8A55),
+      GroupType.Fallback =>
+        dark ? const Color(0xFFF5B85E) : const Color(0xFFB26A0B),
+      GroupType.LoadBalance =>
+        dark ? const Color(0xFFC4A6F7) : const Color(0xFF7A45C9),
+      GroupType.Relay =>
+        dark ? const Color(0xFF6FD3D0) : const Color(0xFF0E8684),
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     if (GroupMonogram.isGlobal(name)) {
       return GroupMonogram(name, exitCountryCode: exitCountryCode);
     }
-    return GlyphIcon(glyphOf(type));
+    return GlyphIcon(glyphOf(type), color: colorOf(context, type));
   }
 }
 
