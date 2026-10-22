@@ -1,5 +1,7 @@
 script_template: inno_setup.iss
-app_id: 728B3532-C74B-4870-9068-BE70FE12A3E6
+# Skyward's own identity. FlClash's GUID made Inno keep the previous install
+# directory and Start menu group, so an upgrade still landed in FlClash.
+app_id: 2DA60D9A-1F82-4E9D-AE25-D9FF599B50B2
 app_name: Skyward
 publisher: chen08209
 publisher_url: https://github.com/aqiyoung/Skyward

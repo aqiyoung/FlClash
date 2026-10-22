@@ -158,4 +158,56 @@ void main() {
 
     await expectLater(appPath.ensureProviderDirs(9), completes);
   });
+
+  group('adoptWindowsDataDirectory', () {
+    Directory roaming() {
+      final directory = Directory.systemTemp.createTempSync('roaming');
+      addTearDown(() {
+        if (directory.existsSync()) {
+          directory.deleteSync(recursive: true);
+        }
+      });
+      return directory;
+    }
+
+    test('moves the FlClash directory under the app name', () async {
+      final root = roaming();
+      final legacy = Directory(join(root.path, 'com.follow', 'clash'))
+        ..createSync(recursive: true);
+      File(
+        join(legacy.path, 'config.yaml'),
+      ).writeAsStringSync('mixed-port: 7890');
+
+      final directory = await adoptWindowsDataDirectory(root.path);
+
+      expect(directory.path, join(root.path, appName));
+      expect(
+        File(join(directory.path, 'config.yaml')).readAsStringSync(),
+        contains('7890'),
+      );
+      expect(legacy.existsSync(), isFalse);
+    });
+
+    test('leaves a directory that already carries the app name', () async {
+      final root = roaming();
+      final current = Directory(join(root.path, appName))
+        ..createSync(recursive: true);
+      final legacy = Directory(join(root.path, 'com.follow', 'clash'))
+        ..createSync(recursive: true);
+
+      final directory = await adoptWindowsDataDirectory(root.path);
+
+      expect(directory.path, current.path);
+      expect(legacy.existsSync(), isTrue);
+    });
+
+    test('creates the directory when nothing precedes it', () async {
+      final root = roaming();
+
+      final directory = await adoptWindowsDataDirectory(root.path);
+
+      expect(directory.existsSync(), isTrue);
+      expect(directory.path, join(root.path, appName));
+    });
+  });
 }
