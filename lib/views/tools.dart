@@ -4,6 +4,7 @@ import 'package:skyward/l10n/l10n.dart';
 import 'package:skyward/models/models.dart';
 import 'package:skyward/providers/providers.dart';
 import 'package:skyward/ui/icons/icons.dart';
+import 'package:skyward/ui/metrics.dart';
 import 'package:skyward/views/about.dart';
 import 'package:skyward/views/access.dart';
 import 'package:skyward/views/backup_and_restore.dart';
@@ -87,8 +88,14 @@ class _ToolViewState extends ConsumerState<ToolsView> {
           if (state.navigationItems.isEmpty) {
             return Container();
           }
+          // The page's own gap already clears the bar, so a section's full
+          // lead-in would leave the label sitting well below the title.
+          final headerPadding = listHeaderPaddingOf(
+            context,
+          ).copyWith(top: 12);
           return generateSection(
             title: context.appLocalizations.more,
+            headerPadding: headerPadding,
             items: state.navigationItems.map(_buildNavigationMenuItem),
           );
         },
@@ -106,7 +113,7 @@ class _ToolViewState extends ConsumerState<ToolsView> {
           padding: EdgeInsets.only(
             left: 16,
             right: 16,
-            top: context.contentTopPadding,
+            top: context.appBarInset,
             bottom: 20 + context.bottomInset,
           ),
         ),

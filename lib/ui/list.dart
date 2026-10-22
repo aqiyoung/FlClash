@@ -611,12 +611,17 @@ Widget generateSection({
   required Iterable<Widget> items,
   List<IconButtonData> actions = const [],
   String? footer,
+  EdgeInsets? headerPadding,
 }) {
   return Column(
     children: [
       if (items.isNotEmpty)
         title != null
-            ? ListHeader(title: title, actions: actions)
+            ? ListHeader(
+                title: title,
+                actions: actions,
+                padding: headerPadding,
+              )
             : const ListSectionGap(),
       generateGroup(items),
       if (items.isNotEmpty && footer != null) ListFooter(text: footer),
