@@ -217,16 +217,23 @@ jobs:
           # against that version, compares like with like.
           #
           # The versionCode -- what Android uses to decide whether one build may
-          # install over another -- comes from a build number of <date><sequence
-          # that day>, the shape upstream itself uses. The sequence is one past
-          # the highest spent *that day*: not the number of tags, because
-          # counting assumes the stamps are contiguous and any tag that ever went
-          # missing would hand the same number out twice; and not per version,
-          # because that restarts at 01 the moment upstream ships a new version,
-          # and on a day that already had a release it would produce a lower
-          # versionCode than the one already on the phone, which Android refuses
-          # to install over. Both channels draw from the one counter, stable
-          # first: the same day gives stable ...05 and beta ...06.
+          # install over another -- comes from a build number of <21><date>
+          # <sequence that day>, the date shape upstream uses behind a 21 that
+          # lifts every build past the 2,090,00x,xxx numbers the probes were
+          # published with. Those probes sat above the plain 2,02x,xxxxxx dates
+          # on purpose, which meant a release landing on a phone that still ran
+          # one was refused as a downgrade; from 21 on both channels draw from
+          # the one counter, so a release always outranks the last probe and the
+          # next day's build always outranks both. The 32-bit ceiling holds
+          # until 2047. The sequence is one past the highest spent *that day*:
+          # not the number of tags, because counting assumes the stamps are
+          # contiguous and any tag that ever went missing would hand the same
+          # number out twice; and not per version, because that restarts at 01
+          # the moment upstream ships a new version, and on a day that already
+          # had a release it would produce a lower versionCode than the one
+          # already on the phone, which Android refuses to install over. Both
+          # channels draw from the one counter, stable first: the same day gives
+          # stable ...05 and beta ...06.
           #
           # The tags carry only the version, so the build number is read back
           # from the release titles and notes, which is where it is written;
@@ -235,10 +242,12 @@ jobs:
           # instead of the tags API, which pages at 100 names and upstream alone
           # already has more tags than that.
           today=$(date -u +%Y%m%d)
+          # 21<yyMMdd>: see the note above on how the probes were numbered.
+          stamp_prefix="21${today:2}"
           titles=$(gh api "repos/${GITHUB_REPOSITORY}/releases?per_page=100" \
             --jq '[.[] | .name, .body] | .[]' 2>/dev/null || true)
           highest_stamp=$(printf '%s\n' "$titles" \
-            | sed -n "s/.*${today}\([0-9][0-9]*\).*/\1/p" | sort -n | tail -1)
+            | sed -n "s/.*${stamp_prefix}\([0-9][0-9]*\).*/\1/p" | sort -n | tail -1)
           # 10#: past the eighth build of a day the stamp carries a leading zero,
           # and bash would read a bare 09 as an invalid octal number.
           stamp=$(( 10#${highest_stamp:-0} + 1 ))
@@ -265,8 +274,8 @@ jobs:
             taken="$taken ${base_version}.${revision}"
             seq=$(printf '%02d' "$stamp")
             echo "version_$ch=${base_version}.${revision}" >> "$GITHUB_OUTPUT"
-            echo "build_number_$ch=${today}${seq}" >> "$GITHUB_OUTPUT"
-            echo "$ch ($br): next version ${base_version}.${revision}, build number ${today}${seq}"
+            echo "build_number_$ch=${stamp_prefix}${seq}" >> "$GITHUB_OUTPUT"
+            echo "$ch ($br): next version ${base_version}.${revision}, build number ${stamp_prefix}${seq}"
             stamp=$(( stamp + 1 ))
           done
 
