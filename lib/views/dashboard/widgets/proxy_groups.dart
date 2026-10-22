@@ -112,7 +112,10 @@ class _GroupIconState extends ConsumerState<_GroupIcon> {
       padding: EdgeInsets.all(inset),
       clipBehavior: Clip.antiAlias,
       decoration: ShapeDecoration(
-        color: DashboardColors.of(context).tone2,
+        color: Color.alphaBlend(
+          GroupGlyph.colorOf(context, group.type).withValues(alpha: 0.16),
+          DashboardColors.of(context).tone2,
+        ),
         shape: AppShape.all(widget.radius).copyWith(
           side: ring == null
               ? BorderSide.none

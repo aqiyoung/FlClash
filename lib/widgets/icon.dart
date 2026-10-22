@@ -191,8 +191,9 @@ class GroupMonogram extends StatelessWidget {
 }
 
 /// Stands in for a group the config gave no icon: the glyph of what the group
-/// does. [GroupName.GLOBAL] keeps [GroupMonogram]'s flag, which says where
-/// traffic leaves rather than what the group is.
+/// does, in the hue that kind of group wears. [GroupName.GLOBAL] keeps
+/// [GroupMonogram]'s flag, which says where traffic leaves rather than what the
+/// group is.
 class GroupGlyph extends StatelessWidget {
   const GroupGlyph({
     super.key,
@@ -213,12 +214,30 @@ class GroupGlyph extends StatelessWidget {
     GroupType.Relay => AppGlyphs.link,
   };
 
+  /// Fixed rather than seeded: the kinds have to stay apart whatever colour the
+  /// theme takes. Each is a tone that reads on both a light and a dark surface.
+  static Color colorOf(BuildContext context, GroupType type) {
+    final dark = context.colorScheme.brightness == Brightness.dark;
+    return switch (type) {
+      GroupType.Selector =>
+        dark ? const Color(0xFF8AB4F8) : const Color(0xFF1A63C7),
+      GroupType.URLTest =>
+        dark ? const Color(0xFF7BD8A4) : const Color(0xFF1D8A55),
+      GroupType.Fallback =>
+        dark ? const Color(0xFFF5B85E) : const Color(0xFFB26A0B),
+      GroupType.LoadBalance =>
+        dark ? const Color(0xFFC4A6F7) : const Color(0xFF7A45C9),
+      GroupType.Relay =>
+        dark ? const Color(0xFF6FD3D0) : const Color(0xFF0E8684),
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     if (GroupMonogram.isGlobal(name)) {
       return GroupMonogram(name, exitCountryCode: exitCountryCode);
     }
-    return GlyphIcon(glyphOf(type));
+    return GlyphIcon(glyphOf(type), color: colorOf(context, type));
   }
 }
 
