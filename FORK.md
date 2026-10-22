@@ -8,7 +8,7 @@
 
 - **正式版**（推荐）：[最新 Release](../../releases/latest) 里 `Skyward-` 开头的安装包。`/releases/latest` 永远指向正式版。
 - **测试版**：在 [Releases 列表](../../releases) 里标着 *Pre-release* 的那个，跟上游 `dev` 走，比正式版新，也可能有问题。
-- **预览版**：只有 Android arm64 一个包，每次代码有改动就自动构建（tag 形如 `preview-123`）。它是我们自己装机试新功能用的，比测试版更早、也更糙。
+- **预览版**：只有 Android arm64 一个包，每次代码有改动就自动构建（tag 形如 `preview-<构建号>`）。它是我们自己装机试新功能用的，比测试版更早、也更糙。
 
 Android 一般下 `-arm64-v8a.apk`（绝大多数手机）或 `-armeabi-v7a.apk`（老机器），模拟器下 `-x86_64.apk`。
 

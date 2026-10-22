@@ -97,8 +97,6 @@ jobs:
       # verify step reads the real one back out.
       - name: Choose a preview version
         id: version
-        env:
-          RUN_NUMBER: ${{ github.run_number }}
         run: |
           set -euo pipefail
           base="$(sed -n 's/^version: *\([^+ ]*\).*/\1/p' pubspec.yaml | head -1 | tr -d '\r')"
@@ -106,7 +104,6 @@ jobs:
             echo "::error::expected a three-component version in pubspec.yaml, got '$base'"
             exit 1
           fi
-          version="${base}.$((900000 + RUN_NUMBER))"
           now=$(date -u +%s)
           origin=$(date -u -d 2026-01-01 +%s)
           day_prefix=$(( 20900000 + (now - origin) / 86400 ))
@@ -116,6 +113,11 @@ jobs:
             | sed -n "s/.*${day_prefix}\([0-9][0-9]*\).*/\1/p" | sort -n | tail -1)
           stamp=$(( 10#${highest_stamp:-0} + 1 ))
           build_number=$(( day_prefix * 100 + stamp ))
+          # The build number doubles as the visible version and the tag: it is
+          # the only number here that is unique and monotonic across both ways a
+          # preview starts (a push, which numbers its own runs, and ci.yaml
+          # calling in, which inherits the caller's numbering).
+          version="${base}.${build_number}"
           awk -v v="${base}+${build_number}" '/^version:/{ print "version: " v; next } { print }' \
             pubspec.yaml > pubspec.yaml.new
           mv pubspec.yaml.new pubspec.yaml
@@ -340,11 +342,10 @@ jobs:
           BASE_NUMBER: ${{ steps.version.outputs.build_number }}
           VERSION_CODE: ${{ steps.verify.outputs.version_code }}
           REF: ${{ inputs.ref || github.ref_name }}
-          RUN_NUMBER: ${{ github.run_number }}
           APPLICATION_ID: ${{ inputs.package == 'upstream' && 'com.follow.clash' || 'com.threely.skyward' }}
         run: |
           set -euo pipefail
-          tag="preview-${RUN_NUMBER}"
+          tag="preview-${BASE_NUMBER}"
           commit="$(git rev-parse --short HEAD)"
           (cd dist && sha256sum ./* > SHA256SUMS)
 
@@ -398,7 +399,7 @@ jobs:
           BASE_NUMBER: ${{ steps.version.outputs.build_number }}
           VERSION_CODE: ${{ steps.verify.outputs.version_code }}
           REF: ${{ inputs.ref || github.ref_name }}
-          TAG: preview-${{ github.run_number }}
+          TAG: preview-${{ steps.version.outputs.build_number }}
           APPLICATION_ID: ${{ inputs.package == 'upstream' && 'com.follow.clash' || 'com.threely.skyward' }}
         run: |
           set -euo pipefail
