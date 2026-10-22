@@ -3,6 +3,7 @@ import 'package:skyward/providers/app.dart';
 import 'package:skyward/providers/config.dart';
 import 'package:skyward/providers/database.dart';
 import 'package:skyward/state.dart';
+import 'package:skyward/ui/ui.dart';
 import 'package:skyward/views/config/general.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -97,7 +98,7 @@ void main() {
         isEmpty,
       );
 
-      await tester.tap(find.byType(Switch));
+      await tester.tap(find.byType(CommonSwitch));
       await tester.pumpAndSettle();
 
       final authentication = container
@@ -119,7 +120,7 @@ void main() {
           );
 
       await pumpItem(tester, const AuthenticationItem());
-      await tester.tap(find.byType(Switch));
+      await tester.tap(find.byType(CommonSwitch));
       await tester.pumpAndSettle();
 
       final authentication = container

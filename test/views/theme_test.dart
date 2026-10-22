@@ -575,7 +575,15 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(readTheme().textScale.scale, 1);
-      expect(find.text('100%'), findsOneWidget);
+      // The dock keeps a percentage of its own; this one is the text scale's.
+      final scaling = find.ancestor(
+        of: find.text('Text scaling'),
+        matching: find.byType(Column),
+      );
+      expect(
+        find.descendant(of: scaling.first, matching: find.text('100%')),
+        findsOneWidget,
+      );
     });
   });
 }

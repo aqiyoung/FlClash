@@ -327,8 +327,9 @@ void main() {
       final glass = find.byType(LiquidGlass);
       expect(glass, findsOneWidget);
 
+      // The lensed copy stands over the lens and takes no presses.
       final gesture = await tester.startGesture(
-        tester.getCenter(find.text('b')),
+        tester.getCenter(find.text('b').first),
       );
       await tester.pumpAndSettle();
       expect(glass, findsNWidgets(lifted));
