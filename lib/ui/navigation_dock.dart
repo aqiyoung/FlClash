@@ -1502,7 +1502,9 @@ class _LensContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final textDirection = Directionality.of(context);
     final clipper = _LensClip(rect, textDirection);
-    if (!warp) {
+    // At rest the pane's every effect is scaled to nothing, so it would only
+    // cost a backdrop pass per frame.
+    if (!warp || lift <= 0) {
       return Positioned.fill(
         child: IgnorePointer(
           child: ExcludeSemantics(
@@ -2086,12 +2088,13 @@ class _RenderLensTint extends RenderProxyBox {
   ) {
     final filter = ColorFilter.mode(_color, BlendMode.srcIn);
     if (needsCompositing) {
-      _tint.layer = context.pushColorFilter(
-        offset,
-        filter,
+      final layer = _tint.layer ??= ColorFilterLayer();
+      layer.colorFilter = filter;
+      context.pushLayer(
+        layer,
         (context, offset) =>
             _paintMoved(context, offset, motion, _insideMotion),
-        oldLayer: _tint.layer,
+        offset,
       );
       return;
     }
