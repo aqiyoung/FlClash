@@ -20,6 +20,14 @@ import 'package:flutter_test/flutter_test.dart';
 import '../helpers/test_app.dart';
 import '../helpers/test_profiles.dart';
 
+/// The text scale row, which shares its slider shape with the dock's.
+Finder _textScaleSection() => find
+    .ancestor(of: find.text('Text scaling'), matching: find.byType(Column))
+    .first;
+
+Finder _textScaleSlider() =>
+    find.descendant(of: _textScaleSection(), matching: find.byType(Slider));
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
@@ -529,13 +537,13 @@ void main() {
       await pumpThemeView(tester);
 
       expect(readTheme().textScale.enable, isFalse);
-      expect(tester.widget<Slider>(find.byType(Slider)).onChanged, isNull);
+      expect(tester.widget<Slider>(_textScaleSlider()).onChanged, isNull);
 
       await tester.tap(find.text('Custom'));
       await tester.pumpAndSettle();
 
       expect(readTheme().textScale.enable, isTrue);
-      expect(tester.widget<Slider>(find.byType(Slider)).onChanged, isNotNull);
+      expect(tester.widget<Slider>(_textScaleSlider()).onChanged, isNotNull);
 
       await tester.tap(find.text('Follow system'));
       await tester.pumpAndSettle();
@@ -549,7 +557,7 @@ void main() {
       await tester.pumpAndSettle();
       final before = readTheme().textScale.scale;
 
-      final slider = find.byType(Slider);
+      final slider = _textScaleSlider();
       final gesture = await tester.startGesture(tester.getCenter(slider));
       await gesture.moveBy(const Offset(120, 0));
       await tester.pump();
@@ -576,12 +584,8 @@ void main() {
 
       expect(readTheme().textScale.scale, 1);
       // The dock keeps a percentage of its own; this one is the text scale's.
-      final scaling = find.ancestor(
-        of: find.text('Text scaling'),
-        matching: find.byType(Column),
-      );
       expect(
-        find.descendant(of: scaling.first, matching: find.text('100%')),
+        find.descendant(of: _textScaleSection(), matching: find.text('100%')),
         findsOneWidget,
       );
     });
