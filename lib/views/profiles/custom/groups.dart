@@ -403,7 +403,7 @@ class _ProxyGroupItem extends ConsumerWidget {
           data: const IconThemeData(size: 32),
           child: CommonTargetIcon(
             src: proxyGroup.icon ?? '',
-            fallback: GroupMonogram(proxyGroup.name),
+            fallback: GroupGlyph(name: proxyGroup.name, type: proxyGroup.type),
           ),
         ),
       ),

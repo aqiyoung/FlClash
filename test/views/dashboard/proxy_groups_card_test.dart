@@ -204,7 +204,7 @@ void main() {
     ];
     final inTiles = find.descendant(
       of: find.byType(DashboardBlock),
-      matching: find.byType(GroupMonogram),
+      matching: find.byType(GroupGlyph),
     );
 
     for (final style in ProxiesIconStyle.values) {
@@ -216,7 +216,7 @@ void main() {
       expect(inTiles, findsNWidgets(2), reason: style.name);
 
       await pumpCard(tester, density: DashboardDensity.mobile);
-      expect(find.byType(GroupMonogram), findsNWidgets(2), reason: style.name);
+      expect(find.byType(GroupGlyph), findsNWidgets(2), reason: style.name);
     }
     expect(tester.takeException(), isNull);
   });
