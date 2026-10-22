@@ -131,8 +131,9 @@ class _GroupIconState extends ConsumerState<_GroupIcon> {
           ),
           child: CommonTargetIcon(
             src: group.icon,
-            fallback: GroupMonogram(
-              group.name,
+            fallback: GroupGlyph(
+              name: group.name,
+              type: group.type,
               exitCountryCode: GroupMonogram.isGlobal(group.name)
                   ? _exitCountryCode()
                   : null,

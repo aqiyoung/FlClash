@@ -190,6 +190,38 @@ class GroupMonogram extends StatelessWidget {
   }
 }
 
+/// Stands in for a group the config gave no icon: the glyph of what the group
+/// does. [GroupName.GLOBAL] keeps [GroupMonogram]'s flag, which says where
+/// traffic leaves rather than what the group is.
+class GroupGlyph extends StatelessWidget {
+  const GroupGlyph({
+    super.key,
+    required this.name,
+    required this.type,
+    this.exitCountryCode,
+  });
+
+  final String name;
+  final GroupType type;
+  final String? exitCountryCode;
+
+  static Glyph glyphOf(GroupType type) => switch (type) {
+    GroupType.Selector => AppGlyphs.proxies,
+    GroupType.URLTest => AppGlyphs.speed,
+    GroupType.Fallback => AppGlyphs.layers,
+    GroupType.LoadBalance => AppGlyphs.split,
+    GroupType.Relay => AppGlyphs.link,
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    if (GroupMonogram.isGlobal(name)) {
+      return GroupMonogram(name, exitCountryCode: exitCountryCode);
+    }
+    return GlyphIcon(glyphOf(type));
+  }
+}
+
 class _BytesImage extends StatelessWidget {
   const _BytesImage({
     required this.bytes,
