@@ -303,7 +303,7 @@ abstract final class GroupIconSource {
   /// never names at all. A service wins over the region it sits behind, a
   /// region over the group's kind, and within a list the first match wins.
   static const _serviceKeywords = <String, List<String>>{
-    'youtube.png': ['youtube', '油管', 'yt'],
+    'youtube.png': ['youtube', '油管', 'yt', '哔哩哔哩', 'bilibili'],
     'netflix.png': ['netflix', '奈飞', '网飞', '影视', '国外媒体', '电影'],
     'disney.png': ['disney', '迪士尼'],
     'spotify.png': ['spotify', '音乐'],
@@ -316,13 +316,14 @@ abstract final class GroupIconSource {
     'tiktok.png': ['tiktok', '抖音'],
     'pikpak.png': ['pikpak'],
     'crypto.png': ['crypto', 'binance', 'okx', 'coinbase', '加密', '数字货币'],
-    'adblock.png': ['adblock', 'adguard', '广告', '拦截', '去广告', '屏蔽'],
+    'adblock.png': ['adblock', 'adguard', '广告', '拦截', '去广告', '屏蔽', '净化'],
     'apple.png': ['apple', 'icloud', '苹果', 'itunes'],
     'microsoft.png': ['microsoft', '微软', 'office'],
     'onedrive.png': ['onedrive'],
     'google_search.png': ['google', '谷歌', '搜索', 'gmail'],
     'spark.png': ['fcm', 'gcm', '推送'],
     'steam.png': ['steam', '游戏', 'game'],
+    'area.png': ['巴哈姆特', 'bahamut', '资讯站', '门户'],
   };
 
   /// The kinds of group, by the words a config writes for them: a group that
@@ -545,6 +546,7 @@ abstract final class GroupIconSource {
     'cn': 'CN',
     'china': 'CN',
     '回国': 'CN',
+    '国内': 'CN',
     '卢森堡': 'LU',
     'lu': 'LU',
     'luxembourg': 'LU',

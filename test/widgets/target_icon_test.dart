@@ -253,6 +253,13 @@ void main() {
         ('剩余流量', 'world_map.png'),
         ('🌍 国外媒体', 'netflix.png'),
         ('🎮 游戏', 'steam.png'),
+        ('手动切换', 'rocket.png'),
+        ('巴哈姆特', 'area.png'),
+        ('哔哩哔哩', 'youtube.png'),
+        ('游戏平台', 'steam.png'),
+        ('网易音乐', 'spotify.png'),
+        ('全球直连', 'direct.png'),
+        ('应用净化', 'adblock.png'),
       ]) {
         expect(
           GroupIconSource.of(name: name, icon: ''),
@@ -270,6 +277,7 @@ void main() {
       expect(GroupIconSource.of(name: '韩国', icon: ''), '');
       expect(GroupIconSource.flagOf('韩国'), '🇰🇷');
       expect(GroupIconSource.flagOf('英国 01'), '🇬🇧');
+      expect(GroupIconSource.flagOf('国内媒体'), '🇨🇳');
       expect(GroupIconSource.flagOf('mine'), '');
     });
 
