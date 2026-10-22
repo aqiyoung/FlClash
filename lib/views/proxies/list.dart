@@ -628,7 +628,7 @@ class ListHeader extends ConsumerWidget {
             Flexible(
               child: Row(
                 children: [
-                  _GroupIcon(src: group.icon, name: groupName),
+                  _GroupIcon(group: group),
                   Flexible(child: _GroupSummary(groupName: groupName)),
                 ],
               ),
@@ -694,10 +694,9 @@ List<BoxShadow> _floatingShadows(ColorScheme colorScheme, double lift) {
 }
 
 class _GroupIcon extends ConsumerWidget {
-  const _GroupIcon({required this.src, required this.name});
+  const _GroupIcon({required this.group});
 
-  final String src;
-  final String name;
+  final Group group;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -729,8 +728,8 @@ class _GroupIcon extends ConsumerWidget {
                     color: context.colorScheme.onSurfaceVariant,
                   ),
                   child: CommonTargetIcon(
-                    src: src,
-                    fallback: GroupMonogram(name),
+                    src: group.icon,
+                    fallback: GroupGlyph(name: group.name, type: group.type),
                   ),
                 ),
               ),
@@ -747,7 +746,10 @@ class _GroupIcon extends ConsumerWidget {
                 size: constraints.maxHeight,
                 color: context.colorScheme.primary,
               ),
-              child: CommonTargetIcon(src: src, fallback: GroupMonogram(name)),
+              child: CommonTargetIcon(
+                src: group.icon,
+                fallback: GroupGlyph(name: group.name, type: group.type),
+              ),
             );
           },
         ),

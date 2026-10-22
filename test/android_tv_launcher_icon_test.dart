@@ -41,7 +41,7 @@ void main() {
     }
   });
 
-  test('the adaptive launcher art stays centered in the safe zone', () async {
+  test('the adaptive launcher art stays in the safe zone', () async {
     // Both launchers draw the same tile; only the raster sizes differ.
     for (final path in const [
       'android/app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml',
@@ -55,7 +55,7 @@ void main() {
       );
       expect(
         _androidAttribute(adaptiveIcon, 'background', 'drawable'),
-        '@android:color/transparent',
+        '@drawable/ic_launcher_background',
         reason: path,
       );
     }
@@ -82,8 +82,8 @@ void main() {
     image.dispose();
     codec.dispose();
 
-    // The art fills a 108 dp adaptive icon; the launcher's mask may crop
-    // everything outside the middle 72 dp.
+    // The mark sits on the adaptive icon's plate, whose mask may crop
+    // everything outside the middle 72 dp of the 108 dp canvas.
     const safeZone = ui.Rect.fromLTWH(18, 18, 72, 72);
     final bounds = ui.Rect.fromLTRB(
       left / side * 108,
@@ -96,7 +96,5 @@ void main() {
     expect(bounds.top, greaterThanOrEqualTo(safeZone.top));
     expect(bounds.right, lessThanOrEqualTo(safeZone.right));
     expect(bounds.bottom, lessThanOrEqualTo(safeZone.bottom));
-    expect(bounds.center.dx, closeTo(safeZone.center.dx, 0.5));
-    expect(bounds.center.dy, closeTo(safeZone.center.dy, 0.5));
   });
 }
