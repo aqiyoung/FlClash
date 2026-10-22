@@ -69,10 +69,12 @@ jobs:
           sed -i 's/applicationId = "com.threely.skyward"/applicationId = "com.follow.clash"/' android/app/build.gradle.kts
           grep -n 'applicationId' android/app/build.gradle.kts
 
-      # A probe lands on a phone that already runs a release, so its versionCode
-      # sits above the date-shaped numbers ci.yaml hands out (2,02x,xxxxxx) and
-      # still below Android's 2,100,000,000 ceiling. Going back to a release
-      # then costs one uninstall, which is the price of a throwaway build.
+      # A probe draws its versionCode from the same counter ci.yaml uses
+      # (21<yyMMdd><sequence that day>, read back from today's releases), so it
+      # installs over the release already on the phone and the next day's
+      # release installs over the probe. Numbering probes above the releases
+      # ended with a release refused as a downgrade, which is why the counter is
+      # shared rather than offset.
       #
       # split-per-abi adds the ABI's own offset on top of this base (arm64-v8a
       # is +2000), so the value here is not what the APK ends up carrying; the
@@ -89,7 +91,13 @@ jobs:
             exit 1
           fi
           version="${base}.$((900000 + RUN_NUMBER))"
-          build_number=$((2090000000 + RUN_NUMBER))
+          today=$(date -u +%Y%m%d)
+          stamp_prefix="21${today:2}"
+          titles=$(gh api "repos/${GITHUB_REPOSITORY}/releases?per_page=100" \
+            --jq '[.[] | .name, .body] | .[]' 2>/dev/null || true)
+          highest_stamp=$(printf '%s\n' "$titles" \
+            | sed -n "s/.*${stamp_prefix}\([0-9][0-9]*\).*/\1/p" | sort -n | tail -1)
+          build_number="${stamp_prefix}$(printf '%02d' "$(( 10#${highest_stamp:-0} + 1 ))")"
           awk -v v="${base}+${build_number}" '/^version:/{ print "version: " v; next } { print }' \
             pubspec.yaml > pubspec.yaml.new
           mv pubspec.yaml.new pubspec.yaml
