@@ -171,7 +171,7 @@ gh workflow run ci.yaml -R aqiyoung/Skyward --ref ci \
 
 ### 推送长什么样
 
-跟 `aqiyoung/datbox-android`、`aqiyoung/iptv-app-check` 里那套一样：`curl` 调 `sendMessage`，正文是几个平台的**下载直链**，直链前面挂 `https://gh-proxy.com/` 前缀（release 资产在 GitHub 上，很多人打不开）。因此：
+跟 `aqiyoung/datbox-android`、`aqiyoung/iptv-app-check` 里那套一样：`curl` 调 `sendMessage`，正文先写**这次改了什么**（自该渠道上一个 Release 以来的提交标题，最多 15 条，`ci:` 这类自动化提交不列），再列几个平台的**下载直链**，直链前面挂 `https://gh-proxy.com/` 前缀（release 资产在 GitHub 上，很多人打不开）。Release 说明里放的是完整那份（最多 40 条）。因此：
 
 1. **不发文件本身**。安装包动辄 60 MB+，超过云端 Bot API 的 50 MB 上传上限；发链接就没有这个问题，也不用起自建的 Bot API 服务。
 2. **bot 得能往目标会话发消息**：发群要先把这个 bot 拉进群，`TELEGRAM_CHAT_ID` 用 `-100…` 那种群 id。

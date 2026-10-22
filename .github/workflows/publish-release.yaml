@@ -40,6 +40,42 @@ jobs:
         with:
           ref: ${{ inputs.branch }}
 
+      # What changed since this channel last published. The compare API reads
+      # the range off the tags GitHub already holds, which survives the rebases
+      # that make a local `git log previous..HEAD` range meaningless.
+      - name: Collect the changelog
+        id: changelog
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CHANNEL: ${{ inputs.channel }}
+          TAG: v${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          case "$CHANNEL" in
+            stable) pick='[.[] | select(.prerelease == false)]' ;;
+            *) pick='[.[] | select(.prerelease == true and (.tag_name | startswith("v")))]' ;;
+          esac
+          previous=$(gh api "repos/${GITHUB_REPOSITORY}/releases?per_page=100" \
+            --jq "${pick} | .[].tag_name" 2>/dev/null | grep -vx "$TAG" | head -1 || true)
+          commit="$(git rev-parse HEAD)"
+
+          entries=""
+          if [ -n "$previous" ]; then
+            echo "changelog: $previous...$commit"
+            entries=$(gh api "repos/${GITHUB_REPOSITORY}/compare/${previous}...${commit}" \
+              --jq '.commits[].commit.message | split("\n")[0]' 2>/dev/null \
+              | sed '/^$/d; s/^/- /' | grep -v '^- ci' | tac | head -40 || true)
+          else
+            echo "::notice::no earlier release of this channel; the changelog starts here"
+          fi
+
+          echo "previous=$previous" >> "$GITHUB_OUTPUT"
+          {
+            echo "entries<<CHANGELOG_END"
+            printf '%s\n' "$entries"
+            echo "CHANGELOG_END"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
@@ -55,6 +91,8 @@ jobs:
           VERSION: ${{ inputs.version }}
           BUILD_NUMBER: ${{ inputs.build_number }}
           PRERELEASE: ${{ inputs.prerelease }}
+          PREVIOUS: ${{ steps.changelog.outputs.previous }}
+          CHANGELOG: ${{ steps.changelog.outputs.entries }}
         run: |
           set -euo pipefail
           shopt -s nullglob
@@ -95,6 +133,12 @@ jobs:
             echo "- 构建号：\`${BUILD_NUMBER}\`（APK 的 versionCode）"
             echo "- 提交：[\`${commit}\`](https://github.com/${GITHUB_REPOSITORY}/commit/${commit})"
             echo "- 构建时间：$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            if [ -n "$PREVIOUS" ]; then
+              echo
+              echo "**自 \`${PREVIOUS}\` 以来的改动**"
+              echo
+              printf '%s\n' "$CHANGELOG"
+            fi
             echo
             echo "签名用的是本仓库自己的证书，与上游官方构建不同，所以：**装过其它版本（官方版或本仓库更早的构建）必须先卸载一次**，之后就能直接覆盖升级。"
             echo
@@ -153,6 +197,8 @@ jobs:
           TAG_URL: ${{ steps.meta.outputs.tag_url }}
           VERSION: ${{ inputs.version }}
           CHANNEL: ${{ inputs.channel }}
+          PREVIOUS: ${{ steps.changelog.outputs.previous }}
+          CHANGELOG: ${{ steps.changelog.outputs.entries }}
         run: |
           set -euo pipefail
           shopt -s nullglob
@@ -170,6 +216,14 @@ jobs:
           {
             echo "📦 Skyward ${VERSION}（${label}）构建成功"
             echo
+            # Telegram cuts a message at 4096 characters, so the changelog is
+            # capped here and the release page carries the rest.
+            if [ -n "$PREVIOUS" ] && [ -n "$CHANGELOG" ]; then
+              echo "自 \`${PREVIOUS}\` 以来："
+              printf '%s\n' "$CHANGELOG" | awk 'NR<=15'
+              [ "$(printf '%s\n' "$CHANGELOG" | wc -l)" -gt 15 ] && echo "…（其余见 Release 页）"
+              echo
+            fi
             for f in dist/*; do
               name="$(basename "$f")"
               [ "$name" = SHA256SUMS ] && continue
