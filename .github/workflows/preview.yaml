@@ -1,13 +1,19 @@
-name: probe
+name: preview
 
-# One platform, no tests: the fast loop for putting a change on a phone. The
-# release is a prerelease under a `probe-` tag, so the version counter in
+# The preview channel: one platform, no tests, the fast loop for putting a
+# change on a phone. Every push to `beta` rebuilds it, and ci.yaml calls it for
+# `channel=preview` right after a manual upstream sync.
+#
+# The release is a prerelease under a `preview-` tag, so the version counter in
 # ci.yaml -- which reads `v*` tags and release titles -- never counts it, and
 # the in-app update check, which looks at the latest release, never offers one.
-#
-# Anything meant to reach users goes through ci.yaml instead.
+# A preview is not a beta and not a release: the beta channel publishes from the
+# same branch through ci.yaml once the preview has settled.
 
 on:
+  push:
+    branches:
+      - beta
   workflow_dispatch:
     inputs:
       ref:
@@ -29,10 +35,20 @@ on:
           - ours
           - upstream
         default: ours
+  workflow_call:
+    inputs:
+      ref:
+        description: Branch or commit to build
+        type: string
+        default: beta
+      package:
+        description: 'ours = com.threely.skyward, upstream = com.follow.clash (diagnostic only)'
+        type: string
+        default: ours
 
-# A probe is expendable: a newer one supersedes the one still building.
+# A preview is expendable: a newer one supersedes the one still building.
 concurrency:
-  group: probe-${{ inputs.ref }}
+  group: preview-${{ inputs.ref || github.ref_name }}
   cancel-in-progress: true
 
 permissions:
@@ -44,7 +60,7 @@ env:
   NDK_VERSION: r28c
 
 jobs:
-  probe:
+  preview:
     name: Android arm64-v8a
     runs-on: ubuntu-latest
     timeout-minutes: 120
@@ -56,7 +72,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          ref: ${{ inputs.ref }}
+          ref: ${{ inputs.ref || github.ref_name }}
           submodules: recursive
 
       # Diagnostic only: the Tencent engine's verdict may follow the package
@@ -69,17 +85,17 @@ jobs:
           sed -i 's/applicationId = "com.threely.skyward"/applicationId = "com.follow.clash"/' android/app/build.gradle.kts
           grep -n 'applicationId' android/app/build.gradle.kts
 
-      # A probe draws its versionCode from the same counter ci.yaml uses --
+      # A preview draws its versionCode from the same counter ci.yaml uses --
       # 2,090,000,000 plus a hundred per day since 2026-01-01 plus the sequence
       # that day, read back from the releases already out -- so it installs over
       # the release on the phone and the next release installs over it.
-      # Numbering probes above the releases ended with a release refused as a
+      # Numbering previews above the releases ended with a release refused as a
       # downgrade, which is why the counter is shared rather than offset.
       #
       # split-per-abi adds the ABI's own offset on top of this base (arm64-v8a
       # is +2000), so the value here is not what the APK ends up carrying; the
       # verify step reads the real one back out.
-      - name: Choose a probe version
+      - name: Choose a preview version
         id: version
         env:
           RUN_NUMBER: ${{ github.run_number }}
@@ -176,7 +192,7 @@ jobs:
       - name: Set up Rust cache
         uses: Swatinem/rust-cache@v2
         with:
-          key: probe-android-arm64
+          key: preview-android-arm64
           workspaces: services/helper
           cache-directories: .dart_tool/hooks_runner
 
@@ -225,7 +241,7 @@ jobs:
         env:
           ANDROID_NDK_HOME: ${{ steps.ndk.outputs.ndk-path }}
           APP_VERSION_NAME: ${{ steps.version.outputs.version }}
-        run: dart setup.dart android --env ${{ inputs.env }} --arch arm64 -v
+        run: dart setup.dart android --env ${{ inputs.env || 'pre' }} --arch arm64 -v
 
       - name: Name the artifact after our version
         env:
@@ -259,7 +275,7 @@ jobs:
 
       # `--arch arm64` has to actually limit the APK, not merely prefer arm64: a
       # package carrying the x86 libraries is not the thing being tested.
-      - name: Verify the probe
+      - name: Verify the preview
         id: verify
         env:
           VERSION: ${{ steps.version.outputs.version }}
@@ -310,30 +326,30 @@ jobs:
             exit 1
           }
 
-      - name: Upload the probe
+      - name: Upload the preview
         uses: actions/upload-artifact@v4
         with:
-          name: probe-android-arm64
+          name: preview-android-arm64
           path: ./dist
           if-no-files-found: error
 
-      - name: Publish the probe
+      - name: Publish the preview
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.version.outputs.version }}
           BASE_NUMBER: ${{ steps.version.outputs.build_number }}
           VERSION_CODE: ${{ steps.verify.outputs.version_code }}
-          REF: ${{ inputs.ref }}
+          REF: ${{ inputs.ref || github.ref_name }}
           RUN_NUMBER: ${{ github.run_number }}
           APPLICATION_ID: ${{ inputs.package == 'upstream' && 'com.follow.clash' || 'com.threely.skyward' }}
         run: |
           set -euo pipefail
-          tag="probe-${RUN_NUMBER}"
+          tag="preview-${RUN_NUMBER}"
           commit="$(git rev-parse --short HEAD)"
           (cd dist && sha256sum ./* > SHA256SUMS)
 
-          cat > probe-notes.md <<EOF
-          Skyward ${VERSION} 测试包，只含 Android arm64-v8a。
+          cat > preview-notes.md <<EOF
+          Skyward ${VERSION} 预览版，只含 Android arm64-v8a。
           EOF
           {
             echo
@@ -345,16 +361,33 @@ jobs:
             echo "- 构建日志：${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
             echo
             echo "签名与本仓库正式版相同，和正式版共用同一套递增的构建号，可以直接互相覆盖安装。这不是正式发布。"
-          } >> probe-notes.md
+          } >> preview-notes.md
 
           # A retried run reuses its number, so the tag may already exist.
           gh release delete "$tag" --repo "$GITHUB_REPOSITORY" --yes --cleanup-tag 2>/dev/null || true
           gh release create "$tag" dist/* \
             --repo "$GITHUB_REPOSITORY" \
             --target "$REF" \
-            --title "Skyward ${VERSION}（测试包）" \
-            --notes-file probe-notes.md \
+            --title "Skyward ${VERSION}（预览版）" \
+            --notes-file preview-notes.md \
             --prerelease
+
+      # Every push to `beta` adds one, so the list would otherwise fill with
+      # them: keep the newest few and drop the rest together with their tags.
+      - name: Prune old previews
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          gh release list --repo "$GITHUB_REPOSITORY" --limit 100 \
+            --json tagName,createdAt,isPrerelease \
+            --jq '[.[] | select(.isPrerelease and (.tagName | startswith("preview-")))]
+                  | sort_by(.createdAt) | reverse | .[5:] | .[].tagName' \
+          | while read -r tag; do
+              [ -z "$tag" ] && continue
+              echo "deleting $tag"
+              gh release delete "$tag" --repo "$GITHUB_REPOSITORY" --yes --cleanup-tag || true
+            done
 
       # Same shape as the release announcement: a plain sendMessage carrying
       # links, because the APK is far over the cloud Bot API's 50 MB upload cap.
@@ -364,8 +397,8 @@ jobs:
           VERSION: ${{ steps.version.outputs.version }}
           BASE_NUMBER: ${{ steps.version.outputs.build_number }}
           VERSION_CODE: ${{ steps.verify.outputs.version_code }}
-          REF: ${{ inputs.ref }}
-          TAG: probe-${{ github.run_number }}
+          REF: ${{ inputs.ref || github.ref_name }}
+          TAG: preview-${{ github.run_number }}
           APPLICATION_ID: ${{ inputs.package == 'upstream' && 'com.follow.clash' || 'com.threely.skyward' }}
         run: |
           set -euo pipefail
@@ -375,7 +408,7 @@ jobs:
           prefix="https://gh-proxy.com/https://github.com/${GITHUB_REPOSITORY}/releases/download/${TAG}/"
 
           {
-            echo "🧪 Skyward ${VERSION}（测试包）构建成功"
+            echo "🧪 Skyward ${VERSION}（预览版）构建成功"
             echo
             for f in dist/*; do
               name="$(basename "$f")"
@@ -388,7 +421,7 @@ jobs:
             echo "全部文件：https://github.com/${GITHUB_REPOSITORY}/releases/tag/${TAG}"
             echo "构建日志：${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
             echo
-            echo "（测试包，不是正式发布：签名与正式版相同，可直接覆盖安装；装回正式版要先卸载）"
+            echo "（预览版，不是正式发布：签名与正式版相同，可直接覆盖安装；装回正式版要先卸载）"
           } > /tmp/msg.txt
 
           cat /tmp/msg.txt
