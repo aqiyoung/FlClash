@@ -118,7 +118,8 @@ jobs:
       # monotone or Android refuses to install one build over another. The fourth
       # component -- the revision we iterate -- cannot go in there (pub refuses a
       # four-part version, and the desktop packaging configs want three), so it
-      # reaches the app through APP_VERSION and stays out of versionName.
+      # reaches the app through APP_VERSION and, since it is what Android's own
+      # app info shows, through versionName as well.
       - name: Inject our version
         shell: bash
         env:
@@ -143,7 +144,7 @@ jobs:
             pubspec.yaml > pubspec.yaml.new
           mv pubspec.yaml.new pubspec.yaml
           echo "we build as:  $(grep '^version:' pubspec.yaml)"
-          echo "android versionName: ${base}; the app reports ${VERSION}"
+          echo "versionName and the reported version: ${VERSION}"
 
       - name: Set up Rust (Windows arm64)
         if: matrix.os == 'windows-11-arm'
@@ -295,9 +296,8 @@ jobs:
       - name: Build
         env:
           ANDROID_NDK_HOME: ${{ steps.ndk.outputs.ndk-path }}
-          # The version the app reports in-app; Android's versionName keeps only
-          # its first three components. Harmless for the other platforms, which
-          # take the pubspec's three.
+          # The version the app reports in-app and Android's versionName carries.
+          # Harmless for the other platforms, which take the pubspec's three.
           APP_VERSION_NAME: ${{ inputs.version }}
         run: dart setup.dart ${{ matrix.platform }} --env ${{ inputs.env }} -v
 
@@ -360,7 +360,6 @@ jobs:
         run: |
           set -euo pipefail
           build_tools="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)"
-          base_version="${VERSION%.*}"
           for apk in dist/*.apk; do
             echo "== $(basename "$apk")"
             "$build_tools/aapt2" dump badging "$apk" | sed -n '1p'
@@ -378,8 +377,11 @@ jobs:
               echo "::error::$(basename "$apk") is not signed with our certificate (expected SHA-256 $CERT_SHA256)"
               exit 1
             fi
-            if ! "$build_tools/aapt2" dump badging "$apk" | grep -q "versionName='${base_version}'"; then
-              echo "::error::$(basename "$apk") does not carry ${base_version} as its versionName"
+            # The whole four-part version, not just upstream's three: the app
+            # and Android both report this string, and a build that quietly
+            # dropped the revision would pass a prefix check.
+            if ! "$build_tools/aapt2" dump badging "$apk" | grep -q "versionName='${VERSION}'"; then
+              echo "::error::$(basename "$apk") does not carry ${VERSION} as its versionName"
               exit 1
             fi
           done
