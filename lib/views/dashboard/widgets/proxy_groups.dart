@@ -113,7 +113,7 @@ class _GroupIconState extends ConsumerState<_GroupIcon> {
       clipBehavior: Clip.antiAlias,
       decoration: ShapeDecoration(
         color: Color.alphaBlend(
-          GroupGlyph.colorOf(context, group.type).withValues(alpha: 0.16),
+          GroupBadge.colorOf(context, group.type).withValues(alpha: 0.16),
           DashboardColors.of(context).tone2,
         ),
         shape: AppShape.all(widget.radius).copyWith(
@@ -133,14 +133,9 @@ class _GroupIconState extends ConsumerState<_GroupIcon> {
             color: colorScheme.onSurfaceVariant,
           ),
           child: CommonTargetIcon(
-            src: GroupIconSource.of(
+            src: GroupIconSource.of(name: group.name, icon: group.icon),
+            fallback: GroupBadge(
               name: group.name,
-              type: group.type,
-              icon: group.icon,
-            ),
-            fallback: GroupGlyph(
-              name: group.name,
-              type: group.type,
               exitCountryCode: GroupMonogram.isGlobal(group.name)
                   ? _exitCountryCode()
                   : null,

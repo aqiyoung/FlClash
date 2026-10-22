@@ -717,7 +717,7 @@ class _GroupIcon extends ConsumerWidget {
                 padding: EdgeInsets.all(6.ap(context)),
                 decoration: ShapeDecoration(
                   color: Color.alphaBlend(
-                    GroupGlyph.colorOf(
+                    GroupBadge.colorOf(
                       context,
                       group.type,
                     ).withValues(alpha: 0.14),
@@ -732,12 +732,8 @@ class _GroupIcon extends ConsumerWidget {
                     color: context.colorScheme.onSurfaceVariant,
                   ),
                   child: CommonTargetIcon(
-                    src: GroupIconSource.of(
-                      name: group.name,
-                      type: group.type,
-                      icon: group.icon,
-                    ),
-                    fallback: GroupGlyph(name: group.name, type: group.type),
+                    src: GroupIconSource.of(name: group.name, icon: group.icon),
+                    fallback: GroupBadge(name: group.name),
                   ),
                 ),
               ),
@@ -755,12 +751,8 @@ class _GroupIcon extends ConsumerWidget {
                 color: context.colorScheme.primary,
               ),
               child: CommonTargetIcon(
-                src: GroupIconSource.of(
-                  name: group.name,
-                  type: group.type,
-                  icon: group.icon,
-                ),
-                fallback: GroupGlyph(name: group.name, type: group.type),
+                src: GroupIconSource.of(name: group.name, icon: group.icon),
+                fallback: GroupBadge(name: group.name),
               ),
             );
           },
