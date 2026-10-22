@@ -14,6 +14,11 @@ on:
   push:
     branches:
       - beta
+    # A preview exists to put app code on a phone; a docs or automation commit
+    # has nothing to install.
+    paths-ignore:
+      - '.github/**'
+      - '**/*.md'
   workflow_dispatch:
     inputs:
       ref:
@@ -128,6 +133,37 @@ jobs:
           echo "version=${version}" >> "$GITHUB_OUTPUT"
           echo "build_number=${build_number}" >> "$GITHUB_OUTPUT"
           echo "building ${version} from ${base}, base versionCode ${build_number}"
+
+      # What changed since the previous preview, so the phone shows the point of
+      # the build rather than a bare version number.
+      - name: Collect the changelog
+        id: changelog
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: preview-${{ steps.version.outputs.build_number }}
+        run: |
+          set -euo pipefail
+          previous=$(gh api "repos/${GITHUB_REPOSITORY}/releases?per_page=100" \
+            --jq '[.[] | select(.tag_name | startswith("preview-"))] | .[].tag_name' 2>/dev/null \
+            | grep -vx "$TAG" | head -1 || true)
+          commit="$(git rev-parse HEAD)"
+
+          entries=""
+          if [ -n "$previous" ]; then
+            echo "changelog: $previous...$commit"
+            entries=$(gh api "repos/${GITHUB_REPOSITORY}/compare/${previous}...${commit}" \
+              --jq '.commits[].commit.message | split("\n")[0]' 2>/dev/null \
+              | sed '/^$/d; s/^/- /' | grep -v '^- ci' | tac | awk 'NR<=40' || true)
+          else
+            echo "::notice::this is the first preview; no changelog range"
+          fi
+
+          echo "previous=$previous" >> "$GITHUB_OUTPUT"
+          {
+            echo "entries<<CHANGELOG_END"
+            printf '%s\n' "$entries"
+            echo "CHANGELOG_END"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Set up Android release signing
         env:
@@ -347,6 +383,8 @@ jobs:
           VERSION_CODE: ${{ steps.verify.outputs.version_code }}
           REF: ${{ inputs.ref || github.ref_name }}
           APPLICATION_ID: ${{ inputs.package == 'upstream' && 'com.follow.clash' || 'com.threely.skyward' }}
+          PREVIOUS: ${{ steps.changelog.outputs.previous }}
+          CHANGELOG: ${{ steps.changelog.outputs.entries }}
         run: |
           set -euo pipefail
           tag="preview-${BASE_NUMBER}"
@@ -364,6 +402,12 @@ jobs:
             echo "- 构建号：\`${BASE_NUMBER}\`（arm64-v8a APK 实际为 \`${VERSION_CODE}\`，含 ABI 偏移）"
             echo "- 提交：[\`${commit}\`](https://github.com/${GITHUB_REPOSITORY}/commit/${commit})"
             echo "- 构建日志：${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+            if [ -n "$PREVIOUS" ] && [ -n "$CHANGELOG" ]; then
+              echo
+              echo "**自 \`${PREVIOUS}\` 以来**"
+              echo
+              printf '%s\n' "$CHANGELOG"
+            fi
             echo
             echo "签名与本仓库正式版相同，和正式版共用同一套递增的构建号，可以直接互相覆盖安装。这不是正式发布。"
           } >> preview-notes.md
@@ -405,6 +449,8 @@ jobs:
           REF: ${{ inputs.ref || github.ref_name }}
           TAG: preview-${{ steps.version.outputs.build_number }}
           APPLICATION_ID: ${{ inputs.package == 'upstream' && 'com.follow.clash' || 'com.threely.skyward' }}
+          PREVIOUS: ${{ steps.changelog.outputs.previous }}
+          CHANGELOG: ${{ steps.changelog.outputs.entries }}
         run: |
           set -euo pipefail
           shopt -s nullglob
@@ -415,6 +461,14 @@ jobs:
           {
             echo "🧪 Skyward ${VERSION}（预览版）构建成功"
             echo
+            # Telegram cuts a message at 4096 characters, so the changelog is
+            # capped here and the release page carries the rest.
+            if [ -n "$PREVIOUS" ] && [ -n "$CHANGELOG" ]; then
+              echo "自 \`${PREVIOUS}\` 以来："
+              printf '%s\n' "$CHANGELOG" | awk 'NR<=10'
+              [ "$(printf '%s\n' "$CHANGELOG" | wc -l)" -gt 10 ] && echo "…（其余见 Release 页）"
+              echo
+            fi
             for f in dist/*; do
               name="$(basename "$f")"
               [ "$name" = SHA256SUMS ] && continue
