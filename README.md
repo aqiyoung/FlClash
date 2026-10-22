@@ -71,7 +71,7 @@ APK 签名证书（SHA-256）：`04:89:68:C1:72:8E:0E:2E:27:E7:04:D6:B3:01:74:27
 
 | 渠道 | 分支 | 怎么发 | Release |
 | --- | --- | --- | --- |
-| 预览版 | `beta` | 每次推 `beta` 自动构建（`preview.yaml`），也可以手动 `channel=preview` | prerelease，tag `preview-<run>`，只发 Android arm64，不占版本号 |
+| 预览版 | `beta` | 每次推 `beta` 自动构建（`preview.yaml`），也可以手动 `channel=preview` | prerelease，tag `preview-<构建号>`，只发 Android arm64，不占版本号 |
 | 测试版 | `beta` | 手动 `channel=beta -f publish=true` | prerelease，tag `v<版本>`，7 个平台 |
 | 正式版 | `main` | 手动 `channel=stable -f promote=true -f publish=true` | 标记 Latest，tag `v<版本>`，7 个平台 |
 
@@ -84,7 +84,7 @@ App 内更新检查读的是 `/releases/latest`（只挑正式版），所以预
 ```
 预览版（每次推 beta，或手动 channel=preview）
   └─ build    Android arm64 单架构，不跑测试
-  └─ release  tag preview-<run> → prerelease → 推 TG（保留最近 5 个）
+  └─ release  tag preview-<构建号> → prerelease → 推 TG（保留最近 5 个）
 
 测试版（手动 channel=beta）
   └─ [sync]   beta ← 上游 dev：只有 -f sync=true 才做，rebase 我们的提交
