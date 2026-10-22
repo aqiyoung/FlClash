@@ -244,7 +244,7 @@ void main() {
       expect(GroupIconSource.of(name: '漏网之鱼', icon: ''), GroupIconSource.logo);
       expect(
         GroupIconSource.of(name: '美国', icon: own),
-        '${_groupDir}america_map.png',
+        '${_groupDir}united_states.png',
       );
     });
 
