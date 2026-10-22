@@ -1,7 +1,7 @@
 name: skyward
 description: A multi-platform proxy client based on ClashMeta, simple and easy to use, open-source and ad-free.
 publish_to: 'none'
-version: 0.9.2+2026102101
+version: 1.0.0+2026102201
 environment:
   sdk: '>=3.10.0 <4.0.0'
 
@@ -100,6 +100,7 @@ flutter:
     - assets/fonts/
     - assets/images/
     - assets/images/services/
+    - assets/images/groups/
     - core/Clash.Meta/component/ca/ca-certificates.crt
     - path: assets/images/tray/unix/
       platforms: [ linux, macos ]
