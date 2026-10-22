@@ -159,6 +159,8 @@ class LinkReceiver {
       return Uri.splitQueryString(utf8.decode(bytes))['link']?.trim();
     } on FormatException {
       return null;
+    } on ArgumentError {
+      return null;
     }
   }
 

@@ -31,22 +31,6 @@ class _FakeProxy implements Proxy {
   Future<bool> stopProxy() => _call('stop');
 }
 
-class _FakeStore implements SystemProxyStore {
-  _FakeStore(this.applied, this.calls);
-
-  bool applied;
-  final List<String> calls;
-
-  @override
-  Future<bool> read() async => applied;
-
-  @override
-  Future<void> write(bool applied) async {
-    calls.add('mark $applied');
-    this.applied = applied;
-  }
-}
-
 ProxyState _state({required bool isStart}) {
   return ProxyState(
     isStart: isStart,
@@ -56,24 +40,20 @@ ProxyState _state({required bool isStart}) {
   );
 }
 
-SystemProxyQueue _queue(_FakeProxy proxy, {bool applied = false}) {
-  return SystemProxyQueue(proxy, store: _FakeStore(applied, proxy.calls));
-}
-
 void main() {
   test('applies changes in the order they come', () async {
     final proxy = _FakeProxy();
-    final queue = _queue(proxy);
+    final queue = SystemProxyQueue(proxy);
 
     unawaited(queue.apply(_state(isStart: true)));
     await queue.apply(_state(isStart: false));
 
-    expect(proxy.calls, ['mark true', 'start 7890', 'stop', 'mark false']);
+    expect(proxy.calls, ['start 7890', 'stop']);
   });
 
   test('close stops last and drops the starts queued before it', () async {
     final proxy = _FakeProxy();
-    final queue = _queue(proxy);
+    final queue = SystemProxyQueue(proxy);
     final inFlight = Completer<bool>();
     proxy.held = inFlight.future;
 
@@ -82,29 +62,29 @@ void main() {
     unawaited(queue.apply(_state(isStart: true)));
     final closed = queue.close();
     await pumpEventQueue();
-    expect(proxy.calls, ['mark true', 'start 7890']);
+    expect(proxy.calls, ['start 7890']);
 
     inFlight.complete(true);
     await closed;
     await queue.apply(_state(isStart: true));
 
-    expect(proxy.calls, ['mark true', 'start 7890', 'stop', 'mark false']);
+    expect(proxy.calls, ['start 7890', 'stop']);
   });
 
   test('a failing call does not stall the queue', () async {
     final proxy = _FakeProxy();
-    final queue = _queue(proxy);
+    final queue = SystemProxyQueue(proxy);
     proxy.failure = StateError('channel gone');
 
     await queue.apply(_state(isStart: true));
     await queue.apply(_state(isStart: false));
 
-    expect(proxy.calls, ['mark true', 'start 7890', 'stop', 'mark false']);
+    expect(proxy.calls, ['start 7890', 'stop']);
   });
 
   test('leaves a proxy it never set alone', () async {
     final proxy = _FakeProxy();
-    final queue = _queue(proxy);
+    final queue = SystemProxyQueue(proxy);
 
     await queue.apply(_state(isStart: false));
     await queue.close();
@@ -112,27 +92,16 @@ void main() {
     expect(proxy.calls, isEmpty);
   });
 
-  test('clears a proxy an earlier run left on', () async {
+  test('tries a failed stop again on close', () async {
     final proxy = _FakeProxy();
-    final queue = _queue(proxy, applied: true);
+    final queue = SystemProxyQueue(proxy);
 
+    await queue.apply(_state(isStart: true));
+    proxy.held = Future.value(false);
     await queue.apply(_state(isStart: false));
     await queue.close();
+    await queue.close();
 
-    expect(proxy.calls, ['stop', 'mark false']);
+    expect(proxy.calls, ['start 7890', 'stop', 'stop']);
   });
-
-  test(
-    'keeps the mark when a stop fails so the next one tries again',
-    () async {
-      final proxy = _FakeProxy();
-      final queue = _queue(proxy, applied: true);
-      proxy.held = Future.value(false);
-
-      await queue.apply(_state(isStart: false));
-      await queue.close();
-
-      expect(proxy.calls, ['stop', 'stop', 'mark false']);
-    },
-  );
 }

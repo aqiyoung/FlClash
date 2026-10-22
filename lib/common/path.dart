@@ -15,15 +15,14 @@ class AppPath {
 
   @visibleForTesting
   static Future<Directory> Function() supportDirectory =
-      getApplicationSupportDirectory;
+      _resolveSupportDirectory;
 
   @visibleForTesting
   static Future<Directory> Function() temporaryDirectory =
       getTemporaryDirectory;
 
   @visibleForTesting
-  static Future<Directory> Function() cacheDirectory =
-      getApplicationCacheDirectory;
+  static Future<Directory> Function() cacheDirectory = _resolveCacheDirectory;
 
   @visibleForTesting
   static Future<Directory?> Function() downloadDirectory =
@@ -166,6 +165,51 @@ class AppPath {
 }
 
 final appPath = AppPath();
+
+/// Adopts the `com.follow\clash` directory that FlClash's CompanyName and
+/// ProductName pair produced, so the rename costs nobody their profiles.
+Future<Directory> adoptWindowsDataDirectory(String roamingAppData) async {
+  final directory = Directory(join(roamingAppData, appName));
+  if (directory.existsSync()) {
+    return directory;
+  }
+  final legacy = Directory(join(roamingAppData, 'com.follow', 'clash'));
+  if (!legacy.existsSync()) {
+    await directory.create(recursive: true);
+    return directory;
+  }
+  try {
+    return await legacy.rename(directory.path);
+  } on FileSystemException {
+    return legacy;
+  }
+}
+
+String? _windowsBasePath(String variable) {
+  final basePath = Platform.environment[variable];
+  if (!system.isWindows || basePath == null || basePath.isEmpty) {
+    return null;
+  }
+  return basePath;
+}
+
+Future<Directory> _resolveSupportDirectory() async {
+  final basePath = _windowsBasePath('APPDATA');
+  if (basePath == null) {
+    return getApplicationSupportDirectory();
+  }
+  return adoptWindowsDataDirectory(basePath);
+}
+
+Future<Directory> _resolveCacheDirectory() async {
+  final basePath = _windowsBasePath('LOCALAPPDATA');
+  if (basePath == null) {
+    return getApplicationCacheDirectory();
+  }
+  final directory = Directory(join(basePath, appName));
+  await directory.create(recursive: true);
+  return directory;
+}
 
 String getBackupFileName() {
   return '${appName}_backup_${DateTime.now().show}.zip';

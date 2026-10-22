@@ -49,6 +49,7 @@ Android 一般下 `-arm64-v8a.apk`（绝大多数手机）或 `-armeabi-v7a.apk`
 | 用量进度 | 仪表盘「配置」卡片的用量进度由上游的 M3 波浪线改成直线（改 `lib/views/dashboard/widgets/profiles.dart`） |
 | README | 下载徽章、下载按钮、官网链接、F-Droid 仓库、Homebrew tap、TG 频道都换成本仓库 / [@sanyeinfo](https://t.me/sanyeinfo)——上游那些入口装出来的是另一套签名的包 |
 | dock 玻璃 | 主题设置里开「液态玻璃」后，dock 的观感更贴 iOS 27：tint 不再被 `contrast` 加厚（更透）、镜片折射与色散加深、顶底高光与两侧暗线更明显、选中底板由副色改成中性色（在 `lib/ui/liquid_glass.dart` 与 `lib/ui/navigation_dock.dart`，每次同步上游时留意这两处冲突） |
+| Windows 安装 | 安装包不再沿用上游的 AppId，装进 `Program Files\Skyward`、开始菜单与桌面快捷方式用自己的图标；数据目录由 `%APPDATA%\com.follow\clash` 改成 `%APPDATA%\Skyward`，旧目录在首次启动时整体改名过去，配置不丢 |
 
 另外两件不在代码里的事：
 
@@ -81,6 +82,10 @@ Android 一般下 `-arm64-v8a.apk`（绝大多数手机）或 `-armeabi-v7a.apk`
 macOS 产物没有 Apple 开发者证书，是**未签名**的，首次打开要在「系统设置 → 隐私与安全性」里放行。
 
 维护细节（分支结构、版本号规则、晋升、冲突处理、需要的 Secrets）写在 [`ci` 分支的 README](../../blob/ci/README.md)。
+
+### Windows 上换过身份，旧的装过一次要卸
+
+1.0.0.3 及之前的 Windows 安装包沿用了上游的 AppId，会装进旧的 FlClash 目录、也复用它的快捷方式；从 1.0.0.4 起安装包有自己的 AppId，装进 `Program Files\Skyward`。所以 Windows 上如果装过 1.0.0.3 或更早的版本，先在「设置 → 应用」里把旧的 Skyward / FlClash 条目卸载一次，再装新版，否则两个条目会同时存在。配置目录会自动迁移，不用手动搬。
 
 ## License
 

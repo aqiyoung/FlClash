@@ -17,7 +17,11 @@ void main() {
     rowTaps = 0;
   });
 
-  Future<void> pump(WidgetTester tester, {bool glass = false}) async {
+  Future<void> pump(
+    WidgetTester tester, {
+    bool glass = false,
+    bool rowFlips = false,
+  }) async {
     await tester.pumpWidget(
       TestApp(
         child: LiquidGlassScope(
@@ -27,7 +31,12 @@ void main() {
               builder: (context, setState) => ListView(
                 children: [
                   InkWell(
-                    onTap: () => rowTaps++,
+                    onTap: () {
+                      rowTaps++;
+                      if (rowFlips) {
+                        setState(() => value = !value);
+                      }
+                    },
                     onHighlightChanged: highlights.add,
                     child: Padding(
                       padding: const EdgeInsets.all(16),
@@ -112,6 +121,55 @@ void main() {
 
     expect(value, isTrue);
     expect(find.byType(LiquidGlass), findsNothing);
+  });
+
+  testWidgets('on glass a tap carries the lens across before it settles', (
+    tester,
+  ) async {
+    await pump(tester, glass: true);
+
+    await tester.tap(switchFinder());
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 150));
+
+    expect(value, isTrue);
+    expect(
+      find.descendant(of: switchFinder(), matching: find.byType(LiquidGlass)),
+      findsOneWidget,
+    );
+    expect(
+      tester.getSize(thumbFinder()).height,
+      greaterThan(CommonSwitch.trackHeight),
+    );
+
+    await tester.pumpAndSettle();
+
+    expect(find.byType(LiquidGlass), findsNothing);
+    expect(tester.getSize(thumbFinder()), const Size.square(24));
+  });
+
+  testWidgets('on glass a row that flips the switch carries the lens too', (
+    tester,
+  ) async {
+    await pump(tester, glass: true, rowFlips: true);
+
+    await tester.tapAt(
+      tester.getTopLeft(find.byType(InkWell).first) + const Offset(24, 24),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 150));
+
+    expect(rowTaps, 1);
+    expect(value, isTrue);
+    expect(
+      find.descendant(of: switchFinder(), matching: find.byType(LiquidGlass)),
+      findsOneWidget,
+    );
+
+    await tester.pumpAndSettle();
+
+    expect(find.byType(LiquidGlass), findsNothing);
+    expect(tester.getSize(thumbFinder()), const Size.square(24));
   });
 
   testWidgets('dragging the thumb across flips the switch', (tester) async {

@@ -489,7 +489,7 @@ void main() {
     final gesture = await tester.startGesture(
       tester.getCenter(find.byType(SortHandle).first),
     );
-    await tester.pump(kPressTimeout);
+    await tester.pump(kLongPressTimeout + const Duration(milliseconds: 50));
     await gesture.moveTo(
       Offset(tester.getCenter(find.byType(SortHandle).first).dx, to.dy + 100),
     );

@@ -6,6 +6,7 @@ import 'package:skyward/common/common.dart';
 import 'package:skyward/common/window.dart';
 import 'package:skyward/bootstrap.dart';
 import 'package:skyward/common/system_dns.dart';
+import 'package:skyward/enum/enum.dart';
 import 'package:skyward/l10n/l10n.dart';
 import 'package:skyward/manager/hotkey_manager.dart';
 import 'package:skyward/manager/manager.dart';
@@ -152,15 +153,17 @@ class ApplicationState extends ConsumerState<Application>
     commonPrint.log('connectivityChanged ${results.toString()}');
     unawaited(systemDnsCoordinator?.resync() ?? Future.value());
     unawaited(ref.read(systemActionProvider.notifier).updateLocalIp());
-    // Android's NetworkObserver tells the Core about a new network itself.
-    if (system.isDesktop) {
-      unawaited(
-        ref.read(coreActionProvider.notifier).clearDnsCacheOnNetworkChange(),
-      );
-    }
     final hasVpn = results.contains(ConnectivityResult.vpn);
     if (_preHasVpn == hasVpn) {
       ref.read(routeTrackerProvider.notifier).bumpHostEpoch();
+      // Android's NetworkObserver tells the Core about a new network itself.
+      if (system.isDesktop) {
+        debouncer.call(
+          FunctionTag.clearDnsCache,
+          ref.read(coreActionProvider.notifier).clearDnsCacheOnNetworkChange,
+          duration: const Duration(milliseconds: 200),
+        );
+      }
     }
     _preHasVpn = hasVpn;
   }

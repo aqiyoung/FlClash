@@ -319,7 +319,7 @@ class ProxyGroupsCard extends ConsumerWidget {
             ),
             height: tileHeight,
             gap: tileGap,
-            iconSize: _figureMetricsOf(density).icon,
+            iconSize: tileHeight - _blockInset * 2,
             bottom: padding.bottom,
           );
           return Column(

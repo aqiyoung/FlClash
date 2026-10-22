@@ -82,6 +82,7 @@ mixin RoutedProbe<K, V>
   final Map<K, RouteState> _staleUnder = {};
   bool _scheduled = false;
   Timer? _settle;
+  Duration _settleLength = Duration.zero;
   RouteState _route = const RouteState();
 
   /// May also answer targets it was not asked for; a fresh one of those is
@@ -94,6 +95,9 @@ mixin RoutedProbe<K, V>
 
   @protected
   Duration get settleDuration => probeSettleDuration;
+
+  @protected
+  Duration get moveSettleDuration => probeMoveSettleDuration;
 
   @protected
   RoutedProbeState<K, V> buildProbe() {
@@ -255,7 +259,7 @@ mixin RoutedProbe<K, V>
       // Stale twice under one route: the Core and host disagree, stop asking.
       if (_staleUnder[target] != current) {
         _staleUnder[target] = current;
-        _invalidate(target, entries);
+        _invalidate(target, entries, moved: current.hasMovedSince(stamp));
       } else if (_watchers.containsKey(target)) {
         entries[target] = ProbeEntry(phase: ProbePhase.failed, stamp: stamp);
       } else {
@@ -320,7 +324,7 @@ mixin RoutedProbe<K, V>
     for (final MapEntry(key: target, value: entry) in state.entries.entries) {
       if (_inFlight.containsKey(target)) {
         if (moved) {
-          _invalidate(target, entries);
+          _invalidate(target, entries, moved: true);
         }
         continue;
       }
@@ -329,7 +333,7 @@ mixin RoutedProbe<K, V>
         continue;
       }
       if (!next.isFresh(stamp)) {
-        _invalidate(target, entries);
+        _invalidate(target, entries, moved: next.hasMovedSince(stamp));
       } else if (resumed &&
           entry.phase == ProbePhase.failed &&
           _watchers.containsKey(target)) {
@@ -341,6 +345,9 @@ mixin RoutedProbe<K, V>
         );
       }
     }
+    if (moved && _settle != null) {
+      _settleWithin(moveSettleDuration);
+    }
     if (!mapEquals(entries, state.entries)) {
       state = RoutedProbeState(entries);
     }
@@ -351,8 +358,12 @@ mixin RoutedProbe<K, V>
 
   /// A stale entry is asked again while someone watches it and forgotten
   /// otherwise; either way its old value is never shown. The question waits
-  /// for the route to settle, which a start moves three times in 150 ms.
-  void _invalidate(K target, Map<K, ProbeEntry<V>> entries) {
+  /// for the route to settle, which a move does faster than a re-pick.
+  void _invalidate(
+    K target,
+    Map<K, ProbeEntry<V>> entries, {
+    required bool moved,
+  }) {
     if (_watchers.containsKey(target)) {
       entries[target] = ProbeEntry(phase: ProbePhase.probing);
       _due[target] = (
@@ -361,11 +372,20 @@ mixin RoutedProbe<K, V>
         supersede: true,
         settle: true,
       );
-      _settle ??= Timer(settleDuration, _settled);
+      _settleWithin(moved ? moveSettleDuration : settleDuration);
     } else {
       _inFlight.remove(target);
       entries.remove(target);
     }
+  }
+
+  void _settleWithin(Duration duration) {
+    if (_settle != null && _settleLength <= duration) {
+      return;
+    }
+    _settle?.cancel();
+    _settleLength = duration;
+    _settle = Timer(duration, _settled);
   }
 
   void _settled() {

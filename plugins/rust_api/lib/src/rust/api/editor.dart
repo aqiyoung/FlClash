@@ -87,6 +87,16 @@ abstract class RopeBridge implements RustOpaqueInterface {
   Future<Uint8List> utf8Bytes();
 }
 
+// Rust type: RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<RopeUpload>>
+abstract class RopeUpload implements RustOpaqueInterface {
+  Future<RopeBridge> finish();
+
+  factory RopeUpload({required BigInt capacity}) =>
+      RustLib.instance.api.crateApiEditorRopeUploadNew(capacity: capacity);
+
+  Future<void> push({required List<int> chunk});
+}
+
 class EditorOpenError implements FrbException {
   final EditorOpenErrorKind kind;
   final String message;

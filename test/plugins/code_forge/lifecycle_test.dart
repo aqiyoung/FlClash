@@ -390,6 +390,23 @@ void main() {
       expect(utf8.decode(await controller.readBytes()), text);
       expect(await controller.readText(), text);
     });
+
+    test(
+      'comes in whole from bytes split inside a character or a CRLF',
+      () async {
+        const piece = 1 << 18;
+        for (final pad in [piece - 1, piece - 4]) {
+          final bytes = utf8.encode('${'x' * pad}名\r\ny');
+          final controller = CodeForgeController();
+          addTearDown(controller.dispose);
+          final built = await CodeForgeDocument.fromUtf8(bytes);
+          addTearDown(built.dispose);
+          controller.load(built);
+
+          expect(controller.text, '${'x' * pad}名\ny');
+        }
+      },
+    );
   });
 
   testWidgets('disposing the editor mid scroll to a line throws nothing', (

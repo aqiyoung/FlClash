@@ -44,6 +44,28 @@ pub struct RopeBridge {
     buffer: Buffer,
 }
 
+#[frb(opaque)]
+pub struct RopeUpload {
+    bytes: Vec<u8>,
+}
+
+impl RopeUpload {
+    #[frb(sync)]
+    pub fn new(capacity: usize) -> Self {
+        Self {
+            bytes: Vec::with_capacity(capacity),
+        }
+    }
+
+    pub fn push(&mut self, chunk: Vec<u8>) {
+        self.bytes.extend_from_slice(&chunk);
+    }
+
+    pub fn finish(&mut self) -> Result<RopeBridge, EditorOpenError> {
+        RopeBridge::from_utf8(std::mem::take(&mut self.bytes))
+    }
+}
+
 impl RopeBridge {
     #[frb(sync)]
     pub fn create(initial_text: String) -> Self {

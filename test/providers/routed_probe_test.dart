@@ -22,9 +22,13 @@ class _Probe extends Notifier<RoutedProbeState<String, String>>
   final routes = <RouteState>[];
   final pending = <Completer<Map<String, ProbeAnswer<String>>>>[];
   Duration settle = Duration.zero;
+  Duration moveSettle = Duration.zero;
 
   @override
   Duration get settleDuration => settle;
+
+  @override
+  Duration get moveSettleDuration => moveSettle;
 
   @override
   RoutedProbeState<String, String> build() => buildProbe();
@@ -180,7 +184,8 @@ void main() {
   ) async {
     final container = build();
     final probe = container.read(_probeProvider.notifier)
-      ..settle = probeSettleDuration;
+      ..settle = probeSettleDuration
+      ..moveSettle = probeMoveSettleDuration;
     probe.watch('a');
     await tester.pump();
     probe.answer({
@@ -195,9 +200,37 @@ void main() {
     expect(container.read(_probeProvider).isLoading('a'), isTrue);
     expect(probe.calls, ['a']);
 
-    await tester.pump(probeSettleDuration);
+    await tester.pump(probeMoveSettleDuration);
     expect(probe.calls, ['a', 'a']);
     expect(probe.routes.last.hostEpoch, _route.hostEpoch + 3);
+  });
+
+  testWidgets('a re-pick waits past the next pick poll', (tester) async {
+    final container = build();
+    final probe = container.read(_probeProvider.notifier)
+      ..settle = probeSettleDuration
+      ..moveSettle = probeMoveSettleDuration;
+    probe.watch('a');
+    await tester.pump();
+    probe.answer({
+      'a': _ok(['HK-01', 'Proxy']),
+    });
+    await tester.pump();
+
+    trackerOf(container).applySnapshot(
+      const RouteSnapshot(
+        coreEpoch: 1,
+        picksVersion: 2,
+        picks: {'Proxy': 'HK-02', 'Auto': 'JP-01'},
+      ),
+    );
+    await tester.pump(const Duration(seconds: 1));
+    expect(container.read(_probeProvider).isLoading('a'), isTrue);
+    expect(probe.calls, ['a']);
+
+    trackerOf(container).bumpHostEpoch();
+    await tester.pump(probeMoveSettleDuration);
+    expect(probe.calls, ['a', 'a']);
   });
 
   testWidgets('a refresh does not wait for the route to settle', (
@@ -205,7 +238,8 @@ void main() {
   ) async {
     final container = build();
     final probe = container.read(_probeProvider.notifier)
-      ..settle = probeSettleDuration;
+      ..settle = probeSettleDuration
+      ..moveSettle = probeMoveSettleDuration;
     probe.watch('a');
     await tester.pump();
     probe.answer({

@@ -1,5 +1,4 @@
 import 'package:skyward/common/constant.dart';
-import 'package:skyward/common/preferences.dart';
 import 'package:skyward/common/print.dart';
 import 'package:skyward/common/system.dart';
 import 'package:skyward/enum/enum.dart';
@@ -10,38 +9,17 @@ final proxy = system.isDesktop && !safeModeBuild ? Proxy() : null;
 
 final systemProxyQueue = proxy == null ? null : SystemProxyQueue(proxy!);
 
-abstract interface class SystemProxyStore {
-  Future<bool> read();
-
-  Future<void> write(bool applied);
-}
-
-final class PreferencesSystemProxyStore implements SystemProxyStore {
-  const PreferencesSystemProxyStore();
-
-  @override
-  Future<bool> read() => preferences.getSystemProxyApplied();
-
-  @override
-  Future<void> write(bool applied) =>
-      preferences.saveSystemProxyApplied(applied);
-}
-
 /// Exit's stop goes through the same queue as every other change, so a start
 /// still waiting behind a slow call cannot turn the proxy back on after it.
-/// A stop also clears settings someone else made, so it only runs while the
-/// mark written before each start says Skyward set the proxy.
+/// A stop also clears settings someone else made, so it only undoes a start
+/// of this run.
 class SystemProxyQueue {
   final Proxy _proxy;
-  final SystemProxyStore _store;
   Future<void> _tail = Future.value();
   bool _closed = false;
-  bool? _applied;
+  bool _applied = false;
 
-  SystemProxyQueue(
-    this._proxy, {
-    SystemProxyStore store = const PreferencesSystemProxyStore(),
-  }) : _store = store;
+  SystemProxyQueue(this._proxy);
 
   Future<void> apply(ProxyState state) {
     return _enqueue(() async {
@@ -49,7 +27,10 @@ class SystemProxyQueue {
         return;
       }
       if (state.isStart && state.systemProxy) {
-        await _start(state.port, state.bassDomain);
+        _applied = true;
+        if (!await _proxy.startProxy(state.port, state.bassDomain)) {
+          _logFailure();
+        }
       } else {
         await _stop();
       }
@@ -61,31 +42,15 @@ class SystemProxyQueue {
     return _enqueue(_stop);
   }
 
-  Future<void> _start(int port, List<String> bypassDomain) async {
-    if (!await _isApplied()) {
-      await _mark(true);
-    }
-    if (!await _proxy.startProxy(port, bypassDomain)) {
-      _logFailure();
-    }
-  }
-
   Future<void> _stop() async {
-    if (!await _isApplied()) {
+    if (!_applied) {
       return;
     }
     if (!await _proxy.stopProxy()) {
       _logFailure();
       return;
     }
-    await _mark(false);
-  }
-
-  Future<bool> _isApplied() async => _applied ??= await _store.read();
-
-  Future<void> _mark(bool applied) async {
-    _applied = applied;
-    await _store.write(applied);
+    _applied = false;
   }
 
   void _logFailure() {

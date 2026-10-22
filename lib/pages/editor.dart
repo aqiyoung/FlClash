@@ -131,12 +131,14 @@ class EditorPage extends ConsumerStatefulWidget {
   ConsumerState<EditorPage> createState() => _EditorPageState();
 }
 
-class _EditorPageState extends ConsumerState<EditorPage> {
+class _EditorPageState extends ConsumerState<EditorPage>
+    with RouteSettledMixin<EditorPage> {
   final _editorKey = GlobalKey<EditorViewState>();
   late UndoRedoController _undoController;
   late TextEditingController _titleController;
   late bool readOnly = false;
   CodeForgeDocument? _document;
+  CodeForgeDocument? _heldDocument;
   var _openGeneration = 0;
   bool _saving = false;
   ({bool isDirty, bool canUndo, bool canRedo}) _barState = (
@@ -217,7 +219,18 @@ class _EditorPageState extends ConsumerState<EditorPage> {
 
   void _handleReady() {
     _editor?.controller?.addListener(_syncBarState);
-    setState(() => _barState = _currentBarState);
+    _syncBarState();
+  }
+
+  @override
+  void didSettleRoute() {
+    final held = _heldDocument;
+    _heldDocument = null;
+    if (held != null) {
+      _show(held);
+    } else {
+      setState(() {});
+    }
   }
 
   Future<void> _open(Future<CodeForgeDocument> Function() open) async {
@@ -242,6 +255,15 @@ class _EditorPageState extends ConsumerState<EditorPage> {
       }
       return;
     }
+    if (!routeSettled) {
+      _heldDocument?.dispose();
+      _heldDocument = document;
+      return;
+    }
+    _show(document);
+  }
+
+  void _show(CodeForgeDocument document) {
     final previous = _document;
     setState(() {
       _document = document;
@@ -255,6 +277,7 @@ class _EditorPageState extends ConsumerState<EditorPage> {
     _undoController.dispose();
     _titleController.dispose();
     _document?.dispose();
+    _heldDocument?.dispose();
     super.dispose();
   }
 
@@ -312,7 +335,7 @@ class _EditorPageState extends ConsumerState<EditorPage> {
   @override
   Widget build(BuildContext context) {
     final appLocalizations = context.appLocalizations;
-    final isReady = _editor?.controller != null;
+    final isReady = _document != null;
     final lineWrap = ref.watch(
       appSettingProvider.select((state) => state.editorLineWrap),
     );
@@ -402,6 +425,7 @@ class _EditorPageState extends ConsumerState<EditorPage> {
                 schema: widget.schema,
                 readOnly: readOnly,
                 undoController: _undoController,
+                showsLoading: routeSettled,
                 onReady: _handleReady,
               ),
             ),
@@ -421,6 +445,7 @@ class EditorView extends ConsumerStatefulWidget {
   final EditorSchema schema;
   final bool readOnly;
   final UndoRedoController? undoController;
+  final bool showsLoading;
   final VoidCallback? onReady;
 
   const EditorView({
@@ -430,6 +455,7 @@ class EditorView extends ConsumerStatefulWidget {
     this.schema = EditorSchema.config,
     this.readOnly = false,
     this.undoController,
+    this.showsLoading = true,
     this.onReady,
   });
 
@@ -523,7 +549,8 @@ class EditorViewState extends ConsumerState<EditorView> {
       language: widget.language,
       schema: widget.schema,
       error: _initError,
-      isLoading: _initError == null && controller == null,
+      isLoading:
+          widget.showsLoading && _initError == null && controller == null,
     );
   }
 }
@@ -643,10 +670,12 @@ class _CodeEditorState extends ConsumerState<_CodeEditor> {
     widget.language,
     widget.schema,
   );
+  late final ScrollController _verticalController;
 
   @override
   void initState() {
     super.initState();
+    _verticalController = sheetScrollController(context);
     widget.findController.addListener(_handleFindChanged);
   }
 
@@ -670,6 +699,7 @@ class _CodeEditorState extends ConsumerState<_CodeEditor> {
   @override
   void dispose() {
     widget.findController.removeListener(_handleFindChanged);
+    _verticalController.dispose();
     super.dispose();
   }
 
@@ -831,6 +861,7 @@ class _CodeEditorState extends ConsumerState<_CodeEditor> {
       controller: widget.controller,
       findController: widget.findController,
       undoController: widget.undoController,
+      verticalScrollController: _verticalController,
       readOnly: widget.readOnly,
       language: switch (widget.language) {
         Language.yaml => langYaml,

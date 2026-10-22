@@ -109,11 +109,13 @@ begin
   Result := True;
 end;
 
-// path_provider names these folders after CompanyName and ProductName in
-// windows/runner/Runner.rc.
+// lib/common/path.dart keeps the data in {userappdata}\{app_name}; the
+// com.follow pair is what FlClash and the earlier Skyward builds wrote.
 procedure RemoveUserData;
 begin
+  DelTree(ExpandConstant('{userappdata}\{{APP_NAME}}'), True, True, True);
   DelTree(ExpandConstant('{userappdata}\com.follow\clash'), True, True, True);
+  DelTree(ExpandConstant('{localappdata}\{{APP_NAME}}'), True, True, True);
   DelTree(ExpandConstant('{localappdata}\com.follow\clash'), True, True, True);
   RemoveDir(ExpandConstant('{userappdata}\com.follow'));
   RemoveDir(ExpandConstant('{localappdata}\com.follow'));

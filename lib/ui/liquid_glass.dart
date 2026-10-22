@@ -443,19 +443,14 @@ Color _darkGlassTint(ColorScheme colorScheme) {
   );
 }
 
-/// An iOS 27 menu's or alert's, measured over white.
-List<BoxShadow> glassMenuShadows(ColorScheme colorScheme, [double depth = 1]) {
+/// An iOS 27 menu's or alert's, measured over white below, above and beside
+/// it: one wide shadow, glass or not.
+List<BoxShadow> menuShadows(ColorScheme colorScheme, [double depth = 1]) {
   final strength = colorScheme.brightness == Brightness.dark ? 1.5 : 1.0;
-  final alpha = strength * depth;
   return [
     BoxShadow(
-      color: colorScheme.shadow.withValues(alpha: 0.09 * alpha),
-      blurRadius: 16.5,
-      offset: const Offset(0, 4),
-    ),
-    BoxShadow(
-      color: colorScheme.shadow.withValues(alpha: 0.045 * alpha),
-      blurRadius: 42,
+      color: colorScheme.shadow.withValues(alpha: 0.118 * strength * depth),
+      blurRadius: 29,
       offset: const Offset(0, 8),
     ),
   ];

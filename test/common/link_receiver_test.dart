@@ -16,16 +16,20 @@ Future<(int, String)> _request(
   Uri uri, {
   String method = 'GET',
   String? link,
+  String? body,
 }) async {
   final client = HttpClient();
   try {
     final request = await client.openUrl(method, uri);
-    if (link != null) {
+    final form =
+        body ??
+        (link == null ? null : 'link=${Uri.encodeQueryComponent(link)}');
+    if (form != null) {
       request.headers.contentType = ContentType(
         'application',
         'x-www-form-urlencoded',
       );
-      request.write('link=${Uri.encodeQueryComponent(link)}');
+      request.write(form);
     }
     final response = await request.close();
     return (response.statusCode, await utf8.decodeStream(response));
@@ -88,6 +92,18 @@ void main() {
 
       final (formStatus, _) = await _request(receiver.address);
       expect(formStatus, HttpStatus.ok);
+    });
+
+    test('rejects a body with broken percent encoding', () async {
+      for (final body in ['link=%zz', 'link=%']) {
+        final (status, page) = await _request(
+          receiver.address,
+          method: 'POST',
+          body: body,
+        );
+        expect(status, HttpStatus.badRequest);
+        expect(page, contains('Not a link'));
+      }
     });
 
     test('hands over the first link and then stops listening', () async {

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 
 import 'package:skyward/ui/context.dart';
@@ -39,6 +40,7 @@ class _CommonSwitchState extends State<CommonSwitch>
   static const _heldStretch = Offset(10, -2);
   static const _toggleDuration = Duration(milliseconds: 300);
   static const _pressDuration = Duration(milliseconds: 150);
+  static const _tapLift = Duration(milliseconds: 200);
 
   late final _toggle = AnimationController(
     vsync: this,
@@ -60,6 +62,7 @@ class _CommonSwitchState extends State<CommonSwitch>
   );
   late final _motion = Listenable.merge([_position, _press]);
 
+  Timer? _tapLiftTimer;
   var _dragging = false;
   var _focused = false;
 
@@ -79,12 +82,18 @@ class _CommonSwitchState extends State<CommonSwitch>
           ..curve = Curves.easeOutBack
           ..reverseCurve = Curves.easeOutBack.flipped;
       }
+      // A drag hands over its flip with the thumb already past halfway.
+      final across = (_toggle.value - (widget.value ? 1 : 0)).abs() > 0.5;
+      if (across && widget.onChanged != null) {
+        _liftAcross();
+      }
       _settle();
     }
   }
 
   @override
   void dispose() {
+    _tapLiftTimer?.cancel();
     _position.dispose();
     _press.dispose();
     _toggle.dispose();
@@ -96,8 +105,21 @@ class _CommonSwitchState extends State<CommonSwitch>
 
   void _flip() => widget.onChanged?.call(!widget.value);
 
-  void _handleDragStart() {
+  void _handlePress() {
+    _tapLiftTimer?.cancel();
     _pressController.forward();
+  }
+
+  void _liftAcross() {
+    _handlePress();
+    _tapLiftTimer = Timer(
+      context.motionDuration(_tapLift),
+      _pressController.reverse,
+    );
+  }
+
+  void _handleDragStart() {
+    _handlePress();
     _dragging = true;
     _position
       ..curve = Curves.linear
@@ -111,11 +133,12 @@ class _CommonSwitchState extends State<CommonSwitch>
   }
 
   void _handleRelease() {
-    _pressController.reverse();
     if (!_dragging) {
       _flip();
+      _liftAcross();
       return;
     }
+    _pressController.reverse();
     _dragging = false;
     if (_toggle.value >= 0.5 == widget.value) {
       _settle();
@@ -299,14 +322,14 @@ class _CommonSwitchState extends State<CommonSwitch>
     if (Material.maybeOf(context) == null) {
       return GestureDetector(
         excludeFromSemantics: true,
-        onTapDown: (_) => _pressController.forward(),
+        onTapDown: (_) => _handlePress(),
         onTap: _handleRelease,
         onTapCancel: _handleCancel,
         child: child,
       );
     }
     return InkResponse(
-      onTapDown: (_) => _pressController.forward(),
+      onTapDown: (_) => _handlePress(),
       onTap: _handleRelease,
       onTapCancel: _handleCancel,
       excludeFromSemantics: true,

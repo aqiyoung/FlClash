@@ -17,6 +17,9 @@ add_library(${PLUGIN_NAME} SHARED
 )
 
 apply_standard_settings(${PLUGIN_NAME})
+# Below C++20 C++/WinRT includes <experimental/coroutine>, which MSVC 14.50
+# (Visual Studio 2026) rejects as an error.
+target_compile_features(${PLUGIN_NAME} PRIVATE cxx_std_20)
 
 # C++/WinRT still drives these headers through <experimental/coroutine> when it
 # is built for arm64, which MSVC 14.51 rejects unless the deprecation is
