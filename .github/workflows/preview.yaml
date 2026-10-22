@@ -326,7 +326,6 @@ jobs:
         run: |
           set -euo pipefail
           build_tools="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)"
-          base_version="${VERSION%.*}"
           shopt -s nullglob
           apks=(dist/*.apk)
           if [ ${#apks[@]} -ne 1 ]; then
@@ -355,8 +354,8 @@ jobs:
             echo "::error::$(basename "$apk") is not signed with our certificate (expected SHA-256 $CERT_SHA256)"
             exit 1
           fi
-          if ! "$build_tools/aapt2" dump badging "$apk" | grep -q "versionName='${base_version}'"; then
-            echo "::error::$(basename "$apk") does not carry ${base_version} as its versionName"
+          if ! "$build_tools/aapt2" dump badging "$apk" | grep -q "versionName='${VERSION}'"; then
+            echo "::error::$(basename "$apk") does not carry ${VERSION} as its versionName"
             exit 1
           fi
           if unzip -l "$apk" | grep -qE 'lib/(armeabi-v7a|x86|x86_64)/'; then
