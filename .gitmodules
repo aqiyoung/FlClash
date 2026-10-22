@@ -1,4 +1,4 @@
 [submodule "core/Clash.Meta"]
 	path = core/Clash.Meta
-	url = git@github.com:aqiyoung/mihomo.git
+	url = git@github.com:aqiyoung/skyward-core.git
 	branch = FlClash
