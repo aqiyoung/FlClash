@@ -208,21 +208,19 @@ class GroupMonogram extends StatelessWidget {
 abstract final class GroupIconSource {
   static const _dir = 'assets/images/groups/';
 
-  /// The app's own mark. The groups the default config builds for routing wear
-  /// it instead of a drawing of their own, and so does any group without a
-  /// picture.
+  /// The app's own mark, which stands in for a group no picture suits.
   static const logo = 'assets/images/icon.png';
 
-  /// The routing groups the default config builds, which wear [logo] whatever
-  /// picture the config or the Core puts on them.
+  /// The routing groups the default config builds, by the name it gives them:
+  /// each wears the picture that says what it does.
   static const _routing = {
-    '默认代理',
-    '自动选择',
-    '故障转移',
-    '负载均衡',
-    '漏网之鱼',
-    '直连',
-    '其他节点',
+    '默认代理': 'rocket.png',
+    '自动选择': 'auto.png',
+    '故障转移': 'round_robin.png',
+    '负载均衡': 'stack.png',
+    '漏网之鱼': 'final.png',
+    '直连': 'direct.png',
+    '其他节点': 'world_map.png',
   };
 
   /// Region groups, by the name the default config gives them: each wears the
@@ -262,9 +260,9 @@ abstract final class GroupIconSource {
 
   /// The entry a group wears, or empty for a [GroupBadge] to stand in.
   static String of({required String name, required String icon}) {
-    final region = _regions[name] ?? _regionAuto(name);
-    if (region != null) {
-      return '$_dir$region';
+    final known = _routing[name] ?? _regions[name] ?? _regionAuto(name);
+    if (known != null) {
+      return '$_dir$known';
     }
     final service = _services[name];
     if (service != null) {
@@ -273,21 +271,13 @@ abstract final class GroupIconSource {
     if (GroupMonogram.isGlobal(name)) {
       return '';
     }
-    if (_routing.contains(name) || icon.isEmpty) {
-      return logo;
-    }
-    return icon;
+    return icon.isEmpty ? logo : icon;
   }
 
   /// `<地区>-自动选择` is how the default config names the url-test group it
-  /// builds beside each region.
-  static String? _regionAuto(String name) {
-    const suffix = '-自动选择';
-    if (!name.endsWith(suffix)) {
-      return null;
-    }
-    return _regions[name.substring(0, name.length - suffix.length)];
-  }
+  /// builds beside each region, and it wears the same picture as the rest.
+  static String? _regionAuto(String name) =>
+      name.endsWith('-自动选择') ? 'auto.png' : null;
 }
 
 /// Stands in for a group whose picture is empty or unreadable: the app's own
