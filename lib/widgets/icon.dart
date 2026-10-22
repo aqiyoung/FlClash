@@ -190,6 +190,50 @@ class GroupMonogram extends StatelessWidget {
   }
 }
 
+/// The colour icon set the fork's default config dresses its groups in. A group
+/// that carries no picture of its own borrows the entry its kind is known by,
+/// so it keeps the same face as the config's own groups.
+abstract final class GroupIconSource {
+  static const _set =
+      'https://cdn.jsdmirror.com/gh/Koolson/Qure@master/IconSet/Color/';
+
+  /// The names the default config gives the groups it builds.
+  static const _named = {
+    '默认代理': 'Rocket.png',
+    '自动选择': 'Auto.png',
+    '故障转移': 'Round_Robin.png',
+    '负载均衡': 'Stack.png',
+    '漏网之鱼': 'Final.png',
+    '直连': 'Direct.png',
+    '其他节点': 'World_Map.png',
+  };
+
+  /// A group's own icon, or the set's entry for its kind, or empty for a
+  /// [GroupMonogram] to stand in. A selector without a name the set knows keeps
+  /// the monogram: which picture would suit an arbitrary group is a guess.
+  static String of({
+    required String name,
+    required GroupType type,
+    required String icon,
+  }) {
+    if (icon.isNotEmpty) {
+      return icon;
+    }
+    if (GroupMonogram.isGlobal(name)) {
+      return '';
+    }
+    final entry =
+        _named[name] ??
+        switch (type) {
+          GroupType.URLTest => 'Auto.png',
+          GroupType.Fallback => 'Round_Robin.png',
+          GroupType.LoadBalance => 'Stack.png',
+          GroupType.Selector || GroupType.Relay => null,
+        };
+    return entry == null ? '' : '$_set$entry';
+  }
+}
+
 /// Stands in for a group the config gave no icon: the glyph of what the group
 /// does, in the hue that kind of group wears. [GroupName.GLOBAL] keeps
 /// [GroupMonogram]'s flag, which says where traffic leaves rather than what the
