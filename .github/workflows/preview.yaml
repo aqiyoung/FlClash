@@ -97,6 +97,10 @@ jobs:
       # verify step reads the real one back out.
       - name: Choose a preview version
         id: version
+        env:
+          # The shared counter is read back from the releases, which the API
+          # only answers when authenticated.
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           base="$(sed -n 's/^version: *\([^+ ]*\).*/\1/p' pubspec.yaml | head -1 | tr -d '\r')"
