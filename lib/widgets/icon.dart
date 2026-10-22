@@ -85,7 +85,7 @@ class CommonTargetIcon extends StatelessWidget {
     return fallback ?? const _ImagePlaceholder();
   }
 
-  Widget _buildIcon() {
+  Widget _buildIcon(BuildContext context) {
     if (src.isEmpty) {
       return _defaultIcon();
     }
@@ -100,8 +100,12 @@ class CommonTargetIcon extends StatelessWidget {
     }
 
     if (src.isBundleAsset) {
+      final size = IconTheme.of(context).size ?? 24;
       return Image.asset(
         src,
+        width: size,
+        height: size,
+        cacheWidth: _iconDecodeExtent,
         gaplessPlayback: true,
         errorBuilder: (_, _, _) => _defaultIcon(),
       );
@@ -112,7 +116,7 @@ class CommonTargetIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return _buildIcon();
+    return _buildIcon(context);
   }
 }
 
@@ -204,17 +208,26 @@ class GroupMonogram extends StatelessWidget {
 abstract final class GroupIconSource {
   static const _dir = 'assets/images/groups/';
 
-  /// The names the default config gives the groups it builds. A group by one of
-  /// these names takes the picture whatever the config or the Core says, since
-  /// that picture is what the name means.
-  static const _named = {
-    '默认代理': 'rocket.png',
-    '自动选择': 'auto.png',
-    '故障转移': 'round_robin.png',
-    '负载均衡': 'stack.png',
-    '漏网之鱼': 'final.png',
-    '直连': 'direct.png',
-    '其他节点': 'world_map.png',
+  /// The app's own mark. The groups the default config builds for routing wear
+  /// it instead of a drawing of their own, and so does any group without a
+  /// picture.
+  static const logo = 'assets/images/icon.png';
+
+  /// The routing groups the default config builds, which wear [logo] whatever
+  /// picture the config or the Core puts on them.
+  static const _routing = {
+    '默认代理',
+    '自动选择',
+    '故障转移',
+    '负载均衡',
+    '漏网之鱼',
+    '直连',
+    '其他节点',
+  };
+
+  /// Region groups, by the name the default config gives them: each wears the
+  /// flag of its region.
+  static const _regions = {
     '香港': 'hong_kong.png',
     '日本': 'japan.png',
     '美国': 'america_map.png',
@@ -222,64 +235,69 @@ abstract final class GroupIconSource {
     '台湾': 'taiwan.png',
   };
 
-  /// The entry a group wears, or empty for a [GroupGlyph] to stand in.
-  ///
-  /// A selector the set does not know keeps the glyph: which picture would suit
-  /// an arbitrary group is a guess, while a test group, a relay and a hand-made
-  /// group all share the type.
-  static String of({
-    required String name,
-    required GroupType type,
-    required String icon,
-  }) {
-    final known = _named[name] ?? _regionAuto(name);
-    if (known != null) {
-      return '$_dir$known';
+  /// Service groups, by the name the default config gives them: each wears its
+  /// service's mark.
+  static const _services = {
+    'GoogleFCM': 'spark.png',
+    'YouTube': 'youtube.png',
+    'Google': 'google_search.png',
+    'ChatGPT': 'chatgpt.png',
+    'GitHub': 'github.png',
+    'OneDrive': 'onedrive.png',
+    'Microsoft': 'microsoft.png',
+    'APPLE': 'apple.png',
+    'Telegram': 'telegram.png',
+    'Steam': 'steam.png',
+    'Twitter': 'twitter.png',
+    'Meta': 'meta.png',
+    'Line': 'line.png',
+    'TikTok': 'tiktok.png',
+    'NETFLIX': 'netflix.png',
+    'Disney': 'disney.png',
+    'Spotify': 'spotify.png',
+    'PikPak': 'pikpak.png',
+    'Crypto': 'crypto.png',
+    'AdBlock': 'adblock.png',
+  };
+
+  /// The entry a group wears, or empty for a [GroupBadge] to stand in.
+  static String of({required String name, required String icon}) {
+    final region = _regions[name] ?? _regionAuto(name);
+    if (region != null) {
+      return '$_dir$region';
     }
-    if (icon.isNotEmpty) {
-      return icon;
+    final service = _services[name];
+    if (service != null) {
+      return '$_dir$service';
     }
     if (GroupMonogram.isGlobal(name)) {
       return '';
     }
-    final typed = switch (type) {
-      GroupType.URLTest => 'auto.png',
-      GroupType.Fallback => 'round_robin.png',
-      GroupType.LoadBalance => 'stack.png',
-      GroupType.Selector || GroupType.Relay => null,
-    };
-    return typed == null ? '' : '$_dir$typed';
+    if (_routing.contains(name) || icon.isEmpty) {
+      return logo;
+    }
+    return icon;
   }
 
   /// `<地区>-自动选择` is how the default config names the url-test group it
   /// builds beside each region.
-  static String? _regionAuto(String name) =>
-      name.endsWith('-自动选择') ? 'auto.png' : null;
+  static String? _regionAuto(String name) {
+    const suffix = '-自动选择';
+    if (!name.endsWith(suffix)) {
+      return null;
+    }
+    return _regions[name.substring(0, name.length - suffix.length)];
+  }
 }
 
-/// Stands in for a group the config gave no icon: the glyph of what the group
-/// does, in the hue that kind of group wears. [GroupName.GLOBAL] keeps
-/// [GroupMonogram]'s flag, which says where traffic leaves rather than what the
-/// group is.
-class GroupGlyph extends StatelessWidget {
-  const GroupGlyph({
-    super.key,
-    required this.name,
-    required this.type,
-    this.exitCountryCode,
-  });
+/// Stands in for a group whose picture is empty or unreadable: the app's own
+/// mark. [GroupName.GLOBAL] keeps [GroupMonogram]'s flag, which says where
+/// traffic leaves rather than what the group is.
+class GroupBadge extends StatelessWidget {
+  const GroupBadge({super.key, required this.name, this.exitCountryCode});
 
   final String name;
-  final GroupType type;
   final String? exitCountryCode;
-
-  static Glyph glyphOf(GroupType type) => switch (type) {
-    GroupType.Selector => AppGlyphs.proxies,
-    GroupType.URLTest => AppGlyphs.speed,
-    GroupType.Fallback => AppGlyphs.layers,
-    GroupType.LoadBalance => AppGlyphs.split,
-    GroupType.Relay => AppGlyphs.link,
-  };
 
   /// Fixed rather than seeded: the kinds have to stay apart whatever colour the
   /// theme takes. Each is a tone that reads on both a light and a dark surface.
@@ -304,7 +322,16 @@ class GroupGlyph extends StatelessWidget {
     if (GroupMonogram.isGlobal(name)) {
       return GroupMonogram(name, exitCountryCode: exitCountryCode);
     }
-    return GlyphIcon(glyphOf(type), color: colorOf(context, type));
+    final size = IconTheme.of(context).size ?? 24;
+    return Image.asset(
+      GroupIconSource.logo,
+      width: size,
+      height: size,
+      cacheWidth: _iconDecodeExtent,
+      gaplessPlayback: true,
+      errorBuilder: (_, _, _) =>
+          GroupMonogram(name, exitCountryCode: exitCountryCode),
+    );
   }
 }
 
