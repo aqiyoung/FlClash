@@ -1526,6 +1526,11 @@ its version only from its own CI, so the fork alone reports the placeholder `1.1
 user agents; `GoBuilder` passes the value as `-X github.com/metacubex/mihomo/constant.Version=...` for every build,
 local and CI alike. Bump it whenever the submodule moves onto a new upstream release.
 
+The fork the submodule points at is `aqiyoung/mihomo`, branch `FlClash`: the patches the app needs live in that
+branch, and the owner of this repository keeps it in step with upstream mihomo releases. The Go module path stays
+`github.com/metacubex/mihomo` and the directory stays `core/Clash.Meta`, because the vendored core imports itself
+under that path and every upstream rebase would turn a rename into a conflict on every file.
+
 Architecture detection is automatic. The `--description` flag passed to `flutter_distributor` adds arch suffixes to artifact names, such as `FlClash-0.8.93-macos-arm64.dmg`.
 
 #### Android Core Build

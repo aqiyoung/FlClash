@@ -45,6 +45,7 @@ Android 一般下 `-arm64-v8a.apk`（绝大多数手机）或 `-armeabi-v7a.apk`
 | --- | --- |
 | 免责声明 | 保留全部条款文案，把手机上"照着把声明敲一遍"改成勾选确认 |
 | 关于页 | 去掉上游的 Telegram 频道入口（那个频道不是本仓库运营的） |
+| 内核来源 | 内核（mihomo）改从本仓库作者的 fork `aqiyoung/mihomo` 取，`FlClash` 分支带着 FlClash 的补丁；关于页的「内核」链接也指向它。Go 模块路径仍是 `github.com/metacubex/mihomo`、目录仍是 `core/Clash.Meta`——不为了改名去动上游代码的 import |
 | 更新检查 | 指向本仓库的 Releases，而不是上游；版本比较额外认我们自己的第四位 |
 | 版本名 | 四段版本号由构建注入：Android 走 `versionName`，桌面端走 `APP_VERSION` dart-define（`pubspec.yaml` 仍是三段） |
 | 包名 | Android 的 `applicationId` 改成 `com.threely.skyward`（2026-10-18 起先用 `com.threely.clash`，2026-10-21 随改名换成现在这个）。本仓库用自己的名字发布，和上游官方包分别安装 |
