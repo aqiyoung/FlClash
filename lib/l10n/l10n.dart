@@ -790,20 +790,20 @@ class AppLocalizations {
     );
   }
 
-  /// `Receiving a link from your phone needs the Nearby devices permission, which lets FlClash reach the local network. Turn it on in the app's settings.`
+  /// `Receiving a link from your phone needs the Nearby devices permission, which lets Skyward reach the local network. Turn it on in the app's settings.`
   String get sendFromPhonePermissionDenied {
     return Intl.message(
-      'Receiving a link from your phone needs the Nearby devices permission, which lets FlClash reach the local network. Turn it on in the app\'s settings.',
+      'Receiving a link from your phone needs the Nearby devices permission, which lets Skyward reach the local network. Turn it on in the app\'s settings.',
       name: 'sendFromPhonePermissionDenied',
       desc: '',
       args: [],
     );
   }
 
-  /// `Send a link to FlClash`
+  /// `Send a link to Skyward`
   String get sendFromPhonePageTitle {
     return Intl.message(
-      'Send a link to FlClash',
+      'Send a link to Skyward',
       name: 'sendFromPhonePageTitle',
       desc: '',
       args: [],
@@ -845,10 +845,10 @@ class AppLocalizations {
     );
   }
 
-  /// `Scan with FlClash on another device to import this profile.`
+  /// `Scan with Skyward on another device to import this profile.`
   String get shareQrcodeTip {
     return Intl.message(
-      'Scan with FlClash on another device to import this profile.',
+      'Scan with Skyward on another device to import this profile.',
       name: 'shareQrcodeTip',
       desc: '',
       args: [],
@@ -1596,26 +1596,6 @@ class AppLocalizations {
     return Intl.message(
       'External link',
       name: 'externalLink',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Other contributors`
-  String get otherContributors {
-    return Intl.message(
-      'Other contributors',
-      name: 'otherContributors',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `App icon design`
-  String get appIconDesign {
-    return Intl.message(
-      'App icon design',
-      name: 'appIconDesign',
       desc: '',
       args: [],
     );
@@ -2506,10 +2486,10 @@ class AppLocalizations {
     return Intl.message('Disclaimer', name: 'disclaimer', desc: '', args: []);
   }
 
-  /// `Before using FlClash ("the Software"), please read this statement carefully and make sure you understand all of it. Tapping "Agree" means you have read, understood, and accept every term below. If you do not agree, tap "Exit" and stop using the Software.`
+  /// `Before using Skyward ("the Software"), please read this statement carefully and make sure you understand all of it. Tapping "Agree" means you have read, understood, and accept every term below. If you do not agree, tap "Exit" and stop using the Software.`
   String get disclaimerDesc {
     return Intl.message(
-      'Before using FlClash ("the Software"), please read this statement carefully and make sure you understand all of it. Tapping "Agree" means you have read, understood, and accept every term below. If you do not agree, tap "Exit" and stop using the Software.',
+      'Before using Skyward ("the Software"), please read this statement carefully and make sure you understand all of it. Tapping "Agree" means you have read, understood, and accept every term below. If you do not agree, tap "Exit" and stop using the Software.',
       name: 'disclaimerDesc',
       desc: '',
       args: [],
@@ -3421,6 +3401,31 @@ class AppLocalizations {
     return Intl.message(
       'Bottom bar',
       name: 'navigationBarStyle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Dock size`
+  String get dockScale {
+    return Intl.message('Dock size', name: 'dockScale', desc: '', args: []);
+  }
+
+  /// `Hide labels while scrolling`
+  String get hideLabelOnScroll {
+    return Intl.message(
+      'Hide labels while scrolling',
+      name: 'hideLabelOnScroll',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The dock keeps its icons while the page moves`
+  String get hideLabelOnScrollDesc {
+    return Intl.message(
+      'The dock keeps its icons while the page moves',
+      name: 'hideLabelOnScrollDesc',
       desc: '',
       args: [],
     );
@@ -4886,10 +4891,10 @@ class AppLocalizations {
     );
   }
 
-  /// `Helper service unavailable; TUN mode cannot be enabled. Reinstall FlClash to restore it.`
+  /// `Helper service unavailable; TUN mode cannot be enabled. Reinstall Skyward to restore it.`
   String get helperCorruptTip {
     return Intl.message(
-      'Helper service unavailable; TUN mode cannot be enabled. Reinstall FlClash to restore it.',
+      'Helper service unavailable; TUN mode cannot be enabled. Reinstall Skyward to restore it.',
       name: 'helperCorruptTip',
       desc: '',
       args: [],
@@ -4916,20 +4921,20 @@ class AppLocalizations {
     );
   }
 
-  /// `Windows refused to run FlClashCore.exe (error {code}). An app control policy such as Smart App Control or AppLocker blocks unsigned programs; allow FlClash in that policy or turn it off, then try again.`
+  /// `Windows refused to run SkywardCore.exe (error {code}). An app control policy such as Smart App Control or AppLocker blocks unsigned programs; allow Skyward in that policy or turn it off, then try again.`
   String coreBlockedByPolicyTip(Object code) {
     return Intl.message(
-      'Windows refused to run FlClashCore.exe (error $code). An app control policy such as Smart App Control or AppLocker blocks unsigned programs; allow FlClash in that policy or turn it off, then try again.',
+      'Windows refused to run SkywardCore.exe (error $code). An app control policy such as Smart App Control or AppLocker blocks unsigned programs; allow Skyward in that policy or turn it off, then try again.',
       name: 'coreBlockedByPolicyTip',
       desc: '',
       args: [code],
     );
   }
 
-  /// `Windows Smart App Control blocked FlClashCore.exe because it is not signed. Open Windows Security → App & browser control → Smart App Control settings, choose Off, then start FlClash again. Smart App Control cannot be turned back on without reinstalling Windows.`
+  /// `Windows Smart App Control blocked SkywardCore.exe because it is not signed. Open Windows Security → App & browser control → Smart App Control settings, choose Off, then start Skyward again. Smart App Control cannot be turned back on without reinstalling Windows.`
   String get coreBlockedBySmartAppControlTip {
     return Intl.message(
-      'Windows Smart App Control blocked FlClashCore.exe because it is not signed. Open Windows Security → App & browser control → Smart App Control settings, choose Off, then start FlClash again. Smart App Control cannot be turned back on without reinstalling Windows.',
+      'Windows Smart App Control blocked SkywardCore.exe because it is not signed. Open Windows Security → App & browser control → Smart App Control settings, choose Off, then start Skyward again. Smart App Control cannot be turned back on without reinstalling Windows.',
       name: 'coreBlockedBySmartAppControlTip',
       desc: '',
       args: [],
@@ -6964,10 +6969,10 @@ class AppLocalizations {
     );
   }
 
-  /// `FlClash ran into an error while starting and can't continue. Copy the details to report the problem. If it keeps happening, clearing the data usually lets the app start again.`
+  /// `Skyward ran into an error while starting and can't continue. Copy the details to report the problem. If it keeps happening, clearing the data usually lets the app start again.`
   String get initFailedTip {
     return Intl.message(
-      'FlClash ran into an error while starting and can\'t continue. Copy the details to report the problem. If it keeps happening, clearing the data usually lets the app start again.',
+      'Skyward ran into an error while starting and can\'t continue. Copy the details to report the problem. If it keeps happening, clearing the data usually lets the app start again.',
       name: 'initFailedTip',
       desc: '',
       args: [],
@@ -7978,7 +7983,8 @@ class AppLocalizations {
   String customImportDroppedSubRules(num count, Object label) {
     return Intl.plural(
       count,
-      one: '1 SUB-RULE rule was dropped, since custom profiles do not support sub-rules',
+      one:
+          '1 SUB-RULE rule was dropped, since custom profiles do not support sub-rules',
       other:
           '$label SUB-RULE rules were dropped, since custom profiles do not support sub-rules',
       name: 'customImportDroppedSubRules',
