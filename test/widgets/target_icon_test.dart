@@ -205,35 +205,62 @@ void main() {
 
       expect(find.text('P'), findsOne);
     });
+
+    testWidgets('a bundled group icon never asks for a download', (
+      tester,
+    ) async {
+      await _pump(
+        tester,
+        const CommonTargetIcon(src: 'assets/images/groups/auto.png'),
+      );
+      await tester.pump();
+
+      expect(reads, isEmpty);
+      expect(find.byType(Image), findsOne);
+    });
   });
 
   group('a group that carries no icon', () {
-    const set =
-        'https://cdn.jsdmirror.com/gh/Koolson/Qure@master/IconSet/'
-        'Color/';
+    const dir = 'assets/images/groups/';
 
     test('takes the entry its name or its kind is known by', () {
       expect(
         GroupIconSource.of(name: '自动选择', type: GroupType.Selector, icon: ''),
-        '${set}Auto.png',
+        '${dir}auto.png',
       );
       expect(
         GroupIconSource.of(name: '漏网之鱼', type: GroupType.Selector, icon: ''),
-        '${set}Final.png',
+        '${dir}final.png',
+      );
+      expect(
+        GroupIconSource.of(name: '香港', type: GroupType.Selector, icon: ''),
+        '${dir}hong_kong.png',
+      );
+      expect(
+        GroupIconSource.of(name: '香港-自动选择', type: GroupType.URLTest, icon: ''),
+        '${dir}auto.png',
       );
       expect(
         GroupIconSource.of(name: 'mine', type: GroupType.Fallback, icon: ''),
-        '${set}Round_Robin.png',
+        '${dir}round_robin.png',
       );
     });
 
-    test('keeps its own icon, its monogram in the Core GLOBAL, and its glyph '
-        'when the set has no entry for it', () {
+    test('takes the name over the icon its config names, and keeps the config '
+        'icon otherwise', () {
       const own = 'https://example.com/own.png';
       expect(
         GroupIconSource.of(name: '自动选择', type: GroupType.Selector, icon: own),
+        '${dir}auto.png',
+      );
+      expect(
+        GroupIconSource.of(name: 'mine', type: GroupType.Selector, icon: own),
         own,
       );
+    });
+
+    test('keeps its monogram in the Core GLOBAL and its glyph when no entry '
+        'suits it', () {
       expect(
         GroupIconSource.of(name: 'GLOBAL', type: GroupType.Selector, icon: ''),
         '',
