@@ -334,11 +334,16 @@ jobs:
           fi
           apk="${apks[0]}"
           echo "== $(basename "$apk")"
-          "$build_tools/aapt2" dump badging "$apk" | sed -n '1p'
-          "$build_tools/apksigner" verify --print-certs "$apk" | sed -n '1,4p'
+          # `pipefail` plus `grep -q` is a trap: grep leaves on its first match,
+          # the writer behind it takes EPIPE, and the pipeline reports the
+          # writer's death as the failure. Each output is read once, then matched.
+          badging="$("$build_tools/aapt2" dump badging "$apk")"
+          certs="$("$build_tools/apksigner" verify --print-certs "$apk" | tr -d ':')"
+          listing="$(unzip -l "$apk")"
+          sed -n '1p' <<<"$badging"
+          sed -n '1,4p' <<<"$certs"
 
-          version_code="$("$build_tools/aapt2" dump badging "$apk" \
-            | sed -n "s/.*versionCode='\([0-9]*\)'.*/\1/p" | head -1)"
+          version_code="$(sed -n "s/.*versionCode='\([0-9]*\)'.*/\1/p" <<<"$badging" | head -1)"
           if [ -z "$version_code" ]; then
             echo "::error::could not read the APK's versionCode"
             exit 1
@@ -346,23 +351,23 @@ jobs:
           echo "version_code=${version_code}" >> "$GITHUB_OUTPUT"
           echo "the APK carries versionCode ${version_code}"
 
-          if ! "$build_tools/aapt2" dump badging "$apk" | grep -q "package: name='${APPLICATION_ID}'"; then
+          if ! grep -q "package: name='${APPLICATION_ID}'" <<<"$badging"; then
             echo "::error::$(basename "$apk") is not packaged as ${APPLICATION_ID}"
             exit 1
           fi
-          if ! "$build_tools/apksigner" verify --print-certs "$apk" | tr -d ':' | grep -qi "$CERT_SHA256"; then
+          if ! grep -qi "$CERT_SHA256" <<<"$certs"; then
             echo "::error::$(basename "$apk") is not signed with our certificate (expected SHA-256 $CERT_SHA256)"
             exit 1
           fi
-          if ! "$build_tools/aapt2" dump badging "$apk" | grep -q "versionName='${VERSION}'"; then
+          if ! grep -q "versionName='${VERSION}'" <<<"$badging"; then
             echo "::error::$(basename "$apk") does not carry ${VERSION} as its versionName"
             exit 1
           fi
-          if unzip -l "$apk" | grep -qE 'lib/(armeabi-v7a|x86|x86_64)/'; then
+          if grep -qE 'lib/(armeabi-v7a|x86|x86_64)/' <<<"$listing"; then
             echo "::error::$(basename "$apk") still carries a non-arm64 ABI"
             exit 1
           fi
-          unzip -l "$apk" | grep -q 'lib/arm64-v8a/' || {
+          grep -q 'lib/arm64-v8a/' <<<"$listing" || {
             echo "::error::$(basename "$apk") has no arm64-v8a libraries"
             exit 1
           }
