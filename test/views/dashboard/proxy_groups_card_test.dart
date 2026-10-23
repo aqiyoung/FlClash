@@ -314,11 +314,11 @@ void main() {
   });
 
   for (final (type, desktop, searching, mobile) in [
-    (ProxiesType.list, ['Close', 'Search'], ['Clear search'], ['Close']),
+    (ProxiesType.list, ['Close', 'Search'], ['Cancel'], ['Close']),
     (
       ProxiesType.tab,
       ['Search', 'Delay test', 'Close'],
-      ['Clear search', 'Delay test'],
+      ['Delay test', 'Cancel'],
       ['Close', 'Delay test'],
     ),
   ]) {
@@ -332,7 +332,7 @@ void main() {
       ];
       Iterable<String?> barButtons() => tester
           .widgetList<AppBarActionButton>(
-            inSheet(find.byType(AppBarActionButton)),
+            inSheet(find.byType(AppBarActionButton).hitTestable()),
           )
           .map((button) => button.data.tooltip);
 
@@ -343,7 +343,7 @@ void main() {
       await tester.tap(inSheet(find.byTooltip('Search')));
       await tester.pumpAndSettle();
       expect(barButtons(), unorderedEquals(searching));
-      await tester.tap(inSheet(find.byTooltip('Back')));
+      await tester.tap(inSheet(find.byTooltip('Cancel')));
       await tester.pumpAndSettle();
 
       Navigator.of(tester.element(find.byType(ProxiesView))).pop();
