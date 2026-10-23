@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:skyward/providers/app.dart';
 import 'package:skyward/ui/icons/icons.dart';
 import 'package:skyward/widgets/widgets.dart';
 import 'package:flutter/services.dart';

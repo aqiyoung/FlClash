@@ -1,6 +1,8 @@
 import 'package:skyward/providers/app.dart';
 import 'package:skyward/ui/icons/icons.dart';
 import 'package:skyward/ui/ui.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
 
