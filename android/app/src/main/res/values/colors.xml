@@ -3,4 +3,5 @@
     <color name="shortcut_background">#6666FB</color>
     <color name="widget_running">#4ADE80</color>
     <color name="widget_idle">#99FFFFFF</color>
+    <color name="splash_background">#EFF8FD</color>
 </resources>
