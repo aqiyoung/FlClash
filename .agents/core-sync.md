@@ -49,6 +49,12 @@ gh release view -R MetaCubeX/mihomo --json tagName -q .tagName  # the newest rel
 The pin's parents say which tag it sits on: walk down from our head until a commit is no longer one of
 the FlClash patches, and that commit is the release the mirror was taken from.
 
+
+A scheduled job on the default branch does the comparison for you: `core-watch.yaml` reads `beta`'s
+`core_version`, compares it with mihomo's newest release, and announces a difference on Telegram once,
+recording what it said as a `core-watch-<release>` tag. A release left unpicked therefore does not
+repeat every morning; delete that tag to be told again.
+
 ## Bumping
 
 1. Mirror the new branch head. `aqiyoung` carries no patches of its own, so this is a fast-forward:
