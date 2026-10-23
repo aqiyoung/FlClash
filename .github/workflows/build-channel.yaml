@@ -362,25 +362,32 @@ jobs:
           build_tools="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)"
           for apk in dist/*.apk; do
             echo "== $(basename "$apk")"
-            "$build_tools/aapt2" dump badging "$apk" | sed -n '1p'
-            "$build_tools/apksigner" verify --print-certs "$apk" | sed -n '1,4p'
+            # `pipefail` plus `grep -q` is a trap: grep leaves on its first
+            # match, the writer behind it takes EPIPE, and the pipeline then
+            # reports the writer's death as a mismatch on a good APK. Each
+            # output is read once and matched with a here-string.
+            badging="$("$build_tools/aapt2" dump badging "$apk")"
+            certs="$("$build_tools/apksigner" verify --print-certs "$apk" | tr -d ':')"
+            sed -n '1p' <<<"$badging"
+            sed -n '1,4p' <<<"$certs"
             # The exact id, not merely "no .dev suffix": this also catches a
             # merge that restored upstream's package name without saying so.
-            if ! "$build_tools/aapt2" dump badging "$apk" | grep -q "package: name='${APPLICATION_ID}'"; then
+            if ! grep -q "package: name='${APPLICATION_ID}'" <<<"$badging"; then
               echo "::error::$(basename "$apk") is not packaged as ${APPLICATION_ID}"
               exit 1
             fi
             # The digest is matched without its label so that a change in
             # apksigner's wording cannot quietly turn this into a no-op, and
             # without separators so a colon-separated digest still matches.
-            if ! "$build_tools/apksigner" verify --print-certs "$apk" | tr -d ':' | grep -qi "$CERT_SHA256"; then
+            if ! grep -qi "$CERT_SHA256" <<<"$certs"; then
               echo "::error::$(basename "$apk") is not signed with our certificate (expected SHA-256 $CERT_SHA256)"
+              grep -i 'sha-256' <<<"$certs" || true
               exit 1
             fi
             # The whole four-part version, not just upstream's three: the app
             # and Android both report this string, and a build that quietly
             # dropped the revision would pass a prefix check.
-            if ! "$build_tools/aapt2" dump badging "$apk" | grep -q "versionName='${VERSION}'"; then
+            if ! grep -q "versionName='${VERSION}'" <<<"$badging"; then
               echo "::error::$(basename "$apk") does not carry ${VERSION} as its versionName"
               exit 1
             fi
