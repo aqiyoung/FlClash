@@ -202,9 +202,10 @@ class GroupMonogram extends StatelessWidget {
   }
 }
 
-/// The pictures the fork's default config gives its groups, carried in the
-/// bundle so a group wears the same face whether its config names one, whether
-/// the network is up and whether the cache survived a reinstall.
+/// The pictures a group wears when its config names none of its own, carried
+/// in the bundle so a bare group still wears the face its name is known by,
+/// whether the network is up and whether the cache survived a reinstall. A
+/// profile's own `icon` is always authoritative — it wins before any of these.
 abstract final class GroupIconSource {
   static const _dir = 'assets/images/groups/';
 
@@ -261,7 +262,15 @@ abstract final class GroupIconSource {
   };
 
   /// The entry a group wears, or empty for a [GroupBadge] to stand in.
+  ///
+  /// The profile's own picture wins whenever it names one: a bundled mark is
+  /// only the face a group wears when its config leaves it bare. That keeps a
+  /// subscription's icons authoritative — the same fix [262523e0] first gave
+  /// GoogleFCM, now extended to every group.
   static String of({required String name, required String icon}) {
+    if (icon.isNotEmpty) {
+      return icon;
+    }
     final known = _routing[name] ?? _regions[name] ?? _regionAuto(name);
     if (known != null) {
       return '$_dir$known';
@@ -283,15 +292,14 @@ abstract final class GroupIconSource {
       if (picture != null) {
         return '$_dir$picture';
       }
-      // The flag stands in for a picture the bundle lacks, so a config that
-      // names one of its own still wins.
-      return icon.isEmpty ? '' : icon;
+      // The flag stands in for a picture the bundle lacks.
+      return '';
     }
     final kind = _guess(name, _kindKeywords);
     if (kind != null) {
       return '$_dir$kind';
     }
-    return icon.isEmpty ? logo : icon;
+    return logo;
   }
 
   /// `<地区>-自动选择` is how the default config names the url-test group it

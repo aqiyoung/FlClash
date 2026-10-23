@@ -292,23 +292,22 @@ void main() {
       );
     });
 
-    test('takes the name over the picture its config names', () {
-      expect(
-        GroupIconSource.of(name: '自动选择', icon: own),
-        '${_groupDir}auto.png',
-      );
+    test('the picture its config names wins over the name it is known by', () {
+      expect(GroupIconSource.of(name: '自动选择', icon: own), own);
+      expect(GroupIconSource.of(name: '美国', icon: own), own);
+      // a group the profile leaves bare still wears the name it is known by
       expect(
         GroupIconSource.of(name: '漏网之鱼', icon: ''),
         '${_groupDir}final.png',
       );
       expect(
-        GroupIconSource.of(name: '美国', icon: own),
-        '${_groupDir}united_states.png',
+        GroupIconSource.of(name: '自动选择', icon: ''),
+        '${_groupDir}auto.png',
       );
     });
 
-    test('keeps the picture a config names for a group the set does not know, '
-        'and the monogram in the Core GLOBAL', () {
+    test('a config icon wins for a group the set does not know, and the '
+        'Core GLOBAL wears its globe when handed no icon', () {
       expect(GroupIconSource.of(name: 'mine', icon: own), own);
       expect(GroupIconSource.of(name: 'GLOBAL', icon: ''), '');
     });
