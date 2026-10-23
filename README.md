@@ -72,7 +72,7 @@ APK 签名证书（SHA-256）：`04:89:68:C1:72:8E:0E:2E:27:E7:04:D6:B3:01:74:27
 | 渠道 | 分支 | 怎么发 | Release |
 | --- | --- | --- | --- |
 | 预览版 | `beta` | 每次推 `beta` 自动构建（`preview.yaml`），也可以手动 `channel=preview` | prerelease，tag `preview-<构建号>`，只发 Android arm64，不占版本号 |
-| 测试版 | `beta` | 手动 `channel=beta -f publish=true` | prerelease，tag `v<版本>`，7 个平台 |
+| 测试版 | `beta` | 手动 `channel=beta -f force_build=true` | prerelease，tag `v<版本>`，7 个平台 |
 | 正式版 | `main` | 手动 `channel=stable -f promote=true -f publish=true` | 标记 Latest，tag `v<版本>`，7 个平台 |
 
 三个渠道依次晋升：预览版是"还在改"的快速验证包，稳定下来才发测试版，测试版跑一段没问题才晋升成正式版。预览版走 `preview-*` tag、不占第四位版本号，正式版和测试版才占。
@@ -86,7 +86,7 @@ App 内更新检查读的是 `/releases/latest`（只挑正式版），所以预
   └─ build    Android arm64 单架构，不跑测试
   └─ release  tag preview-<构建号> → prerelease → 推 TG（保留最近 5 个）
 
-测试版（手动 channel=beta）
+测试版（手动 channel=beta -f force_build=true）
   └─ [sync]   beta ← 上游 dev：只有 -f sync=true 才做，rebase 我们的提交
   └─ test     跑完整 flutter 测试
   └─ build    矩阵 7 个平台
@@ -130,8 +130,8 @@ gh workflow run ci.yaml -R aqiyoung/Skyward --ref ci -f channel=preview -f sync=
 # 预览版：不动上游，只按 beta 当前内容重建一个
 gh workflow run ci.yaml -R aqiyoung/Skyward --ref ci -f channel=preview
 
-# 测试版：全平台构建 + prerelease
-gh workflow run ci.yaml -R aqiyoung/Skyward --ref ci -f channel=beta
+# 测试版：全平台构建 + prerelease（beta 只在上游同步过、或显式 force_build 时才构建）
+gh workflow run ci.yaml -R aqiyoung/Skyward --ref ci -f channel=beta -f force_build=true
 
 # 正式版：把 beta 晋升进 main，并构建发布 Latest
 gh workflow run ci.yaml -R aqiyoung/Skyward --ref ci -f channel=stable -f promote=true
@@ -144,7 +144,7 @@ gh workflow run ci.yaml -R aqiyoung/Skyward --ref ci -f channel=all -f force_bui
 
 ## 需要修改代码时
 
-应用改动提交到 `beta`：推上去会自动出一个预览版（Android arm64），装到手机上试。要发全平台就先 `channel=beta -f publish=true`（测试必须是绿的），要正式发布再 `channel=stable -f promote=true`。**不要指望直接往 `main` 提交应用代码**：`main` 只在晋升时从 `beta` 更新，届时应用代码一律以 `beta` 为准。
+应用改动提交到 `beta`：推上去会自动出一个预览版（Android arm64），装到手机上试。要发全平台就先 `channel=beta -f force_build=true`（测试必须是绿的；`publish` 默认就是 true），要正式发布再 `channel=stable -f promote=true`。**不要指望直接往 `main` 提交应用代码**：`main` 只在晋升时从 `beta` 更新，届时应用代码一律以 `beta` 为准。
 
 工作流改动提交到 `ci`：手动触发都用 `--ref ci`，跑的就是 `ci` 上的那份，改完立刻生效；晋升时 `ci` 上的四份工作流会被拷到 `main`。
 
