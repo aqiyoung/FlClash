@@ -236,7 +236,9 @@ abstract final class GroupIconSource {
   /// Service groups, by the name the default config gives them: each wears its
   /// service's mark.
   static const _services = {
-    'GoogleFCM': 'spark.png',
+    // GoogleFCM is deliberately absent: its bundled mark was a paper plane,
+    // which reads as Telegram's. Without an entry the group falls through to
+    // the icon its config names, so a profile can dress it as it likes.
     'YouTube': 'youtube.png',
     'Google': 'google_search.png',
     'ChatGPT': 'chatgpt.png',
