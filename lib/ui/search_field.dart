@@ -95,10 +95,7 @@ class _SearchFieldState extends State<SearchField> {
               height: widget.height ?? TonalButtonSize.bar.button,
             ),
             floatingLabelBehavior: FloatingLabelBehavior.never,
-            // Honor a surrounding searchPillTheme (or default theme) when no
-            // explicit fill is given, so the field keeps a visible surface on
-            // glass pages where the GooSurface behind it renders transparent.
-            filled: widget.fill != null ? true : null,
+            filled: widget.fill != null,
             fillColor: widget.fill,
             hintText: widget.hintText ?? localizations.search,
             border: pill.copyWith(borderSide: BorderSide.none),

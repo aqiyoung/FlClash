@@ -345,14 +345,11 @@ class CommonScaffoldState extends State<CommonScaffold>
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final field = ElasticPress(
       child: GooPane(
-        child: InputDecorationTheme(
-          data: searchPillTheme(context),
-          child: SearchField(
-            height: height,
-            controller: _textController,
-            focusNode: _searchFocusNode,
-            onChanged: searchState.onSearch,
-          ),
+        child: SearchField(
+          height: height,
+          controller: _textController,
+          focusNode: _searchFocusNode,
+          onChanged: searchState.onSearch,
         ),
       ),
     );
@@ -641,17 +638,17 @@ class CommonScaffoldState extends State<CommonScaffold>
           : null,
       color: context.raisedSurfaceLevel.colorOf(colorScheme),
       // The field's own buttons stay off the bar's button fills and glass.
+      // Unlike the docked field, which stands on an opaque dock of its own,
+      // the bar field carries an explicit fill so it stays visible over glass
+      // and over pages whose background matches the raised surface.
       field: IconButtonTheme(
         data: IconButtonTheme.of(context),
-        child: InputDecorationTheme(
-          data: searchPillTheme(context),
-          child: SearchField(
-            autofocus: true,
-            controller: _textController,
-            focusNode: _searchFocusNode,
-            onChanged:
-                (value) => _appBarState.value.searchState?.onSearch(value),
-          ),
+        child: SearchField(
+          autofocus: true,
+          controller: _textController,
+          focusNode: _searchFocusNode,
+          onChanged: (value) => _appBarState.value.searchState?.onSearch(value),
+          fill: SurfaceLevel.floatingOf(colorScheme).colorOf(colorScheme),
         ),
       ),
     );
