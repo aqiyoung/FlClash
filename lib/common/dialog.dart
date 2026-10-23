@@ -47,7 +47,42 @@ class Dialogs {
     String? title,
     String? confirmText,
     String? cancelText,
-    bool cancelable = true,
+    bool? dismissible,
+    bool destructive = false,
+  }) {
+    return _showMessage(
+      message: message,
+      context: context,
+      title: title,
+      confirmText: confirmText,
+      cancelText: cancelText,
+      dismissible: dismissible,
+      destructive: destructive,
+      cancelable: true,
+    );
+  }
+
+  /// A message with nothing to decide, acknowledged with a single button.
+  Future<void> showAlert({
+    required InlineSpan message,
+    String? title,
+    bool? dismissible,
+  }) {
+    return _showMessage(
+      message: message,
+      title: title,
+      dismissible: dismissible,
+      cancelable: false,
+    );
+  }
+
+  Future<bool?> _showMessage({
+    required InlineSpan message,
+    required bool cancelable,
+    BuildContext? context,
+    String? title,
+    String? confirmText,
+    String? cancelText,
     bool? dismissible,
     bool destructive = false,
   }) async {

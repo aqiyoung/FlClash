@@ -74,7 +74,7 @@ class RuleItem extends StatelessWidget {
       child: IconButton(
         tooltip: context.appLocalizations.tip,
         onPressed: () {
-          dialogs.showMessage(
+          dialogs.showAlert(
             message: TextSpan(
               text:
                   message ??

@@ -456,7 +456,7 @@ class _GeoResourceItem extends ConsumerWidget {
             .updateGeoResourceUrl(type, newUrl);
       } catch (e) {
         unawaited(
-          dialogs.showMessage(
+          dialogs.showAlert(
             title: type.name,
             message: TextSpan(text: e.toString()),
           ),

@@ -213,9 +213,6 @@ class MessageLookup extends MessageLookupByLibrary {
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
     "about": MessageLookupByLibrary.simpleMessage("アプリについて"),
     "accessControl": MessageLookupByLibrary.simpleMessage("アクセス制御"),
-    "accessControlAllowDesc": MessageLookupByLibrary.simpleMessage(
-      "選択したアプリのみVPNを経由します",
-    ),
     "accessControlDesc": MessageLookupByLibrary.simpleMessage(
       "アクセス制御では、プロキシを利用するアプリを選びます。",
     ),

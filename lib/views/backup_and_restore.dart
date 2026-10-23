@@ -64,7 +64,7 @@ class _BackupAndRestoreState extends ConsumerState<BackupAndRestore>
     );
     if (res != true) return;
     unawaited(
-      dialogs.showMessage(
+      dialogs.showAlert(
         title: title,
         message: TextSpan(text: successMessage),
       ),

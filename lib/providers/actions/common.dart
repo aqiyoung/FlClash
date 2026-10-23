@@ -208,7 +208,7 @@ class CommonAction extends _$CommonAction {
       }
     } else if (isUser) {
       unawaited(
-        dialogs.showMessage(
+        dialogs.showAlert(
           title: currentAppLocalizations.checkUpdate,
           message: TextSpan(text: currentAppLocalizations.checkUpdateError),
         ),
