@@ -212,6 +212,7 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
+    "accessControlAllowDesc": MessageLookupByLibrary.simpleMessage("선택한 앱만 VPN을 거칩니다"),
     "about": MessageLookupByLibrary.simpleMessage("정보"),
     "accessControl": MessageLookupByLibrary.simpleMessage("접근 제어"),
     "accessControlDesc": MessageLookupByLibrary.simpleMessage(
