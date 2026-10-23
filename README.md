@@ -112,6 +112,15 @@ App 内更新检查读的是 `/releases/latest`（只挑正式版），所以预
 - `macos` 没有 Apple 开发者证书，产物是**未签名**的（首次打开要在「系统设置 → 隐私与安全性」里放行）。
 - 推 `main`/`beta` 会触发这两个分支上**上游自带**的工作流。`build.yaml` 必须保持**手动禁用**：它的触发条件是 `branches: ['**']` 加 `tags: ['v*']`，也就是我们每次同步、每次发布打 tag 都会撞上它。`pages.yaml` 有 `github.repository` 守卫，跑起来什么也不做。
 
+## 内核版本提醒（`core-watch.yaml`）
+
+内核是子模块（`core/Clash.Meta` → `aqiyoung/skyward-core`），pin 只有人动才动，所以上游发了新 release 本仓库是不知道的。这份工作流每天早上跑一次（01:00 UTC，即 09:00）：读 `beta` 上 `build_config.yaml` 的 `core_version`，跟 `MetaCubeX/mihomo` 的最新 release 比，不一致就往 TG 推一条提醒，正文直接给出升内核的三步。
+
+- **只提醒一次**：发完消息会打一个轻量 tag `core-watch-<版本>`，下次跑看到它就不再发。删掉那个 tag 可以再提醒一遍；推送失败则不打 tag，下一次运行会重试。
+- **它不改代码**：移 pin 和改版本串是人的决定，自动把内核推上去等于把没跑过 beta 的上游代码发到手机上。
+- **`schedule` 只在默认分支生效**，所以这份工作流必须进 `main`。晋升时从 `ci` 拷哪些工作流写在 `ci.yaml` 的 `promote` 段里，新增工作流要加进那个清单，否则 `main` 上永远没有它。
+- 升内核的完整步骤（镜像快进、移 pin、依赖变动）见 `beta` 上的 [`.agents/core-sync.md`](../blob/beta/.agents/core-sync.md)。
+
 ## 手动触发
 
 ```bash

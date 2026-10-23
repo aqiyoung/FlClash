@@ -211,7 +211,8 @@ jobs:
                 .github/workflows/ci.yaml \
                 .github/workflows/build-channel.yaml \
                 .github/workflows/preview.yaml \
-                .github/workflows/publish-release.yaml
+                .github/workflows/publish-release.yaml \
+                .github/workflows/core-watch.yaml
               git add -A
               git commit --quiet --amend --no-edit
               # The stable channel has to build exactly what beta ran, so the
