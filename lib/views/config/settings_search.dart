@@ -1,5 +1,6 @@
 import 'package:skyward/common/common.dart';
 import 'package:skyward/ui/icons/icons.dart';
+import 'package:skyward/ui/surface.dart';
 import 'package:skyward/views/config/settings_index.dart';
 import 'package:skyward/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
@@ -21,6 +22,7 @@ class _SettingsSearchViewState extends State<SettingsSearchView> {
   @override
   Widget build(BuildContext context) {
     final appLocalizations = context.appLocalizations;
+    final colorScheme = Theme.of(context).colorScheme;
     final entries = settingsEntries
         .where(
           (entry) => _query.matches(entry.fieldsOf(appLocalizations).toList()),
@@ -38,6 +40,12 @@ class _SettingsSearchViewState extends State<SettingsSearchView> {
               child: SearchField(
                 onChanged: (value) =>
                     setState(() => _query = SearchQuery(value)),
+                // The pill theme cannot dress the field: SearchField pins
+                // `filled` in its own decoration, so the pill carries an
+                // explicit fill, as the bar's search field does.
+                fill: SurfaceLevel.floatingOf(
+                  colorScheme,
+                ).colorOf(colorScheme),
               ),
             ),
           ),
