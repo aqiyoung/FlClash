@@ -473,9 +473,12 @@ class DashboardChip extends StatelessWidget {
             label,
             maxLines: 1,
             style: AppTextStyle.caption1
-                .of(context, emphasized: true)
+                .of(context)
                 .toTabular
-                .copyWith(color: foreground),
+                .copyWith(
+                  color: foreground,
+                  fontWeight: DashboardWeight.value,
+                ),
           ),
         ],
       ),
@@ -838,7 +841,9 @@ class DashboardSwitchTile extends StatelessWidget {
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: AppTextStyle.footnote.of(context, emphasized: true),
+                  style: AppTextStyle.footnote
+                      .of(context)
+                      .copyWith(fontWeight: DashboardWeight.value),
                 ),
               ),
               DashboardSwitch(

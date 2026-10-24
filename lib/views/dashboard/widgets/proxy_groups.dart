@@ -166,10 +166,11 @@ class _GroupDelay extends ConsumerWidget {
           ? '$delay ms'
           : delayFailureText(delay, context.appLocalizations),
       maxLines: 1,
-      style: AppTextStyle.caption1
-          .of(context, emphasized: true)
-          .toTabular
-          .copyWith(color: colorScheme.delayColor(delay > 0 ? delay : -1)),
+      style: DashboardText.value(
+        context,
+        AppTextStyle.caption1,
+        color: colorScheme.delayColor(delay > 0 ? delay : -1),
+      ),
     );
   }
 }
@@ -477,10 +478,11 @@ class _IconStack extends StatelessWidget {
                 child: Center(
                   child: Text(
                     '+$rest',
-                    style: AppTextStyle.caption1
-                        .of(context, emphasized: true)
-                        .toTabular
-                        .copyWith(color: context.colorScheme.onSurfaceVariant),
+                    style: DashboardText.value(
+                      context,
+                      AppTextStyle.caption1,
+                      color: context.colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
               ),

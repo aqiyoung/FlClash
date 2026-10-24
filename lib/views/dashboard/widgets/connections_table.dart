@@ -419,10 +419,11 @@ class _TabCount extends StatelessWidget {
     return Text(
       dashboardCount(count),
       maxLines: 1,
-      style: AppTextStyle.subheadline
-          .of(context, emphasized: true)
-          .toTabular
-          .copyWith(color: DefaultTextStyle.of(context).style.color),
+      style: DashboardText.value(
+        context,
+        AppTextStyle.subheadline,
+        color: DefaultTextStyle.of(context).style.color,
+      ),
     );
   }
 }
@@ -458,8 +459,11 @@ class _FeedSegment extends StatelessWidget {
               label,
               maxLines: 1,
               style: AppTextStyle.footnote
-                  .of(context, emphasized: true)
-                  .copyWith(color: foreground),
+                  .of(context)
+                  .copyWith(
+                    color: foreground,
+                    fontWeight: DashboardWeight.value,
+                  ),
             ),
           ],
         ),
@@ -512,8 +516,11 @@ class _TableState<T> extends ConsumerState<_Table<T>>
             ? sorted.sublist(0, _maxFeedRows)
             : sorted;
         final headerStyle = AppTextStyle.caption1
-            .of(context, emphasized: true)
-            .copyWith(color: colorScheme.onSurfaceVariant);
+            .of(context)
+            .copyWith(
+              color: colorScheme.onSurfaceVariant,
+              fontWeight: DashboardWeight.value,
+            );
         final headerHeight =
             _headerHeight * DashboardDensityScope.scaleOf(context);
         final overflows =
@@ -666,15 +673,18 @@ class _Source extends StatelessWidget {
             child: Text(
               letter,
               style: AppTextStyle.caption2
-                  .of(context, emphasized: true)
-                  .copyWith(color: context.colorScheme.onSurfaceVariant),
+                  .of(context)
+                  .copyWith(
+                    color: context.colorScheme.onSurfaceVariant,
+                    fontWeight: DashboardWeight.value,
+                  ),
             ),
           ),
         ),
         Flexible(
           child: Text(
             name.isEmpty ? '—' : name,
-            style: AppTextStyle.footnote.of(context, emphasized: true),
+            style: DashboardText.value(context, AppTextStyle.footnote),
           ),
         ),
       ],
@@ -841,7 +851,7 @@ List<RecordColumn<DnsQuery>> _dnsColumns(BuildContext context) {
       TableColumn('domain', appLocalizations.domain, flex: 1.3),
       cell: (context, query) => Text(
         query.domain,
-        style: AppTextStyle.footnote.of(context, emphasized: true),
+        style: DashboardText.value(context, AppTextStyle.footnote),
       ),
       sortKey: (query) => query.domain.toLowerCase(),
     ),
@@ -883,9 +893,11 @@ class _DnsResult extends StatelessWidget {
     if (query.hasFailureRcode) {
       return Text(
         query.rcode,
-        style: AppTextStyle.footnote
-            .of(context, emphasized: true)
-            .copyWith(color: DashboardColors.of(context).warn),
+        style: DashboardText.value(
+          context,
+          AppTextStyle.footnote,
+          color: DashboardColors.of(context).warn,
+        ),
       );
     }
     final answer = query.answers.firstOrNull ?? '—';
@@ -904,8 +916,11 @@ class _DnsResult extends StatelessWidget {
               child: Text(
                 context.appLocalizations.cache,
                 style: AppTextStyle.caption2
-                    .of(context, emphasized: true)
-                    .copyWith(color: colorScheme.onSurfaceVariant),
+                    .of(context)
+                    .copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                      fontWeight: DashboardWeight.value,
+                    ),
               ),
             ),
           ),

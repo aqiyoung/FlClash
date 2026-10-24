@@ -126,10 +126,26 @@ String dashboardTraffic(num bytes) {
   return '${show.value} ${show.unit}';
 }
 
+/// The two weights the dashboard reads in.
+///
+/// The system faces Android ships stop at 400, 500 and 700, and a request for
+/// 600 resolves to the bold one, so [AppTextStyle.of]'s `emphasized` is bold on
+/// a phone. Asking every figure for it set the whole page in bold and left
+/// nothing for a card to lead with; values take medium instead.
+abstract final class DashboardWeight {
+  /// A card's title, and nothing else: the mark a reader finds without reading.
+  static const title = FontWeight.w600;
+
+  /// A figure, a rate, a duration, a row's name.
+  static const value = FontWeight.w500;
+}
+
 /// The dashboard's text roles; every figure reads in tabular digits.
 abstract final class DashboardText {
   static TextStyle cardTitle(BuildContext context) =>
-      AppTextStyle.subheadline.of(context, emphasized: true);
+      AppTextStyle.subheadline
+          .of(context)
+          .copyWith(fontWeight: DashboardWeight.title);
 
   static TextStyle label(BuildContext context, {Color? color}) => AppTextStyle
       .caption1
@@ -137,29 +153,43 @@ abstract final class DashboardText {
       .toTabular
       .copyWith(color: color ?? context.colorScheme.onSurfaceVariant);
 
-  /// Semibold by default: a figure is the card's value, and bold on every one
-  /// of them left the page with nothing that stood out.
   static TextStyle figure(
     BuildContext context,
     AppTextStyle style, {
     Color? color,
-    FontWeight weight = FontWeight.w600,
   }) => style
-      .of(context, emphasized: true)
+      .of(context)
       .toTabular
       .copyWith(
         color: color,
-        fontWeight: weight,
+        fontWeight: DashboardWeight.value,
         letterSpacing: -0.02 * style.size,
       );
+
+  /// A value that lives inside a row rather than standing as the card's
+  /// figure: a latency, a duration, a count beside its label. Unlike [figure]
+  /// it leaves the tracking alone, which belongs to large type only.
+  static TextStyle value(
+    BuildContext context,
+    AppTextStyle style, {
+    Color? color,
+  }) => style
+      .of(context)
+      .toTabular
+      .copyWith(color: color, fontWeight: DashboardWeight.value);
 
   static TextStyle unit(
     BuildContext context, [
     AppTextStyle style = AppTextStyle.subheadline,
   ]) => style
-      .of(context, emphasized: true)
-      .copyWith(color: context.colorScheme.onSurfaceVariant);
+      .of(context)
+      .copyWith(
+        color: context.colorScheme.onSurfaceVariant,
+        fontWeight: DashboardWeight.value,
+      );
 
   static TextStyle rowTitle(BuildContext context) =>
-      AppTextStyle.subheadline.of(context, emphasized: true);
+      AppTextStyle.subheadline
+          .of(context)
+          .copyWith(fontWeight: DashboardWeight.value);
 }

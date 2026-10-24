@@ -821,8 +821,11 @@ class _Cell extends StatelessWidget {
   }
 }
 
+/// A cell's value sits under its label rather than beside it, at the value
+/// weight: the address above it is the card's figure, and two figures of one
+/// weight leave neither reading first.
 TextStyle _cellStyle(BuildContext context) =>
-    AppTextStyle.subheadline.of(context, emphasized: true).toTabular;
+    DashboardText.value(context, AppTextStyle.subheadline);
 
 class _CellText extends StatelessWidget {
   const _CellText(this.text);

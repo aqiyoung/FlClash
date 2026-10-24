@@ -7,6 +7,7 @@ import 'package:skyward/models/models.dart';
 import 'package:skyward/providers/providers.dart';
 import 'package:skyward/state.dart';
 import 'package:skyward/ui/icons/icons.dart';
+import 'package:skyward/views/dashboard/style.dart';
 import 'package:skyward/views/profiles/preview.dart';
 import 'package:skyward/views/profiles/profiles.dart';
 import 'package:skyward/views/proxies/providers.dart';
@@ -311,9 +312,11 @@ class _StatTile extends StatelessWidget {
           Text(
             value ?? '0',
             maxLines: 1,
-            style: AppTextStyle.title2
-                .of(context, emphasized: true)
-                .copyWith(color: colorScheme.onSurface),
+            style: DashboardText.figure(
+              context,
+              AppTextStyle.title2,
+              color: colorScheme.onSurface,
+            ),
           ),
           Text(
             label,

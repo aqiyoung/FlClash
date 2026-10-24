@@ -368,10 +368,11 @@ class _ServiceCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (label, color) = service.statusOf(context);
-    final status = AppTextStyle.caption1
-        .of(context, emphasized: true)
-        .toTabular
-        .copyWith(color: color);
+    final status = DashboardText.value(
+      context,
+      AppTextStyle.caption1,
+      color: color,
+    );
     final badge = _ServiceBadge(
       target: service.target,
       size: height - _inset * 2,
@@ -387,7 +388,9 @@ class _ServiceCell extends StatelessWidget {
             service.target.label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: AppTextStyle.footnote.of(context, emphasized: true),
+            // The name says which check this is; the latency under it is the
+            // cell's value, so the name keeps the label's weight.
+            style: AppTextStyle.footnote.of(context),
           ),
           if (service.loading)
             SkeletonText(width: 44, style: status)
@@ -534,8 +537,11 @@ class _StatusPill extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: AppTextStyle.caption1
-              .of(context, emphasized: true)
-              .copyWith(color: colors.onContainer),
+              .of(context)
+              .copyWith(
+                color: colors.onContainer,
+                fontWeight: DashboardWeight.value,
+              ),
         ),
       ),
     );
@@ -1037,10 +1043,11 @@ class _ServiceRowTrailing extends StatelessWidget {
         if (delay != null)
           Text(
             '$delay ms',
-            style: AppTextStyle.footnote
-                .of(context, emphasized: true)
-                .toTabular
-                .copyWith(color: context.colorScheme.onSurface),
+            style: DashboardText.value(
+              context,
+              AppTextStyle.footnote,
+              color: context.colorScheme.onSurface,
+            ),
           ),
         if (checkedAt != null)
           Text(
