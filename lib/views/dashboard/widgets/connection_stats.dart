@@ -11,22 +11,8 @@ import 'connections_table.dart';
 
 /// The counts of the three feeds, each opening its list, for the phone and
 /// for a desktop page too short for the table.
-class ConnectionStatsCard extends ConsumerStatefulWidget {
+class ConnectionStatsCard extends StatelessWidget {
   const ConnectionStatsCard({super.key});
-
-  @override
-  ConsumerState<ConnectionStatsCard> createState() =>
-      _ConnectionStatsCardState();
-}
-
-class _ConnectionStatsCardState extends ConsumerState<ConnectionStatsCard>
-    with
-        WidgetsBindingObserver,
-        ActivePollingMixin<ConnectionStatsCard>,
-        RouteMotionHoldMixin<ConnectionStatsCard>,
-        ConnectionsPolling<ConnectionStatsCard> {
-  @override
-  bool get pollsConnections => false;
 
   @override
   Widget build(BuildContext context) {
@@ -38,14 +24,29 @@ class _ConnectionStatsCardState extends ConsumerState<ConnectionStatsCard>
   }
 }
 
-/// The same counts as a row, for a card that holds other things above them.
-class ConnectionStatsBar extends StatelessWidget {
+/// The same counts as a row, for a card that holds other things above them. It
+/// keeps the card's polling, so the counts are as fresh here as they were
+/// alone.
+class ConnectionStatsBar extends ConsumerStatefulWidget {
   const ConnectionStatsBar({super.key, this.divider = false});
 
   /// A hairline above the counts, for the card they now sit at the bottom of.
   final bool divider;
 
+  @override
+  ConsumerState<ConnectionStatsBar> createState() => _ConnectionStatsBarState();
+}
+
+class _ConnectionStatsBarState extends ConsumerState<ConnectionStatsBar>
+    with
+        WidgetsBindingObserver,
+        ActivePollingMixin<ConnectionStatsBar>,
+        RouteMotionHoldMixin<ConnectionStatsBar>,
+        ConnectionsPolling<ConnectionStatsBar> {
   static const _inset = 8.0;
+
+  @override
+  bool get pollsConnections => false;
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +56,7 @@ class ConnectionStatsBar extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        if (divider)
+        if (widget.divider)
           Divider(
             height: 1,
             thickness: 0.5,
