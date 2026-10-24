@@ -404,11 +404,17 @@ class _GroupsFigure extends StatelessWidget {
         children: [
           TextSpan(
             text: '${groups.length}',
-            style: DashboardText.figure(context, metrics.style),
+            style: DashboardText.figure(
+              context,
+              metrics.style,
+              weight: DashboardWeight.hero,
+            ),
           ),
           TextSpan(
             text: ' ${context.appLocalizations.groupCountUnit}',
-            style: DashboardText.unit(context),
+            style: DashboardText.unit(
+              context,
+            ).copyWith(fontWeight: DashboardWeight.hero),
           ),
         ],
       ),

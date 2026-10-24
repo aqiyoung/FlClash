@@ -138,6 +138,11 @@ abstract final class DashboardWeight {
 
   /// A figure, a rate, a duration, a row's name.
   static const value = FontWeight.w500;
+
+  /// A card's one large figure, the number the card is about. Medium is what a
+  /// row's figure takes, and at this size it reads as bold beside the rows
+  /// above it; the regular weight keeps the same colour at 34 pt and up.
+  static const hero = FontWeight.w400;
 }
 
 /// The dashboard's text roles; every figure reads in tabular digits.
@@ -157,12 +162,13 @@ abstract final class DashboardText {
     BuildContext context,
     AppTextStyle style, {
     Color? color,
+    FontWeight weight = DashboardWeight.value,
   }) => style
       .of(context)
       .toTabular
       .copyWith(
         color: color,
-        fontWeight: DashboardWeight.value,
+        fontWeight: weight,
         letterSpacing: -0.02 * style.size,
       );
 
