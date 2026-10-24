@@ -24,12 +24,16 @@ import 'routing_map.dart';
 /// The way out: the address the traffic leaves home by, the hops the
 /// subscription puts in the way, and what it was addressed to.
 ///
-/// Clash's connection list already carries all three. `chains` names the hops
-/// from the way out back, and its names hold the regions a subscription puts
-/// there; `destinationGeoIP` and `sourceGeoIP` say where the two ends are. The
-/// near end needs one more lookup: the Core resolves a public address to its
-/// country and no further, and the province is what makes the dot land on the
-/// right part of the map.
+/// Clash's connection list carries all three. `chains` names the hops from the
+/// way out back, and its names hold the regions a subscription puts there;
+/// `sourceGeoIP` says where the near end is, and the Core resolves it to a
+/// country and no further, so the province is looked up to make the dot land on
+/// the right part of the map.
+///
+/// The far end needs the same help twice over: `destinationGeoIP` is empty on
+/// most connections, and a route that stops at the node is only half of what
+/// the map is for, so the host the traffic asked for is put to a GeoIP provider
+/// of its own.
 class RoutingBoardCard extends ConsumerStatefulWidget {
   const RoutingBoardCard({super.key});
 
@@ -48,6 +52,21 @@ class _RoutingBoardCardState extends ConsumerState<RoutingBoardCard>
   DateTime? _locationAskedAt;
   bool _locationPending = false;
   Duration _locationWait = const Duration(minutes: 15);
+
+  /// What the live connection is headed for, when the Core did not say: kept
+  /// for the connection it belongs to, so the map never shows the previous
+  /// request's destination under the current one.
+  _Target? _target;
+  String? _targetQuery;
+  bool _targetPending = false;
+
+  /// Answers outlive the connection that asked for them — an address does not
+  /// move — but not the session: a host seen once an hour ago is worth asking
+  /// about again, and a browser tab leaves a lot of hosts behind it.
+  final Map<String, _Target> _targets = {};
+  final Map<String, DateTime> _targetAskedAt = {};
+  static const _targetCacheLimit = 128;
+  static const _targetRetry = Duration(minutes: 2);
 
   CoreController get _core => ref.read(coreHandlerProvider);
 
@@ -75,14 +94,16 @@ class _RoutingBoardCardState extends ConsumerState<RoutingBoardCard>
   Future<void> poll(PollGuard isCurrent) async {
     if (ref.read(coreStatusProvider) != CoreStatus.connected) {
       _locationAskedAt = null;
-      if ((_connections.isNotEmpty || _location != null) &&
+      if ((_connections.isNotEmpty || _location != null || _target != null) &&
           isCurrent() &&
           mounted) {
         setState(() {
           _connections = const [];
           _location = null;
+          _target = null;
         });
       }
+      _targetQuery = null;
       return;
     }
     try {
@@ -98,6 +119,7 @@ class _RoutingBoardCardState extends ConsumerState<RoutingBoardCard>
       );
     }
     unawaited(_askLocation());
+    unawaited(_askTarget());
   }
 
   /// A province does not change while the phone stays where it is, and the
@@ -133,6 +155,68 @@ class _RoutingBoardCardState extends ConsumerState<RoutingBoardCard>
       );
     } finally {
       _locationPending = false;
+    }
+  }
+
+  /// Where the live request is headed, when the Core named no country for it.
+  ///
+  /// A new connection is a new question, and the answer to the old one is
+  /// dropped before it is asked: the map is read in one glance, and a
+  /// destination that belonged to the last request would be read as this one's.
+  /// The answer is kept per host, so a page that opens a dozen connections to
+  /// one site is asked about once.
+  Future<void> _askTarget() async {
+    final live = _live();
+    final query = _targetQueryOf(live);
+    if (query != _targetQuery) {
+      _targetQuery = query;
+      final cached = query == null ? null : _targets[query];
+      if (_target != cached) {
+        setState(() => _target = cached);
+      }
+    }
+    if (query == null || _target != null || _targetPending) {
+      return;
+    }
+    final askedAt = _targetAskedAt[query];
+    if (askedAt != null && DateTime.now().difference(askedAt) < _targetRetry) {
+      return;
+    }
+    _targetPending = true;
+    _targetAskedAt[query] = DateTime.now();
+    if (_targetAskedAt.length > _targetCacheLimit * 4) {
+      final now = DateTime.now();
+      _targetAskedAt.removeWhere(
+        (_, at) => now.difference(at) >= _targetRetry,
+      );
+    }
+    try {
+      final location = await lookupTargetLocation(
+        _core,
+        query,
+        proxyName: _exitOf(live) ?? '',
+        timeout: const Duration(seconds: 4),
+      );
+      final country = geoCountryOf(location?.countryCode);
+      if (country == null) {
+        return;
+      }
+      final target = _Target(country, _placeOf(location!, country));
+      if (_targets.length >= _targetCacheLimit) {
+        _targets.remove(_targets.keys.first);
+      }
+      _targets[query] = target;
+      if (!mounted || _targetQuery != query) {
+        return;
+      }
+      setState(() => _target = target);
+    } catch (error) {
+      commonPrint.log(
+        'routing board target error: $error',
+        logLevel: coreFailureLogLevel(error),
+      );
+    } finally {
+      _targetPending = false;
     }
   }
 
@@ -198,17 +282,29 @@ class _RoutingBoardCardState extends ConsumerState<RoutingBoardCard>
       geoPlaceOfRegion(location?.region) ??
           geoCityOfNode(location?.city ?? ''),
     );
-    final stops = _stopsOf(active, localCountry, localPlace);
-    String? exit;
-    for (final name in active?.chains ?? const <String>[]) {
-      if (!isBuiltinOutbound(name)) {
-        exit = name;
-        break;
-      }
-    }
+    final exit = _exitOf(active);
     final relays = _relaysOf(active, chinese);
-    final destinationCountry = geoCountryOfGeoIps(
-      active?.metadata.destinationGeoIP ?? const <String>[],
+    // The Core names a destination's country on some connections and none on
+    // others; when it does not, the lookup the poll loop runs fills the gap.
+    final target = _target;
+    final destinationCountry =
+        geoCountryOfGeoIps(
+          active?.metadata.destinationGeoIP ?? const <String>[],
+        ) ??
+        _countryOfRule(active) ??
+        target?.country;
+    final destinationPlace = _placeIn(destinationCountry, target?.place);
+    final destinationRegion = _regionOf(
+      destinationCountry,
+      destinationPlace,
+      chinese: chinese,
+    );
+    final stops = _stopsOf(
+      active,
+      localCountry,
+      localPlace,
+      destinationCountry,
+      destinationPlace,
     );
     final detail = RoutingDetail(
       stops: stops,
@@ -225,7 +321,7 @@ class _RoutingBoardCardState extends ConsumerState<RoutingBoardCard>
       relays: relays,
       host: active?.metadata.host,
       endpoint: _endpointOf(active),
-      destinationRegion: destinationCountry?.label(chinese: chinese),
+      destinationRegion: destinationRegion,
       network: active?.metadata.network,
       process: active?.progressText,
       rule: _ruleOf(active),
@@ -287,7 +383,7 @@ class _RoutingBoardCardState extends ConsumerState<RoutingBoardCard>
                 child: _Legend(
                   label: appLocalizations.routeTo,
                   value: active?.title,
-                  detail: destinationCountry?.label(chinese: chinese),
+                  detail: destinationRegion,
                 ),
               ),
             ],
@@ -328,6 +424,8 @@ class _RoutingBoardCardState extends ConsumerState<RoutingBoardCard>
     TrackerInfo? active,
     GeoCountry? local,
     GeoPlace? localPlace,
+    GeoCountry? destination,
+    GeoPlace? destinationPlace,
   ) {
     final stops = <RouteStop>[
       if (local != null)
@@ -354,25 +452,132 @@ class _RoutingBoardCardState extends ConsumerState<RoutingBoardCard>
         add(countries[i], i == countries.length - 1 ? city : null);
       }
     }
-    final destination = geoCountryOfGeoIps(
-      active?.metadata.destinationGeoIP ?? const <String>[],
-    );
     if (destination == null) {
       return stops;
     }
     if (stops.isNotEmpty &&
         stops.last.country == destination &&
         stops.last.role == RouteStopRole.relay) {
+      // The node and what was asked for are in one country, and one dot says
+      // so; the place the node is named after is the exact end of it.
       stops[stops.length - 1] = RouteStop(
         destination,
         RouteStopRole.destination,
-        place: stops.last.place,
+        place: stops.last.place ?? destinationPlace,
       );
     } else {
-      stops.add(RouteStop(destination, RouteStopRole.destination));
+      stops.add(
+        RouteStop(
+          destination,
+          RouteStopRole.destination,
+          place: destinationPlace,
+        ),
+      );
     }
     return stops;
   }
+
+  /// The hop the traffic leaves by, which is the first name in `chains` that a
+  /// user could have chosen.
+  String? _exitOf(TrackerInfo? active) {
+    for (final name in active?.chains ?? const <String>[]) {
+      if (!isBuiltinOutbound(name)) {
+        return name;
+      }
+    }
+    return null;
+  }
+
+  /// The name or address worth asking a GeoIP provider about, or null when the
+  /// Core has already answered or has nothing to ask about.
+  ///
+  /// A host is asked about first and survives fake-ip, where `destinationIP` is
+  /// a stand-in from a reserved range and geolocates to nowhere; a bare address
+  /// is only worth asking about when it is a public one, for the same reason.
+  String? _targetQueryOf(TrackerInfo? active) {
+    final metadata = active?.metadata;
+    if (metadata == null) {
+      return null;
+    }
+    if (geoCountryOfGeoIps(metadata.destinationGeoIP) != null) {
+      return null;
+    }
+    final host = metadata.host;
+    if (host.isNotEmpty && ipAddressOf(host) == null) {
+      return host;
+    }
+    final address = ipAddressOf(host) ?? metadata.destinationIP;
+    return _isPublicAddress(address) ? address : null;
+  }
+
+  /// The country a matched `GEOIP` rule names, which is the Core's own reading
+  /// of where the connection goes and costs no request. A payload like `LAN` or
+  /// a list of two letter tags names no single country and is left alone.
+  GeoCountry? _countryOfRule(TrackerInfo? active) {
+    if (active == null || !active.rule.toUpperCase().contains('GEOIP')) {
+      return null;
+    }
+    return geoCountryOfGeoIps([active.rulePayload]);
+  }
+
+  /// The finest point an answer supports: a city the map already knows how to
+  /// name in both languages, else the province, else the coordinate itself
+  /// under whatever the provider calls it.
+  GeoPlace? _placeOf(IpLocation location, GeoCountry country) {
+    final city = _placeIn(country, geoCityOfNode(location.city ?? ''));
+    if (city != null) {
+      return city;
+    }
+    final region = _placeIn(country, geoPlaceOfRegion(location.region));
+    if (region != null) {
+      return region;
+    }
+    final latitude = location.latitude;
+    final longitude = location.longitude;
+    final label = location.city ?? location.region;
+    if (latitude == null || longitude == null || label == null) {
+      return null;
+    }
+    return GeoPlace(latitude, longitude, label, label, country.code);
+  }
+}
+
+/// What a lookup made of the far end.
+final class _Target {
+  const _Target(this.country, this.place);
+
+  final GeoCountry country;
+  final GeoPlace? place;
+}
+
+/// Reserved ranges: the stand-ins a fake-ip resolver hands out for a name, and
+/// the private ones that never had a country to begin with.
+bool _isPublicAddress(String address) {
+  final parts = ipAddressOf(address)?.split('.');
+  if (parts == null || parts.length != 4) {
+    // A V6 address is public unless it is loopback or link-local.
+    return address.isNotEmpty &&
+        address != '::1' &&
+        !address.toLowerCase().startsWith('fe80');
+  }
+  final first = int.parse(parts[0]);
+  final second = int.parse(parts[1]);
+  if (first == 0 || first == 10 || first == 127 || first >= 224) {
+    return false;
+  }
+  if (first == 172 && second >= 16 && second <= 31) {
+    return false;
+  }
+  if (first == 192 && second == 168) {
+    return false;
+  }
+  if (first == 169 && second == 254) {
+    return false;
+  }
+  if (first == 100 && second >= 64 && second <= 127) {
+    return false;
+  }
+  return !(first == 198 && (second == 18 || second == 19));
 }
 
 /// A place is only worth pinning when it sits in the country the address
@@ -417,8 +622,11 @@ String? _ruleOf(TrackerInfo? active) {
       : '${active.rule}(${active.rulePayload})';
 }
 
-/// Hosts that answer their own question: a resolver's lookups and the
-/// reachability probes each platform runs on a timer.
+/// Hosts that answer their own question: a resolver's lookups, the
+/// reachability probes each platform runs on a timer, and the GeoIP providers
+/// this card asks about itself. The last three are the reason this list exists
+/// twice over — a lookup is a burst of a few kilobytes, and a burst is what
+/// `_live` is looking for.
 const _noiseHosts = [
   'connectivitycheck',
   'connectivity-check',
@@ -432,10 +640,24 @@ const _noiseHosts = [
   'dns.alidns',
   'dns.qq.com',
   'doh.pub',
+  'ip-api.com',
+  'ipwho.is',
+  'api.ip.sb',
+  'ipinfo.io',
+  'geojs.io',
+  'country.is',
+  'ipquery.io',
+  'ident.me',
+  'qifu-api.baidubce.com',
 ];
 
 bool _isNoise(TrackerInfo item) {
   final metadata = item.metadata;
+  // Every request the Core makes for itself — delay tests, service checks, the
+  // GeoIP lookups this card runs — carries the Core's own name as its process.
+  if (metadata.process == 'mihomo') {
+    return true;
+  }
   if (metadata.network == 'udp' && metadata.destinationPort == '53') {
     return true;
   }
