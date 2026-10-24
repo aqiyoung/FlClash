@@ -74,6 +74,7 @@ class _ConnectionStatsBarState extends ConsumerState<ConnectionStatsBar>
                   builder: (context, count, _) => _Count(count),
                 ),
               ),
+              const _StatDivider(),
               _Stat(
                 feed: DashboardFeed.requests,
                 shape: shape,
@@ -82,6 +83,7 @@ class _ConnectionStatsBarState extends ConsumerState<ConnectionStatsBar>
                   builder: (_, count) => _Count(count),
                 ),
               ),
+              const _StatDivider(),
               _Stat(
                 feed: DashboardFeed.dns,
                 shape: shape,
@@ -94,6 +96,22 @@ class _ConnectionStatsBarState extends ConsumerState<ConnectionStatsBar>
           ),
         ),
       ],
+    );
+  }
+}
+
+/// A hairline between two of the counts, drawn at the same weight as the one
+/// they sit under. Without it the three read as one wide strip.
+class _StatDivider extends StatelessWidget {
+  const _StatDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 0.5,
+      height: 26,
+      margin: const EdgeInsets.symmetric(horizontal: 6),
+      color: context.colorScheme.outlineVariant,
     );
   }
 }
