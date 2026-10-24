@@ -113,6 +113,7 @@ const List<DashboardWidget> defaultDashboardWidgets = [
   DashboardWidget.currentOutbound,
   DashboardWidget.networkControl,
   DashboardWidget.networkOverview,
+  DashboardWidget.routingBoard,
   DashboardWidget.profiles,
   DashboardWidget.proxyGroups,
 ];
@@ -122,11 +123,30 @@ const List<DashboardWidget> defaultDashboardWidgets = [
 final List<DashboardWidget> platformDefaultDashboardWidgets = system.isAndroid
     ? const [
         DashboardWidget.currentOutbound,
+        DashboardWidget.routingBoard,
         DashboardWidget.networkControl,
         DashboardWidget.profiles,
         DashboardWidget.proxyGroups,
       ]
     : defaultDashboardWidgets;
+
+/// The sets the build before the route board shipped as its default. A saved
+/// list that still matches one of them was never edited, so it takes the new
+/// default instead of hiding the card behind the editor's add menu.
+const _previousPhoneDefaults = {
+  DashboardWidget.currentOutbound,
+  DashboardWidget.networkControl,
+  DashboardWidget.profiles,
+  DashboardWidget.proxyGroups,
+};
+
+const _previousDesktopDefaults = {
+  DashboardWidget.currentOutbound,
+  DashboardWidget.networkControl,
+  DashboardWidget.networkOverview,
+  DashboardWidget.profiles,
+  DashboardWidget.proxyGroups,
+};
 
 const _legacyDefaultDashboardWidgets = {
   'networkSpeed',
@@ -175,11 +195,15 @@ List<DashboardWidget> dashboardWidgetsFromJson(
   }
   final byName = DashboardWidget.values.asNameMap();
   if (dashboardWidgets.contains(DashboardWidget.currentOutbound.name)) {
-    return dashboardWidgets
+    final kept = dashboardWidgets
         .map((e) => _legacyDashboardWidgets[e] ?? byName[e])
         .nonNulls
-        .toSet()
-        .toList();
+        .toSet();
+    if (setEquals(kept, _previousPhoneDefaults) ||
+        setEquals(kept, _previousDesktopDefaults)) {
+      return platformDefaultDashboardWidgets;
+    }
+    return kept.toList();
   }
   // The one default that knew the mode card by an older name; the sets below
   // are compared by the names they were saved under.

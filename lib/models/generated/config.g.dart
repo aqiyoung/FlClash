@@ -147,6 +147,7 @@ const _$DashboardWidgetEnumMap = {
   DashboardWidget.currentOutbound: 'currentOutbound',
   DashboardWidget.networkControl: 'networkControl',
   DashboardWidget.networkOverview: 'networkOverview',
+  DashboardWidget.routingBoard: 'routingBoard',
   DashboardWidget.profiles: 'profiles',
   DashboardWidget.proxyGroups: 'proxyGroups',
   DashboardWidget.memoryInfo: 'memoryInfo',

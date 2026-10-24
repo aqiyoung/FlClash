@@ -468,6 +468,7 @@ enum DashboardWidget {
   currentOutbound,
   networkControl,
   networkOverview,
+  routingBoard,
   profiles,
   proxyGroups,
   memoryInfo;

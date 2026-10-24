@@ -7974,6 +7974,56 @@ class AppLocalizations {
     );
   }
 
+  /// `Route`
+  String get routeBoard {
+    return Intl.message(
+      'Route',
+      name: 'routeBoard',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The hops this device\'s traffic takes`
+  String get routeBoardDesc {
+    return Intl.message(
+      'The hops this device\'s traffic takes',
+      name: 'routeBoardDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `From`
+  String get routeFrom {
+    return Intl.message(
+      'From',
+      name: 'routeFrom',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Via`
+  String get routeVia {
+    return Intl.message(
+      'Via',
+      name: 'routeVia',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `To`
+  String get routeTo {
+    return Intl.message(
+      'To',
+      name: 'routeTo',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Edit dashboard`
   String get editDashboard {
     return Intl.message(

@@ -9,6 +9,7 @@ extension DashboardWidgetView on DashboardWidget {
     DashboardWidget.currentOutbound => const CurrentOutboundCard(),
     DashboardWidget.networkControl => const NetworkControlCard(),
     DashboardWidget.networkOverview => const NetworkOverviewCard(),
+    DashboardWidget.routingBoard => const RoutingBoardCard(),
     DashboardWidget.profiles => const ProfilesCard(),
     DashboardWidget.proxyGroups => const ProxyGroupsCard(),
     DashboardWidget.memoryInfo => const MemoryInfo(),
@@ -18,6 +19,7 @@ extension DashboardWidgetView on DashboardWidget {
     DashboardWidget.currentOutbound => AppGlyphs.status,
     DashboardWidget.networkControl => AppGlyphs.split,
     DashboardWidget.networkOverview => AppGlyphs.verified,
+    DashboardWidget.routingBoard => AppGlyphs.proxies,
     DashboardWidget.profiles => AppGlyphs.profiles,
     DashboardWidget.proxyGroups => AppGlyphs.layers,
     DashboardWidget.memoryInfo => AppGlyphs.memory,
@@ -29,6 +31,7 @@ extension DashboardWidgetView on DashboardWidget {
       DashboardWidget.currentOutbound => appLocalizations.status,
       DashboardWidget.networkControl => appLocalizations.networkControl,
       DashboardWidget.networkOverview => appLocalizations.networkOverview,
+      DashboardWidget.routingBoard => appLocalizations.routeBoard,
       DashboardWidget.profiles => appLocalizations.profile,
       DashboardWidget.proxyGroups => appLocalizations.proxyGroup,
       DashboardWidget.memoryInfo => appLocalizations.memoryInfo,
@@ -39,6 +42,7 @@ extension DashboardWidgetView on DashboardWidget {
     final appLocalizations = context.appLocalizations;
     return switch (this) {
       DashboardWidget.currentOutbound => appLocalizations.currentOutboundDesc,
+      DashboardWidget.routingBoard => appLocalizations.routeBoardDesc,
       DashboardWidget.memoryInfo => appLocalizations.memoryInfoDesc,
       _ => null,
     };

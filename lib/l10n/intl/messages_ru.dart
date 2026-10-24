@@ -1543,9 +1543,16 @@ class MessageLookup extends MessageLookupByLibrary {
     "result": MessageLookupByLibrary.simpleMessage("Результат"),
     "retry": MessageLookupByLibrary.simpleMessage("Повторить"),
     "routeAddress": MessageLookupByLibrary.simpleMessage("Адреса маршрутов"),
+    "routeBoard": MessageLookupByLibrary.simpleMessage("Маршрут"),
+    "routeBoardDesc": MessageLookupByLibrary.simpleMessage(
+      "Путь трафика от устройства до назначения",
+    ),
     "routeExcludeAddress": MessageLookupByLibrary.simpleMessage(
       "Исключённые адреса маршрутов",
     ),
+    "routeFrom": MessageLookupByLibrary.simpleMessage("Устройство"),
+    "routeTo": MessageLookupByLibrary.simpleMessage("Назначение"),
+    "routeVia": MessageLookupByLibrary.simpleMessage("Узел"),
     "routingMark": MessageLookupByLibrary.simpleMessage("Метка маршрутизации"),
     "ru": MessageLookupByLibrary.simpleMessage("Русский"),
     "rule": MessageLookupByLibrary.simpleMessage("Правило"),

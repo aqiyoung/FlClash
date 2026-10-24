@@ -1479,9 +1479,16 @@ class MessageLookup extends MessageLookupByLibrary {
     "result": MessageLookupByLibrary.simpleMessage("Result"),
     "retry": MessageLookupByLibrary.simpleMessage("Retry"),
     "routeAddress": MessageLookupByLibrary.simpleMessage("Route addresses"),
+    "routeBoard": MessageLookupByLibrary.simpleMessage("Route"),
+    "routeBoardDesc": MessageLookupByLibrary.simpleMessage(
+      "The hops this device's traffic takes",
+    ),
     "routeExcludeAddress": MessageLookupByLibrary.simpleMessage(
       "Route exclude addresses",
     ),
+    "routeFrom": MessageLookupByLibrary.simpleMessage("From"),
+    "routeTo": MessageLookupByLibrary.simpleMessage("To"),
+    "routeVia": MessageLookupByLibrary.simpleMessage("Via"),
     "routingMark": MessageLookupByLibrary.simpleMessage("Routing mark"),
     "ru": MessageLookupByLibrary.simpleMessage("Russian"),
     "rule": MessageLookupByLibrary.simpleMessage("Rule"),
