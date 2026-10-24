@@ -5,12 +5,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'card.dart';
+import 'intranet_ip.dart';
 import 'network_takeover.dart';
 import 'outbound_mode.dart';
 
 /// The mode switch and the switches that let traffic through, in one card: all
-/// three answer the same question, how traffic leaves this device, and each was
-/// a card of its own until the reference layout put them together.
+/// of them answer the same question, how traffic leaves this device and who
+/// may come in, and each was a card of its own until the reference layout put
+/// them together.
 class NetworkControlCard extends ConsumerWidget {
   const NetworkControlCard({super.key, this.platform});
 
@@ -40,6 +42,8 @@ class NetworkControlCard extends ConsumerWidget {
             const SizedBox(height: 10),
             const VpnSwitchRow(),
           ],
+          const SizedBox(height: 8),
+          const LanSwitchRow(showAddress: true),
         ],
       ),
     );

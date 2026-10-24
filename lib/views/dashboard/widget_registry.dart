@@ -11,7 +11,6 @@ extension DashboardWidgetView on DashboardWidget {
     DashboardWidget.networkOverview => const NetworkOverviewCard(),
     DashboardWidget.profiles => const ProfilesCard(),
     DashboardWidget.proxyGroups => const ProxyGroupsCard(),
-    DashboardWidget.intranetIp => const IntranetIpCard(),
     DashboardWidget.memoryInfo => const MemoryInfo(),
   };
 
@@ -21,7 +20,6 @@ extension DashboardWidgetView on DashboardWidget {
     DashboardWidget.networkOverview => AppGlyphs.verified,
     DashboardWidget.profiles => AppGlyphs.profiles,
     DashboardWidget.proxyGroups => AppGlyphs.layers,
-    DashboardWidget.intranetIp => AppGlyphs.devices,
     DashboardWidget.memoryInfo => AppGlyphs.memory,
   };
 
@@ -33,7 +31,6 @@ extension DashboardWidgetView on DashboardWidget {
       DashboardWidget.networkOverview => appLocalizations.networkOverview,
       DashboardWidget.profiles => appLocalizations.profile,
       DashboardWidget.proxyGroups => appLocalizations.proxyGroup,
-      DashboardWidget.intranetIp => appLocalizations.intranetIP,
       DashboardWidget.memoryInfo => appLocalizations.memoryInfo,
     };
   }

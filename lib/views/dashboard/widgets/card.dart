@@ -674,6 +674,7 @@ class DashboardSwitchRow extends StatelessWidget {
     this.color,
     this.onTap,
     this.showIcon = true,
+    this.trailing,
   });
 
   final Glyph glyph;
@@ -687,6 +688,10 @@ class DashboardSwitchRow extends StatelessWidget {
   final Color? color;
   final VoidCallback? onTap;
   final bool showIcon;
+
+  /// Sits between the text and the switch, for an action on what the row now
+  /// says rather than on its setting.
+  final Widget? trailing;
 
   static const _gap = 12.0;
 
@@ -777,6 +782,7 @@ class DashboardSwitchRow extends StatelessWidget {
               ],
             ),
           ),
+          if (trailing case final trailing?) trailing,
           DashboardSwitch(
             value: value,
             onChanged: onChanged,

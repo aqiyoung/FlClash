@@ -368,7 +368,7 @@ void main() {
         dashboardStateProvider.overrideWithValue(
           const DashboardState(
             dashboardWidgets: [
-              DashboardWidget.intranetIp,
+              DashboardWidget.memoryInfo,
               DashboardWidget.networkControl,
             ],
           ),
@@ -395,7 +395,7 @@ void main() {
     await tester.tap(find.byTooltip('Edit dashboard'));
     await tester.pump(const Duration(milliseconds: 500));
 
-    await tester.tap(find.byTooltip('Remove Intranet IP'));
+    await tester.tap(find.byTooltip('Remove Memory info'));
     await tester.pump();
     await tester.binding.handlePopRoute();
     await tester.pump(const Duration(milliseconds: 500));

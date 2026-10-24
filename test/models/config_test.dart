@@ -198,7 +198,7 @@ void main() {
       }
     });
 
-    test('the outbound IP card left its place to the intranet one', () {
+    test('the outbound and intranet cards fold into the control one', () {
       final restored = AppSettingProps.fromJson({
         'dashboardWidgets': [
           'currentOutbound',
@@ -209,7 +209,7 @@ void main() {
       });
       expect(restored.dashboardWidgets, [
         DashboardWidget.currentOutbound,
-        DashboardWidget.intranetIp,
+        DashboardWidget.networkControl,
         DashboardWidget.profiles,
       ]);
     });

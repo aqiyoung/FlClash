@@ -107,6 +107,61 @@ class _CurrentOutboundCardState extends ConsumerState<CurrentOutboundCard>
         : isStart
         ? (appLocalizations.running, DashboardChipTone.ok)
         : (appLocalizations.notRunning, DashboardChipTone.idle);
+    final content = Row(
+      spacing: metrics.gap,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              DashboardCardHeader(
+                glyph: AppGlyphs.status,
+                title: appLocalizations.status,
+                leading: [
+                  DashboardChip(
+                    label: chipLabel,
+                    tone: chipTone,
+                    dot: isStart,
+                  ),
+                ],
+              ),
+              SizedBox(height: metrics.ipTop),
+              _ExitRow(
+                info: shown,
+                stale: stale,
+                failed: failed,
+                loading: loading,
+                checking: phase == ProbePhase.probing || qualityLoading,
+                onRefresh: () => _refresh(shown?.ip),
+                quality: quality,
+                active: isStart,
+                metrics: metrics,
+                large: !density.isDesktop,
+              ),
+              if (density.isDesktop)
+                const Spacer()
+              else
+                const SizedBox(height: 16),
+              _Cells(
+                quality: quality,
+                loading: loading,
+                active: isStart && !suspended,
+                gap: metrics.cellGap,
+              ),
+            ],
+          ),
+        ),
+        SizedBox(
+          width: metrics.buttonSlot,
+          child: _StartToggle(
+            size: metrics.buttonSize,
+            enabled: hasProfile,
+            running: isStart,
+            suspended: suspended,
+          ),
+        ),
+      ],
+    );
     return DashboardCard(
       padding: EdgeInsets.zero,
       semanticLabel: appLocalizations.status,
@@ -149,15 +204,15 @@ class _CurrentOutboundCardState extends ConsumerState<CurrentOutboundCard>
                     ),
                   ),
                   // The speed card's charts become this card's floor: the
-                  // numbers moved to the corner, the shape of the traffic
-                  // stays as a hint of it.
+                  // numbers moved to a row of their own, the shape of the
+                  // traffic stays behind them.
                   if (!density.isDesktop)
-                    Positioned(
+                    const Positioned(
                       left: 0,
                       right: 0,
                       bottom: 0,
-                      height: 78,
-                      child: const _SpeedWaveform(),
+                      height: 88,
+                      child: _SpeedWaveform(),
                     ),
                 ],
               ),
@@ -165,72 +220,19 @@ class _CurrentOutboundCardState extends ConsumerState<CurrentOutboundCard>
           ),
           Padding(
             padding: metrics.padding,
-            child: Row(
-              spacing: metrics.gap,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      DashboardCardHeader(
-                        glyph: AppGlyphs.status,
-                        title: appLocalizations.status,
-                        leading: [
-                          DashboardChip(
-                            label: chipLabel,
-                            tone: chipTone,
-                            dot: isStart,
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: metrics.ipTop),
-                      _ExitRow(
-                        info: shown,
-                        stale: stale,
-                        failed: failed,
-                        loading: loading,
-                        checking: phase == ProbePhase.probing || qualityLoading,
-                        onRefresh: () => _refresh(shown?.ip),
-                        quality: quality,
-                        active: isStart,
-                        metrics: metrics,
-                        large: !density.isDesktop,
-                      ),
-                      if (density.isDesktop)
-                        const Spacer()
-                      else
-                        const SizedBox(height: 16),
-                      _Cells(
-                        quality: quality,
-                        loading: loading,
-                        active: isStart && !suspended,
-                        gap: metrics.cellGap,
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(
-                  width: metrics.buttonSlot,
-                  child: Column(
+            // The phone stacks the two rates under everything, side by side;
+            // a desktop card is a fixed tile with the speed cards beside it.
+            child: density.isDesktop
+                ? content
+                : Column(
                     mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      // A phone has no speed card of its own any more: the
-                      // two rates sit in the corner above the button.
-                      if (!density.isDesktop) ...[
-                        const _SpeedReadout(),
-                        const SizedBox(height: 10),
-                      ],
-                      _StartToggle(
-                        size: metrics.buttonSize,
-                        enabled: hasProfile,
-                        running: isStart,
-                        suspended: suspended,
-                      ),
+                      content,
+                      const SizedBox(height: 14),
+                      const _SpeedBar(),
                     ],
                   ),
-                ),
-              ],
-            ),
           ),
         ],
       ),
@@ -264,53 +266,99 @@ class _SpeedWaveform extends ConsumerWidget {
   }
 }
 
-/// The two rates and what each has carried, in the corner above the button.
-class _SpeedReadout extends ConsumerWidget {
-  const _SpeedReadout();
+/// The two rates side by side along the card's floor, over the charts they
+/// belong to, each with what it has carried.
+class _SpeedBar extends ConsumerWidget {
+  const _SpeedBar();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final traffics = ref.watch(trafficsProvider);
     final total = ref.watch(totalTrafficProvider);
     final latest = traffics.list.safeLast(const Traffic());
+    final outline = context.colorScheme.outlineVariant;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Divider(height: 1, thickness: 0.5, color: outline),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            Expanded(
+              child: _SpeedStat(
+                direction: TrafficDirection.upload,
+                latest: latest,
+                total: total,
+              ),
+            ),
+            Container(width: 0.5, height: 40, color: outline),
+            Expanded(
+              child: _SpeedStat(
+                direction: TrafficDirection.download,
+                latest: latest,
+                total: total,
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _SpeedStat extends StatelessWidget {
+  const _SpeedStat({
+    required this.direction,
+    required this.latest,
+    required this.total,
+  });
+
+  final TrafficDirection direction;
+  final Traffic latest;
+  final Traffic total;
+
+  @override
+  Widget build(BuildContext context) {
     final appLocalizations = context.appLocalizations;
     return Column(
       mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.end,
+      spacing: 2,
       children: [
-        for (final direction in TrafficDirection.values) ...[
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            spacing: 3,
-            children: [
-              GlyphIcon(
-                direction.glyph,
-                size: 12,
-                color: direction.glyphColorOf(context),
-              ),
-              Flexible(
-                child: Text(
-                  '${dashboardTraffic(direction.of(latest))}/s',
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: DashboardText.figure(
-                    context,
-                    AppTextStyle.footnote,
-                    color: context.colorScheme.onSurface,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          Text(
-            appLocalizations.trafficTotal(
-              dashboardTraffic(direction.of(total)),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 4,
+          children: [
+            GlyphIcon(
+              direction.glyph,
+              size: 13,
+              color: direction.glyphColorOf(context),
             ),
+            Text(
+              direction.labelOf(context),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: DashboardText.label(context),
+            ),
+          ],
+        ),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            '${dashboardTraffic(direction.of(latest))}/s',
             maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            style: DashboardText.label(context),
+            style: DashboardText.figure(
+              context,
+              AppTextStyle.title2,
+              color: context.colorScheme.onSurface,
+            ),
           ),
-        ],
+        ),
+        Text(
+          appLocalizations.trafficTotal(dashboardTraffic(direction.of(total))),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: DashboardText.label(context),
+        ),
       ],
     );
   }
@@ -888,10 +936,19 @@ class _StartToggleState extends ConsumerState<_StartToggle>
     final glass = LiquidGlassScope.of(context);
     final size = widget.size;
     final enabled = widget.enabled;
-    final fill = enabled
+    final up = widget.running || widget.suspended;
+    // A stopped button wears a soft primary, so a filled one only ever means
+    // the tunnel is up.
+    final fill = !enabled
+        ? DashboardColors.of(context).tone2
+        : up
         ? colorScheme.primary
-        : DashboardColors.of(context).tone2;
-    final ink = enabled ? colorScheme.onPrimary : colorScheme.onSurfaceVariant;
+        : colorScheme.primaryContainer;
+    final ink = !enabled
+        ? colorScheme.onSurfaceVariant
+        : up
+        ? colorScheme.onPrimary
+        : colorScheme.onPrimaryContainer;
     final tooltip = widget.suspended
         ? appLocalizations.suspended
         : widget.running
@@ -929,7 +986,9 @@ class _StartToggleState extends ConsumerState<_StartToggle>
                       progress: progress,
                       color: glass ? null : color,
                       shadow: enabled
-                          ? colorScheme.primary.withValues(alpha: 0.3)
+                          ? colorScheme.primary.withValues(
+                              alpha: up ? 0.3 : 0.16,
+                            )
                           : Colors.transparent,
                       ring: _focused
                           ? focusRingSide(colorScheme, standsOff: true)

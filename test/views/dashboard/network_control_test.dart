@@ -55,25 +55,51 @@ void main() {
     await tester.pump();
   }
 
-  testWidgets('a phone gets the VPN switch under the modes', (tester) async {
+  testWidgets('a phone gets the VPN and LAN switches under the modes', (
+    tester,
+  ) async {
     await pump(tester, SupportPlatform.Android);
 
     expect(find.text('Network control'), findsOneWidget);
     expect(find.text(Mode.rule.label), findsOneWidget);
     expect(find.text('VPN'), findsOneWidget);
     expect(find.text('System proxy'), findsNothing);
-    expect(find.byType(DashboardSwitch), findsOneWidget);
+    expect(find.text('Allow LAN'), findsOneWidget);
+    expect(find.byType(DashboardSwitch), findsNWidgets(2));
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('a desktop gets both traffic switches', (tester) async {
+  testWidgets('a desktop gets both traffic switches and the LAN one', (
+    tester,
+  ) async {
     await pump(tester, SupportPlatform.MacOS);
 
     expect(find.text(Mode.rule.label), findsOneWidget);
     expect(find.text('System proxy'), findsOneWidget);
     expect(find.text('TUN'), findsOneWidget);
     expect(find.text('VPN'), findsNothing);
-    expect(find.byType(DashboardSwitch), findsNWidgets(2));
+    expect(find.text('Allow LAN'), findsOneWidget);
+    expect(find.byType(DashboardSwitch), findsNWidgets(3));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('the LAN row carries the address the network dials', (
+    tester,
+  ) async {
+    await pump(tester, SupportPlatform.Android);
+    container.read(localIpProvider.notifier).update((_) => '192.168.1.23');
+    await tester.pump();
+
+    expect(find.text('Disabled'), findsOneWidget);
+
+    await tester.tap(find.text('Allow LAN'));
+    await tester.pump();
+
+    expect(container.read(patchClashConfigProvider).allowLan, isTrue);
+    // The row is the only place the address appears here, so it prints the
+    // whole of it and offers to copy it.
+    expect(find.text('192.168.1.23:7890'), findsOneWidget);
+    expect(find.byTooltip('Copy'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 

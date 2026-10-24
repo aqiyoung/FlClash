@@ -113,7 +113,6 @@ const List<DashboardWidget> defaultDashboardWidgets = [
   DashboardWidget.currentOutbound,
   DashboardWidget.networkControl,
   DashboardWidget.networkOverview,
-  DashboardWidget.intranetIp,
   DashboardWidget.profiles,
   DashboardWidget.proxyGroups,
 ];
@@ -139,11 +138,13 @@ const _legacyDefaultDashboardWidgets = {
   'intranetIp',
 };
 
-/// The run time has no replacement: it moved onto the current outbound card,
-/// as did the outbound IP, whose card became the intranet one. The speed, the
-/// mode and the switches were merged into the cards that now hold them.
+/// The run time has no replacement: it moved onto the current outbound card.
+/// The speed, the mode and the switches were merged into the cards that now
+/// hold them, and the intranet one into the control card, whose LAN row is
+/// where its address and its switch both live.
 const _legacyDashboardWidgets = {
-  'networkDetection': DashboardWidget.intranetIp,
+  'networkDetection': DashboardWidget.networkControl,
+  'intranetIp': DashboardWidget.networkControl,
   'outboundModeV2': DashboardWidget.networkControl,
   'outboundMode': DashboardWidget.networkControl,
   'systemProxyButton': DashboardWidget.networkControl,
