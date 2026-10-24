@@ -303,8 +303,17 @@ GeoCountry? geoCountryOf(String? code) {
 /// relay is named after both of its ends. The last one mentioned wins, because
 /// that is the end the traffic leaves from.
 GeoCountry? geoCountryOfNode(String name) {
+  final countries = geoCountriesOfNode(name);
+  return countries.isEmpty ? null : countries.last;
+}
+
+/// Every country a node name mentions, in the order it mentions them.
+///
+/// `香港中转 洛杉矶 01` is one node with two ends: the traffic crosses Hong
+/// Kong on its way to Los Angeles, and the map says so.
+List<GeoCountry> geoCountriesOfNode(String name) {
   if (name.isEmpty) {
-    return null;
+    return const [];
   }
   final hits = <(int, GeoCountry)>[];
   final lower = name.toLowerCase();
@@ -326,10 +335,18 @@ GeoCountry? geoCountryOfNode(String name) {
     hits.add((at, country));
   }
   if (hits.isEmpty) {
-    return null;
+    return const [];
   }
   hits.sort((a, b) => a.$1.compareTo(b.$1));
-  return hits.last.$2;
+  final countries = <GeoCountry>[];
+  for (final (_, country) in hits) {
+    // The aliases overlap — `HK`, `Hong Kong` and the flag all name the same
+    // end — so a repeat next to its twin is the same mention.
+    if (countries.isEmpty || countries.last != country) {
+      countries.add(country);
+    }
+  }
+  return countries;
 }
 
 /// A pair of regional indicators spells the code, which is how most
@@ -372,3 +389,295 @@ GeoCountry? geoCountryOfGeoIps(List<String> geoIps) {
 
 /// Turns a longitude into the map's x, left to right.
 double geoMapX(double longitude) => (longitude + 180) / 360;
+
+/// A named point finer than a country: the city a node is named after, or the
+/// province an address is registered in.
+///
+/// A country's stand-in coordinate is its capital, which is right to within a
+/// few hundred kilometres and wrong in a way that shows: two hops in one
+/// country stack, and a node in Los Angeles sits off the east coast.
+@immutable
+final class GeoPlace {
+  const GeoPlace(
+    this.latitude,
+    this.longitude,
+    this.chineseName,
+    this.englishName, [
+    this.countryCode = '',
+  ]);
+
+  final double latitude;
+  final double longitude;
+  final String chineseName;
+  final String englishName;
+
+  /// The country the place sits in, so a city cannot be pinned to an address
+  /// that resolved somewhere else.
+  final String countryCode;
+
+  String label({required bool chinese}) => chinese ? chineseName : englishName;
+
+  @override
+  bool operator ==(Object other) =>
+      other is GeoPlace &&
+      other.latitude == latitude &&
+      other.longitude == longitude;
+
+  @override
+  int get hashCode => Object.hash(latitude, longitude);
+
+  @override
+  String toString() => 'GeoPlace($englishName)';
+}
+
+/// The province an answer names, read from the `region` field of an IP
+/// lookup.
+///
+/// Every provider spells a province its own way: `Shaanxi`, `Shaanxi Sheng`,
+/// `CN-SN`, `Shenzhen`, `陕西省`. Matching runs on letters and characters only
+/// so the suffixes cancel out, then on containment so a city name reaches its
+/// province, and finally on the ISO subdivision code for the answers that
+/// carry nothing else.
+GeoPlace? geoPlaceOfRegion(String? region) {
+  if (region == null || region.isEmpty) {
+    return null;
+  }
+  final key = _regionKey(region);
+  if (key.isEmpty) {
+    return null;
+  }
+  final direct = _provinceIndex[key];
+  if (direct != null) {
+    return direct;
+  }
+  if (key.length == 4 && key.startsWith('cn')) {
+    return _provincePlaces[_provinceCodes[key.substring(2).toUpperCase()]];
+  }
+  // A city name stands for the province it sits in, and `Shaanxi Sheng`
+  // carries the province with a suffix attached.
+  GeoPlace? winner;
+  var winnerLength = 0;
+  for (final entry in _provinceIndex.entries) {
+    if (entry.key.length > winnerLength && key.contains(entry.key)) {
+      winner = entry.value;
+      winnerLength = entry.key.length;
+    }
+  }
+  return winner;
+}
+
+/// Lowercase, letters and Han characters only: `Shaanxi Sheng` and
+/// `陕西省` both keep just the part that names the place.
+String _regionKey(String value) =>
+    value.toLowerCase().replaceAll(RegExp(r'[^a-z\u4e00-\u9fff]'), '');
+
+/// The city a node name points at, when it names one.
+///
+/// A subscription writes `洛杉矶`, `Los Angeles`, `LAX`, `us-lax-01` and a
+/// dozen other ways. Place names match anywhere in the string, because they
+/// are distinctive; three letter airport codes have to stand alone, because
+/// `SEA` is Seattle in a node name and part of a word everywhere else. A relay
+/// carries both ends, so the last mention wins, matching [geoCountryOfNode].
+GeoPlace? geoCityOfNode(String name) {
+  if (name.isEmpty) {
+    return null;
+  }
+  final lower = name.toLowerCase();
+  GeoPlace? winner;
+  var winnerAt = -1;
+  for (final entry in _cityNames.entries) {
+    final at = lower.lastIndexOf(entry.key);
+    if (at > winnerAt) {
+      winnerAt = at;
+      winner = entry.value;
+    }
+  }
+  for (final match in _airportCode.allMatches(name)) {
+    if (_cityCodes[match.group(1)!] case final place?
+        when match.start > winnerAt) {
+      winnerAt = match.start;
+      winner = place;
+    }
+  }
+  return winner;
+}
+
+final _airportCode = RegExp(r'(?<![A-Za-z])([A-Z]{3})(?![A-Za-z])');
+
+const _tokyo = GeoPlace(35.68, 139.69, '东京', 'Tokyo', 'JP');
+const _osaka = GeoPlace(34.69, 135.50, '大阪', 'Osaka', 'JP');
+const _seoul = GeoPlace(37.57, 126.98, '首尔', 'Seoul', 'KR');
+const _taipei = GeoPlace(25.03, 121.57, '台北', 'Taipei', 'TW');
+const _losAngeles = GeoPlace(34.05, -118.24, '洛杉矶', 'Los Angeles', 'US');
+const _sanJose = GeoPlace(37.34, -121.89, '圣何塞', 'San Jose', 'US');
+const _seattle = GeoPlace(47.61, -122.33, '西雅图', 'Seattle', 'US');
+const _dallas = GeoPlace(32.78, -96.80, '达拉斯', 'Dallas', 'US');
+const _chicago = GeoPlace(41.88, -87.63, '芝加哥', 'Chicago', 'US');
+const _newYork = GeoPlace(40.71, -74.01, '纽约', 'New York', 'US');
+const _miami = GeoPlace(25.76, -80.19, '迈阿密', 'Miami', 'US');
+const _ashburn = GeoPlace(39.04, -77.49, '阿什本', 'Ashburn', 'US');
+const _london = GeoPlace(51.51, -0.13, '伦敦', 'London', 'GB');
+const _frankfurt = GeoPlace(50.11, 8.68, '法兰克福', 'Frankfurt', 'DE');
+const _amsterdam = GeoPlace(52.37, 4.90, '阿姆斯特丹', 'Amsterdam', 'NL');
+const _paris = GeoPlace(48.86, 2.35, '巴黎', 'Paris', 'FR');
+const _moscow = GeoPlace(55.76, 37.62, '莫斯科', 'Moscow', 'RU');
+const _sydney = GeoPlace(-33.87, 151.21, '悉尼', 'Sydney', 'AU');
+const _toronto = GeoPlace(43.65, -79.38, '多伦多', 'Toronto', 'CA');
+const _dubai = GeoPlace(25.20, 55.27, '迪拜', 'Dubai', 'AE');
+const _mumbai = GeoPlace(19.08, 72.88, '孟买', 'Mumbai', 'IN');
+const _bangkok = GeoPlace(13.76, 100.50, '曼谷', 'Bangkok', 'TH');
+const _kualaLumpur = GeoPlace(3.14, 101.69, '吉隆坡', 'Kuala Lumpur', 'MY');
+
+/// Place names, matched as substrings of the lowercased node name.
+final _cityNames = <String, GeoPlace>{
+  '东京': _tokyo, '東京': _tokyo, 'tokyo': _tokyo, '成田': _tokyo,
+  '大阪': _osaka, 'osaka': _osaka,
+  '首尔': _seoul, '서울': _seoul, 'seoul': _seoul,
+  '台北': _taipei, 'taipei': _taipei, '新北': _taipei,
+  '洛杉矶': _losAngeles, 'los angeles': _losAngeles,
+  '圣何塞': _sanJose, 'san jose': _sanJose, '旧金山': _sanJose,
+  'san francisco': _sanJose,
+  '西雅图': _seattle, 'seattle': _seattle,
+  '达拉斯': _dallas, 'dallas': _dallas,
+  '芝加哥': _chicago, 'chicago': _chicago,
+  '纽约': _newYork, 'new york': _newYork,
+  '迈阿密': _miami, 'miami': _miami,
+  '阿什本': _ashburn, 'ashburn': _ashburn,
+  '伦敦': _london, 'london': _london,
+  '法兰克福': _frankfurt, 'frankfurt': _frankfurt,
+  '阿姆斯特丹': _amsterdam, 'amsterdam': _amsterdam,
+  '巴黎': _paris, 'paris': _paris,
+  '莫斯科': _moscow, 'moscow': _moscow,
+  '悉尼': _sydney, 'sydney': _sydney,
+  '多伦多': _toronto, 'toronto': _toronto,
+  '迪拜': _dubai, 'dubai': _dubai,
+  '孟买': _mumbai, 'mumbai': _mumbai,
+  '曼谷': _bangkok, 'bangkok': _bangkok,
+  '吉隆坡': _kualaLumpur, 'kuala lumpur': _kualaLumpur,
+};
+
+/// Airport codes, matched only when they stand alone.
+const _cityCodes = <String, GeoPlace>{
+  'NRT': _tokyo,
+  'KIX': _osaka,
+  'ICN': _seoul,
+  'TPE': _taipei,
+  'LAX': _losAngeles,
+  'SJC': _sanJose,
+  'SFO': _sanJose,
+  'SEA': _seattle,
+  'DFW': _dallas,
+  'ORD': _chicago,
+  'JFK': _newYork,
+  'NYC': _newYork,
+  'MIA': _miami,
+  'IAD': _ashburn,
+  'LHR': _london,
+  'FRA': _frankfurt,
+  'AMS': _amsterdam,
+  'CDG': _paris,
+  'SVO': _moscow,
+  'SYD': _sydney,
+  'YYZ': _toronto,
+  'DXB': _dubai,
+  'BOM': _mumbai,
+  'BKK': _bangkok,
+  'KUL': _kualaLumpur,
+};
+
+/// The provinces of China, with the city an address in each is usually
+/// registered to. `region` comes back as an English name from most providers,
+/// so the keys are the romanisations in use rather than the Chinese names, and
+/// the major cities are here because a lookup that resolves to `Shenzhen` has
+/// told us the province without naming it.
+const _provinceAliases = <String, List<String>>{
+  'anhui': ['安徽', '合肥', 'hefei'],
+  'beijing': ['北京'],
+  'chongqing': ['重庆'],
+  'fujian': ['福建', '福州', '厦门', 'fuzhou', 'xiamen'],
+  'gansu': ['甘肃', '兰州', 'lanzhou'],
+  'guangdong': [
+    '广东', '广州', '深圳', '东莞', '佛山',
+    'guangzhou', 'shenzhen', 'dongguan', 'foshan',
+  ],
+  'guangxi': ['广西', '南宁', 'nanning'],
+  'guizhou': ['贵州', '贵阳', 'guiyang'],
+  'hainan': ['海南', '海口', '三亚', 'haikou', 'sanya'],
+  'hebei': ['河北', '石家庄', 'shijiazhuang'],
+  'heilongjiang': ['黑龙江', '哈尔滨', 'harbin'],
+  'henan': ['河南', '郑州', 'zhengzhou'],
+  'hubei': ['湖北', '武汉', 'wuhan'],
+  'hunan': ['湖南', '长沙', 'changsha'],
+  'jiangsu': ['江苏', '南京', '苏州', '无锡', 'nanjing', 'suzhou', 'wuxi'],
+  'jiangxi': ['江西', '南昌', 'nanchang'],
+  'jilin': ['吉林', '长春', 'changchun'],
+  'liaoning': ['辽宁', '沈阳', '大连', 'shenyang', 'dalian'],
+  'neimongol': ['内蒙古', '呼和浩特', 'inner mongolia', 'hohhot'],
+  'ningxia': ['宁夏', '银川', 'yinchuan'],
+  'qinghai': ['青海', '西宁', 'xining'],
+  'shaanxi': ['陕西', '西安', 'xian'],
+  'shandong': ['山东', '济南', '青岛', 'jinan', 'qingdao'],
+  'shanghai': ['上海'],
+  'shanxi': ['山西', '太原', 'taiyuan'],
+  'sichuan': ['四川', '成都', 'chengdu'],
+  'tianjin': ['天津'],
+  'xinjiang': ['新疆', '乌鲁木齐', 'urumqi'],
+  'xizang': ['西藏', '拉萨', 'tibet', 'lhasa'],
+  'yunnan': ['云南', '昆明', 'kunming'],
+  'zhejiang': ['浙江', '杭州', '宁波', '温州', 'hangzhou', 'ningbo', 'wenzhou'],
+};
+
+/// ISO 3166-2 subdivision codes, for the providers that answer `CN-SN` and
+/// leave the name out. `SX` is Shanxi and `SN` is Shaanxi; the pair that looks
+/// like a typo is the standard.
+const _provinceCodes = <String, String>{
+  'BJ': 'beijing', 'TJ': 'tianjin', 'HE': 'hebei', 'SX': 'shanxi',
+  'NM': 'neimongol', 'LN': 'liaoning', 'JL': 'jilin', 'HL': 'heilongjiang',
+  'SH': 'shanghai', 'JS': 'jiangsu', 'ZJ': 'zhejiang', 'AH': 'anhui',
+  'FJ': 'fujian', 'JX': 'jiangxi', 'SD': 'shandong', 'HA': 'henan',
+  'HB': 'hubei', 'HN': 'hunan', 'GD': 'guangdong', 'GX': 'guangxi',
+  'HI': 'hainan', 'CQ': 'chongqing', 'SC': 'sichuan', 'GZ': 'guizhou',
+  'YN': 'yunnan', 'XZ': 'xizang', 'SN': 'shaanxi', 'GS': 'gansu',
+  'QH': 'qinghai', 'NX': 'ningxia', 'XJ': 'xinjiang',
+};
+
+const _provincePlaces = <String, GeoPlace>{
+  'anhui': GeoPlace(31.86, 117.28, '安徽', 'Anhui', 'CN'),
+  'beijing': GeoPlace(39.90, 116.41, '北京', 'Beijing', 'CN'),
+  'chongqing': GeoPlace(29.56, 106.55, '重庆', 'Chongqing', 'CN'),
+  'fujian': GeoPlace(26.07, 119.30, '福建', 'Fujian', 'CN'),
+  'gansu': GeoPlace(36.06, 103.83, '甘肃', 'Gansu', 'CN'),
+  'guangdong': GeoPlace(23.13, 113.26, '广东', 'Guangdong', 'CN'),
+  'guangxi': GeoPlace(22.82, 108.32, '广西', 'Guangxi', 'CN'),
+  'guizhou': GeoPlace(26.65, 106.63, '贵州', 'Guizhou', 'CN'),
+  'hainan': GeoPlace(20.04, 110.32, '海南', 'Hainan', 'CN'),
+  'hebei': GeoPlace(38.04, 114.51, '河北', 'Hebei', 'CN'),
+  'heilongjiang': GeoPlace(45.80, 126.53, '黑龙江', 'Heilongjiang', 'CN'),
+  'henan': GeoPlace(34.75, 113.63, '河南', 'Henan', 'CN'),
+  'hubei': GeoPlace(30.59, 114.31, '湖北', 'Hubei', 'CN'),
+  'hunan': GeoPlace(28.23, 112.94, '湖南', 'Hunan', 'CN'),
+  'jiangsu': GeoPlace(32.06, 118.80, '江苏', 'Jiangsu', 'CN'),
+  'jiangxi': GeoPlace(28.68, 115.86, '江西', 'Jiangxi', 'CN'),
+  'jilin': GeoPlace(43.82, 125.32, '吉林', 'Jilin', 'CN'),
+  'liaoning': GeoPlace(41.81, 123.43, '辽宁', 'Liaoning', 'CN'),
+  'neimongol': GeoPlace(40.84, 111.75, '内蒙古', 'Inner Mongolia', 'CN'),
+  'ningxia': GeoPlace(38.49, 106.23, '宁夏', 'Ningxia', 'CN'),
+  'qinghai': GeoPlace(36.62, 101.78, '青海', 'Qinghai', 'CN'),
+  'shaanxi': GeoPlace(34.34, 108.94, '陕西', 'Shaanxi', 'CN'),
+  'shandong': GeoPlace(36.65, 117.12, '山东', 'Shandong', 'CN'),
+  'shanghai': GeoPlace(31.23, 121.47, '上海', 'Shanghai', 'CN'),
+  'shanxi': GeoPlace(37.87, 112.55, '山西', 'Shanxi', 'CN'),
+  'sichuan': GeoPlace(30.57, 104.07, '四川', 'Sichuan', 'CN'),
+  'tianjin': GeoPlace(39.08, 117.20, '天津', 'Tianjin', 'CN'),
+  'xinjiang': GeoPlace(43.83, 87.62, '新疆', 'Xinjiang', 'CN'),
+  'xizang': GeoPlace(29.65, 91.14, '西藏', 'Xizang', 'CN'),
+  'yunnan': GeoPlace(25.04, 102.72, '云南', 'Yunnan', 'CN'),
+  'zhejiang': GeoPlace(30.27, 120.16, '浙江', 'Zhejiang', 'CN'),
+};
+
+final _provinceIndex = <String, GeoPlace>{
+  for (final entry in _provincePlaces.entries) entry.key: entry.value,
+  for (final entry in _provinceAliases.entries)
+    if (_provincePlaces[entry.key] case final place?)
+      for (final alias in entry.value) _regionKey(alias): place,
+};

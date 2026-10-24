@@ -26,7 +26,7 @@ const _builtinOutbounds = {'DIRECT', 'REJECT', 'REJECT-DROP', 'PASS'};
 
 bool isBuiltinOutbound(String name) => _builtinOutbounds.contains(name);
 
-const _ipMask = '*****';
+const ipMask = '*****';
 
 const _decorationGrowth = 0.12;
 
@@ -559,7 +559,7 @@ class _IpText extends ConsumerWidget {
     final hideIp = ref.watch(
       appSettingProvider.select((state) => state.hideIp),
     );
-    return DashboardFitText(hideIp ? _ipMask : ip, style: style);
+    return DashboardFitText(hideIp ? ipMask : ip, style: style);
   }
 }
 

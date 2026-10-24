@@ -171,12 +171,13 @@ final Map<String, IpInfo Function(String)> ipInfoSources = {
 Future<OutboundIpResult?> lookupOutboundIp(
   CoreController core,
   String proxyName, {
+  List<String>? urls,
   Duration timeout = outboundIpTimeoutDuration,
 }) {
   return core.outboundIp(
     OutboundIpParams(
       proxyName: proxyName,
-      urls: ipInfoSources.keys.toList(),
+      urls: urls ?? ipInfoSources.keys.toList(),
       timeout: timeout.inMilliseconds,
     ),
   );
@@ -188,6 +189,135 @@ IpInfo? parseOutboundIp(OutboundIpResult? result) {
   }
   final parse = ipInfoSources[result.url];
   if (parse == null) return null;
+  try {
+    return parse(result.body);
+  } on FormatException {
+    return null;
+  } on TypeError {
+    return null;
+  }
+}
+
+/// Where an address sits, to the province when the provider says so.
+///
+/// [IpInfo] carries what the status card needs and no more, and every provider
+/// it asks answers with a country. The board wants the region, so it asks a
+/// narrower set of providers that name one.
+@immutable
+final class IpLocation {
+  const IpLocation({
+    required this.ip,
+    required this.countryCode,
+    this.region,
+    this.city,
+    this.org,
+  });
+
+  factory IpLocation.fromIpInfoIo(Map<String, dynamic> json) => IpLocation(
+    ip: _text(json['ip']) ?? '',
+    countryCode: _text(json['country']) ?? '',
+    region: _text(json['region']),
+    city: _text(json['city']),
+    org: _text(json['org']),
+  );
+
+  factory IpLocation.fromIpSb(Map<String, dynamic> json) => IpLocation(
+    ip: _text(json['ip']) ?? '',
+    countryCode: _text(json['country_code']) ?? '',
+    region: _text(json['region']),
+    city: _text(json['city']),
+    org: _text(json['isp']),
+  );
+
+  factory IpLocation.fromIpWhoIs(Map<String, dynamic> json) => IpLocation(
+    ip: _text(json['ip']) ?? '',
+    countryCode: _text(json['country_code']) ?? '',
+    region: _text(json['region']),
+    city: _text(json['city']),
+    org: switch (json['connection']) {
+      {'isp': final isp} => _text(isp),
+      _ => null,
+    },
+  );
+
+  factory IpLocation.fromGeoJs(Map<String, dynamic> json) => IpLocation(
+    ip: _text(json['ip']) ?? '',
+    countryCode: _text(json['country_code']) ?? '',
+    region: _text(json['region']),
+    city: _text(json['city']),
+    org: _text(json['organization']),
+  );
+
+  /// Baidu's lookup answers in Chinese and is reachable from the mainland
+  /// without a proxy, which is the case that matters: the other providers are
+  /// asked for the same thing over a connection that may not reach them.
+  factory IpLocation.fromBaidu(Map<String, dynamic> json) {
+    final data = json['data'];
+    final fields = data is Map ? data : const {};
+    return IpLocation(
+      ip: _text(json['ip']) ?? '',
+      countryCode: switch (_text(fields['country'])) {
+        '中国' => 'CN',
+        '中国香港' => 'HK',
+        '中国澳门' => 'MO',
+        '中国台湾' => 'TW',
+        _ => '',
+      },
+      region: _text(fields['prov']),
+      city: _text(fields['city']),
+      org: _text(fields['isp']),
+    );
+  }
+
+  final String ip;
+  final String countryCode;
+  final String? region;
+  final String? city;
+  final String? org;
+
+  static String? _text(Object? value) =>
+      value is String && value.trim().isNotEmpty ? value.trim() : null;
+}
+
+/// Providers that name a province. The Core races them and takes the first
+/// usable answer, so every entry has to name one: a provider that answers with
+/// a country alone would win the race and leave the board without it.
+final Map<String, IpLocation Function(String)> ipLocationSources = {
+  'https://qifu-api.baidubce.com/ip/local/geo/v1/district': _location(
+    IpLocation.fromBaidu,
+  ),
+  'https://ipinfo.io/json': _location(IpLocation.fromIpInfoIo),
+  'https://api.ip.sb/geoip': _location(IpLocation.fromIpSb),
+  'https://get.geojs.io/v1/ip/geo.json': _location(IpLocation.fromGeoJs),
+  'https://ipwho.is': _location(IpLocation.fromIpWhoIs),
+};
+
+IpLocation Function(String) _location(
+  IpLocation Function(Map<String, dynamic>) parse,
+) {
+  return (body) => parse(jsonDecode(body) as Map<String, dynamic>);
+}
+
+/// Asks the Core to leave by [proxyName] and read the address back with the
+/// providers that name a province.
+Future<IpLocation?> lookupIpLocation(
+  CoreController core,
+  String proxyName, {
+  Duration timeout = outboundIpTimeoutDuration,
+}) async {
+  final result = await lookupOutboundIp(
+    core,
+    proxyName,
+    urls: ipLocationSources.keys.toList(),
+    timeout: timeout,
+  );
+  if (result == null || result.error != null || result.body.isEmpty) {
+    return null;
+  }
+  final parse = ipLocationSources[result.url];
+  if (parse == null) {
+    return null;
+  }
   try {
     return parse(result.body);
   } on FormatException {

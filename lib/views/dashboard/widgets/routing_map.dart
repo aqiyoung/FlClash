@@ -20,20 +20,31 @@ enum RouteStopRole {
 
 @immutable
 final class RouteStop {
-  const RouteStop(this.country, this.role);
+  const RouteStop(this.country, this.role, {this.place});
 
   final GeoCountry country;
   final RouteStopRole role;
 
+  /// A city or province the name points at more exactly than the country
+  /// does. Without one the country's own stand-in is used.
+  final GeoPlace? place;
+
+  double get latitude => place?.latitude ?? country.latitude;
+
+  double get longitude => place?.longitude ?? country.longitude;
+
   @override
   bool operator ==(Object other) =>
-      other is RouteStop && other.country == country && other.role == role;
+      other is RouteStop &&
+      other.country == country &&
+      other.role == role &&
+      other.place == place;
 
   @override
-  int get hashCode => Object.hash(country, role);
+  int get hashCode => Object.hash(country, role, place);
 
   @override
-  String toString() => 'RouteStop(${country.code}, ${role.name})';
+  String toString() => 'RouteStop(${country.code}, ${role.name}, $place)';
 }
 
 /// The land, one character a cell, ready to be read as dots.
@@ -161,7 +172,7 @@ class _RouteMapPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     _paintLand(canvas, size);
-    final points = [for (final stop in stops) _project(stop.country, size)];
+    final points = [for (final stop in stops) _project(stop, size)];
     if (points.length > 1) {
       // A route that goes the short way round leaves the map on one side and
       // returns on the other, so the path is drawn three times, a world apart,
@@ -264,9 +275,9 @@ class _RouteMapPainter extends CustomPainter {
     }
   }
 
-  Offset _project(GeoCountry country, Size size) {
-    final x = (country.longitude + 180) / 360;
-    final y = (worldMapTopLatitude - country.latitude) /
+  Offset _project(RouteStop stop, Size size) {
+    final x = (stop.longitude + 180) / 360;
+    final y = (worldMapTopLatitude - stop.latitude) /
         (worldMapTopLatitude - worldMapBottomLatitude);
     return Offset(
       x * size.width,
