@@ -1,4 +1,5 @@
 import 'package:skyward/common/common.dart';
+import 'package:skyward/models/models.dart';
 import 'package:skyward/widgets/widgets.dart';
 import 'package:material_ui/material_ui.dart';
 
