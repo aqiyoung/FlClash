@@ -405,6 +405,38 @@ void main() {
       tester,
     ).read(outboundIpProbeProvider).entryOf(routedOutbound).phase;
 
+    testWidgets('keeps the last address, dimmed, while it checks again', (
+      tester,
+    ) async {
+      final core = _MockCore();
+      final recheck = Completer<OutboundIpResult?>();
+      var calls = 0;
+      when(() => core.outboundIp(any())).thenAnswer((_) {
+        calls++;
+        return calls == 1 ? Future.value(_address()) : recheck.future;
+      });
+
+      await tester.pumpWidget(_probingApp(core));
+      await tester.pump();
+      await tester.pump(commonDuration);
+      expect(find.text(_ip), findsOneWidget);
+
+      // Starting is a route move, so the address is asked again -- and this
+      // check is left pending on purpose.
+      start(tester);
+      await tester.pump();
+      await tester.pump(probeSettleDuration);
+
+      // The last address stays on screen, dimmed, instead of blanking.
+      expect(find.text(_ip), findsOneWidget);
+      expect(tester.widget<Text>(find.text(_ip)).style!.color!.a, lessThan(1));
+
+      recheck.complete(_address());
+      await tester.pumpAndSettle();
+      expect(find.text(_ip), findsOneWidget);
+      expect(tester.widget<Text>(find.text(_ip)).style!.color!.a, 1);
+    });
+
     testWidgets('that fails as the proxy starts shows as checking', (
       tester,
     ) async {

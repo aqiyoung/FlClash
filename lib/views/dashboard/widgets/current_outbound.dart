@@ -44,6 +44,10 @@ class _CurrentOutboundCardState extends ConsumerState<CurrentOutboundCard>
     with ProbeStartHold<CurrentOutboundCard> {
   late final OutboundIpProbe _probe;
 
+  /// The last address shown, kept across a recheck so a long background's
+  /// revalidation dims the row instead of blanking it.
+  IpInfo? _lastIp;
+
   @override
   void initState() {
     super.initState();
@@ -75,15 +79,24 @@ class _CurrentOutboundCardState extends ConsumerState<CurrentOutboundCard>
       outboundIpProbeProvider.select((state) => state.entryOf(routedOutbound)),
     );
     final ipInfo = entry.value;
+    if (ipInfo != null) {
+      _lastIp = ipInfo;
+    }
+    // A recheck (the route moved under a long background, say) drops the
+    // answer while it asks again; hold the last address on screen, dimmed,
+    // and swap it only once the new answer lands.
+    final rechecking = entry.phase == ProbePhase.probing && ipInfo == null;
+    final shown = ipInfo ?? (rechecking ? _lastIp : null);
+    final stale = rechecking && shown != null;
     final phase = shownPhase(entry);
-    final failed = phase == ProbePhase.failed && ipInfo == null;
-    final qualityState = ipInfo == null
+    final failed = phase == ProbePhase.failed && shown == null;
+    final qualityState = shown == null
         ? null
-        : ref.watch(ipQualityProvider(ipInfo.ip));
+        : ref.watch(ipQualityProvider(shown.ip));
     final quality = qualityState?.value;
     final qualityLoading =
         qualityState != null && quality == null && qualityState.isLoading;
-    final loading = ipInfo == null ? !failed : qualityLoading;
+    final loading = shown == null ? !failed : qualityLoading;
     final metrics = _OutboundMetrics.of(density);
     final appLocalizations = context.appLocalizations;
     final colorScheme = context.colorScheme;
@@ -160,11 +173,12 @@ class _CurrentOutboundCardState extends ConsumerState<CurrentOutboundCard>
                       ),
                       SizedBox(height: metrics.ipTop),
                       _ExitRow(
-                        info: ipInfo,
+                        info: shown,
+                        stale: stale,
                         failed: failed,
                         loading: loading,
                         checking: phase == ProbePhase.probing || qualityLoading,
-                        onRefresh: () => _refresh(ipInfo?.ip),
+                        onRefresh: () => _refresh(shown?.ip),
                         quality: quality,
                         active: isStart,
                         metrics: metrics,
@@ -276,6 +290,7 @@ class _OutboundMetrics {
 class _ExitRow extends StatelessWidget {
   const _ExitRow({
     required this.info,
+    required this.stale,
     required this.failed,
     required this.loading,
     required this.checking,
@@ -287,6 +302,10 @@ class _ExitRow extends StatelessWidget {
   });
 
   final IpInfo? info;
+
+  /// Showing the last address while a recheck runs, dimmed so it reads as
+  /// provisional rather than as the current exit.
+  final bool stale;
   final bool failed;
   final bool loading;
   final bool checking;
@@ -299,10 +318,11 @@ class _ExitRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = context.colorScheme;
+    final color = active ? colorScheme.onSurface : colorScheme.onSurfaceVariant;
     final style = DashboardText.figure(
       context,
       metrics.ip,
-      color: active ? colorScheme.onSurface : colorScheme.onSurfaceVariant,
+      color: stale ? color.withValues(alpha: 0.45) : color,
     ).copyWith(letterSpacing: 0);
     final info = this.info;
     final appLocalizations = context.appLocalizations;
