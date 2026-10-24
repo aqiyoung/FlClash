@@ -107,61 +107,93 @@ class _CurrentOutboundCardState extends ConsumerState<CurrentOutboundCard>
         : isStart
         ? (appLocalizations.running, DashboardChipTone.ok)
         : (appLocalizations.notRunning, DashboardChipTone.idle);
-    final content = Row(
-      spacing: metrics.gap,
-      children: [
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    final header = DashboardCardHeader(
+      glyph: AppGlyphs.status,
+      title: appLocalizations.status,
+      leading: [
+        DashboardChip(label: chipLabel, tone: chipTone, dot: isStart),
+      ],
+    );
+    final exitRow = _ExitRow(
+      info: shown,
+      stale: stale,
+      failed: failed,
+      loading: loading,
+      checking: phase == ProbePhase.probing || qualityLoading,
+      onRefresh: () => _refresh(shown?.ip),
+      quality: quality,
+      active: isStart,
+      metrics: metrics,
+      large: !density.isDesktop,
+    );
+    final cells = _Cells(
+      quality: quality,
+      loading: loading,
+      active: isStart && !suspended,
+      gap: metrics.cellGap,
+    );
+    final startToggle = SizedBox(
+      width: metrics.buttonSlot,
+      child: _StartToggle(
+        size: metrics.buttonSize,
+        enabled: hasProfile,
+        running: isStart,
+        suspended: suspended,
+      ),
+    );
+    // The phone has one status card, so the rates sit in its header, level
+    // with the status, and the floor belongs to the charts alone. A desktop
+    // card is a fixed tile that keeps the speed cards beside it.
+    final content = density.isDesktop
+        ? Row(
+            spacing: metrics.gap,
             children: [
-              DashboardCardHeader(
-                glyph: AppGlyphs.status,
-                title: appLocalizations.status,
-                leading: [
-                  DashboardChip(
-                    label: chipLabel,
-                    tone: chipTone,
-                    dot: isStart,
-                  ),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    header,
+                    SizedBox(height: metrics.ipTop),
+                    exitRow,
+                    const Spacer(),
+                    cells,
+                  ],
+                ),
+              ),
+              startToggle,
+            ],
+          )
+        : Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                spacing: 12,
+                children: [
+                  Expanded(child: header),
+                  const _HeaderRates(),
                 ],
               ),
               SizedBox(height: metrics.ipTop),
-              _ExitRow(
-                info: shown,
-                stale: stale,
-                failed: failed,
-                loading: loading,
-                checking: phase == ProbePhase.probing || qualityLoading,
-                onRefresh: () => _refresh(shown?.ip),
-                quality: quality,
-                active: isStart,
-                metrics: metrics,
-                large: !density.isDesktop,
-              ),
-              if (density.isDesktop)
-                const Spacer()
-              else
-                const SizedBox(height: 16),
-              _Cells(
-                quality: quality,
-                loading: loading,
-                active: isStart && !suspended,
-                gap: metrics.cellGap,
+              Row(
+                spacing: metrics.gap,
+                children: [
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        exitRow,
+                        const SizedBox(height: 16),
+                        cells,
+                      ],
+                    ),
+                  ),
+                  startToggle,
+                ],
               ),
             ],
-          ),
-        ),
-        SizedBox(
-          width: metrics.buttonSlot,
-          child: _StartToggle(
-            size: metrics.buttonSize,
-            enabled: hasProfile,
-            running: isStart,
-            suspended: suspended,
-          ),
-        ),
-      ],
-    );
+          );
     return DashboardCard(
       padding: EdgeInsets.zero,
       semanticLabel: appLocalizations.status,
@@ -203,45 +235,24 @@ class _CurrentOutboundCardState extends ConsumerState<CurrentOutboundCard>
                       ),
                     ),
                   ),
-                  // The speed card's charts become this card's floor: the
-                  // numbers moved to a row of their own, the shape of the
-                  // traffic stays behind them.
+                  // The speed card's charts become this card's backdrop: the
+                  // numbers moved into the header, the shape of the traffic
+                  // stays behind everything the card shows.
                   if (!density.isDesktop)
-                    const Positioned(
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      height: 88,
-                      child: _SpeedWaveform(),
-                    ),
+                    const Positioned.fill(child: _SpeedWaveform()),
                 ],
               ),
             ),
           ),
-          Padding(
-            padding: metrics.padding,
-            // The phone stacks the two rates under everything, side by side;
-            // a desktop card is a fixed tile with the speed cards beside it.
-            child: density.isDesktop
-                ? content
-                : Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      content,
-                      const SizedBox(height: 14),
-                      const _SpeedBar(),
-                    ],
-                  ),
-          ),
+          Padding(padding: metrics.padding, child: content),
         ],
       ),
     );
   }
 }
 
-/// The two charts, faint, along the card's floor. Watching the traffic here
-/// keeps that repaint out of the card itself.
+/// The two charts, faint, behind everything the card shows. Watching the
+/// traffic here keeps that repaint out of the card itself.
 class _SpeedWaveform extends ConsumerWidget {
   const _SpeedWaveform();
 
@@ -251,7 +262,7 @@ class _SpeedWaveform extends ConsumerWidget {
     return IgnorePointer(
       child: RepaintBoundary(
         child: Opacity(
-          opacity: 0.22,
+          opacity: 0.16,
           child: Stack(
             children: [
               for (final direction in TrafficDirection.values)
@@ -266,10 +277,12 @@ class _SpeedWaveform extends ConsumerWidget {
   }
 }
 
-/// The two rates side by side along the card's floor, over the charts they
-/// belong to, each with what it has carried.
-class _SpeedBar extends ConsumerWidget {
-  const _SpeedBar();
+/// The two rates at the header's end, level with the status: the phone has no
+/// room for a row of their own, and each keeps what it has carried.
+class _HeaderRates extends ConsumerWidget {
+  const _HeaderRates();
+
+  static const _maxWidth = 124.0;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -277,37 +290,35 @@ class _SpeedBar extends ConsumerWidget {
     final total = ref.watch(totalTrafficProvider);
     final latest = traffics.list.safeLast(const Traffic());
     final outline = context.colorScheme.outlineVariant;
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Divider(height: 1, thickness: 0.5, color: outline),
-        const SizedBox(height: 12),
-        Row(
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: _maxWidth),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: AlignmentDirectional.centerEnd,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 8,
           children: [
-            Expanded(
-              child: _SpeedStat(
-                direction: TrafficDirection.upload,
-                latest: latest,
-                total: total,
-              ),
+            _HeaderRate(
+              direction: TrafficDirection.upload,
+              latest: latest,
+              total: total,
             ),
-            Container(width: 0.5, height: 40, color: outline),
-            Expanded(
-              child: _SpeedStat(
-                direction: TrafficDirection.download,
-                latest: latest,
-                total: total,
-              ),
+            Container(width: 0.5, height: 26, color: outline),
+            _HeaderRate(
+              direction: TrafficDirection.download,
+              latest: latest,
+              total: total,
             ),
           ],
         ),
-      ],
+      ),
     );
   }
 }
 
-class _SpeedStat extends StatelessWidget {
-  const _SpeedStat({
+class _HeaderRate extends StatelessWidget {
+  const _HeaderRate({
     required this.direction,
     required this.latest,
     required this.total,
@@ -322,42 +333,36 @@ class _SpeedStat extends StatelessWidget {
     final appLocalizations = context.appLocalizations;
     return Column(
       mainAxisSize: MainAxisSize.min,
-      spacing: 2,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: 1,
       children: [
         Row(
           mainAxisSize: MainAxisSize.min,
-          spacing: 4,
+          spacing: 3,
           children: [
             GlyphIcon(
               direction.glyph,
-              size: 13,
+              size: 12,
               color: direction.glyphColorOf(context),
             ),
             Text(
-              direction.labelOf(context),
+              '${dashboardTraffic(direction.of(latest))}/s',
               maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: DashboardText.label(context),
+              style: DashboardText.figure(
+                context,
+                AppTextStyle.caption1,
+                color: context.colorScheme.onSurface,
+              ),
             ),
           ],
-        ),
-        FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Text(
-            '${dashboardTraffic(direction.of(latest))}/s',
-            maxLines: 1,
-            style: DashboardText.figure(
-              context,
-              AppTextStyle.title2,
-              color: context.colorScheme.onSurface,
-            ),
-          ),
         ),
         Text(
           appLocalizations.trafficTotal(dashboardTraffic(direction.of(total))),
           maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: DashboardText.label(context),
+          style: AppTextStyle.caption2
+              .of(context)
+              .toTabular
+              .copyWith(color: context.colorScheme.onSurfaceVariant),
         ),
       ],
     );
