@@ -1154,6 +1154,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "routeBoard": MessageLookupByLibrary.simpleMessage("路由"),
     "routeBoardDesc": MessageLookupByLibrary.simpleMessage("本机到目的地经过的节点"),
     "routeExcludeAddress": MessageLookupByLibrary.simpleMessage("排除路由地址"),
+    "routeCarrier": MessageLookupByLibrary.simpleMessage("运营商"),
     "routeFrom": MessageLookupByLibrary.simpleMessage("本机"),
     "routeTo": MessageLookupByLibrary.simpleMessage("目的地"),
     "routeVia": MessageLookupByLibrary.simpleMessage("节点"),

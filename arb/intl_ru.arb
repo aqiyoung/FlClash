@@ -956,6 +956,7 @@
   "connectionStatsDesc": "Подключения, запросы и DNS-запросы",
   "routeBoard": "Маршрут",
   "routeBoardDesc": "Путь трафика от устройства до назначения",
+  "routeCarrier": "Оператор",
   "routeFrom": "Устройство",
   "routeVia": "Узел",
   "routeTo": "Назначение",

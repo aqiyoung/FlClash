@@ -956,6 +956,7 @@
   "connectionStatsDesc": "Connexions en direct, requêtes récentes et requêtes DNS",
   "routeBoard": "Route",
   "routeBoardDesc": "Le chemin du trafic depuis cet appareil",
+  "routeCarrier": "Opérateur",
   "routeFrom": "Appareil",
   "routeVia": "Nœud",
   "routeTo": "Destination",

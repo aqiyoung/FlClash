@@ -1244,6 +1244,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "이 기기에서 목적지까지 가는 경로",
     ),
     "routeExcludeAddress": MessageLookupByLibrary.simpleMessage("라우팅 제외 주소"),
+    "routeCarrier": MessageLookupByLibrary.simpleMessage("통신사"),
     "routeFrom": MessageLookupByLibrary.simpleMessage("기기"),
     "routeTo": MessageLookupByLibrary.simpleMessage("목적지"),
     "routeVia": MessageLookupByLibrary.simpleMessage("노드"),

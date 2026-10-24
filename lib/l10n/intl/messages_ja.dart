@@ -1261,6 +1261,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "routeBoard": MessageLookupByLibrary.simpleMessage("ルート"),
     "routeBoardDesc": MessageLookupByLibrary.simpleMessage("この端末から目的地までの経路"),
     "routeExcludeAddress": MessageLookupByLibrary.simpleMessage("ルート除外アドレス"),
+    "routeCarrier": MessageLookupByLibrary.simpleMessage("回線事業者"),
     "routeFrom": MessageLookupByLibrary.simpleMessage("端末"),
     "routeTo": MessageLookupByLibrary.simpleMessage("宛先"),
     "routeVia": MessageLookupByLibrary.simpleMessage("ノード"),

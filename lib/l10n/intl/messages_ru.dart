@@ -1550,6 +1550,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "routeExcludeAddress": MessageLookupByLibrary.simpleMessage(
       "Исключённые адреса маршрутов",
     ),
+    "routeCarrier": MessageLookupByLibrary.simpleMessage("Оператор"),
     "routeFrom": MessageLookupByLibrary.simpleMessage("Устройство"),
     "routeTo": MessageLookupByLibrary.simpleMessage("Назначение"),
     "routeVia": MessageLookupByLibrary.simpleMessage("Узел"),

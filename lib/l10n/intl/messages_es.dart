@@ -1603,6 +1603,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "routeExcludeAddress": MessageLookupByLibrary.simpleMessage(
       "Direcciones excluidas de la ruta",
     ),
+    "routeCarrier": MessageLookupByLibrary.simpleMessage("Operador"),
     "routeFrom": MessageLookupByLibrary.simpleMessage("Dispositivo"),
     "routeTo": MessageLookupByLibrary.simpleMessage("Destino"),
     "routeVia": MessageLookupByLibrary.simpleMessage("Nodo"),

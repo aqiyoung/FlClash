@@ -956,6 +956,7 @@
   "connectionStatsDesc": "实时连接、最近请求、DNS查询",
   "routeBoard": "路由",
   "routeBoardDesc": "本机到目的地经过的节点",
+  "routeCarrier": "运营商",
   "routeFrom": "本机",
   "routeVia": "节点",
   "routeTo": "目的地",

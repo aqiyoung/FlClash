@@ -1486,6 +1486,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "routeExcludeAddress": MessageLookupByLibrary.simpleMessage(
       "Route exclude addresses",
     ),
+    "routeCarrier": MessageLookupByLibrary.simpleMessage("Carrier"),
     "routeFrom": MessageLookupByLibrary.simpleMessage("From"),
     "routeTo": MessageLookupByLibrary.simpleMessage("To"),
     "routeVia": MessageLookupByLibrary.simpleMessage("Via"),

@@ -18,6 +18,7 @@ import 'package:material_ui/material_ui.dart';
 
 import 'card.dart';
 import 'current_outbound.dart';
+import 'routing_detail.dart';
 import 'routing_map.dart';
 
 /// The way out: the address the traffic leaves home by, the hops the
@@ -162,10 +163,20 @@ class _RoutingBoardCardState extends ConsumerState<RoutingBoardCard>
     return fastest ?? newest;
   }
 
+  /// Nothing here is live: the board behind the sheet already follows the
+  /// connection, and the sheet is the reading of the moment it opened.
+  Future<void> _showDetail(RoutingDetail detail) {
+    return showSheet<void>(
+      context: context,
+      builder: (_) => RoutingDetailSheet(detail: detail),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final appLocalizations = context.appLocalizations;
     final chinese = Localizations.localeOf(context).languageCode == 'zh';
+    final mobile = !DashboardDensityScope.of(context).isDesktop;
     final hideIp = ref.watch(appSettingProvider.select((state) => state.hideIp));
     final active = _live();
     final location = _location;
@@ -195,10 +206,38 @@ class _RoutingBoardCardState extends ConsumerState<RoutingBoardCard>
         break;
       }
     }
+    final relays = _relaysOf(active, chinese);
     final destinationCountry = geoCountryOfGeoIps(
       active?.metadata.destinationGeoIP ?? const <String>[],
     );
+    final detail = RoutingDetail(
+      stops: stops,
+      localIp: switch (location?.ip ?? direct?.ip) {
+        final ip? => hideIp ? ipMask : ip,
+        null => null,
+      },
+      localRegion: _regionOf(localCountry, localPlace, chinese: chinese),
+      carrier: location?.org,
+      exit: exit,
+      chain: active == null || active.chains.isEmpty
+          ? null
+          : active.chains.reversed.join(' → '),
+      relays: relays,
+      host: active?.metadata.host,
+      endpoint: _endpointOf(active),
+      destinationRegion: destinationCountry?.label(chinese: chinese),
+      network: active?.metadata.network,
+      process: active?.progressText,
+      rule: _ruleOf(active),
+      upload: active?.upload ?? 0,
+      download: active?.download ?? 0,
+      since: active?.start,
+    );
+    final openable = !detail.isEmpty;
+    final openDetail = openable ? () => _showDetail(detail) : null;
     return DashboardCard(
+      semanticLabel: appLocalizations.routeBoard,
+      onTap: mobile ? openDetail : null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
@@ -206,6 +245,20 @@ class _RoutingBoardCardState extends ConsumerState<RoutingBoardCard>
           DashboardCardHeader(
             glyph: AppGlyphs.proxies,
             title: appLocalizations.routeBoard,
+            chevron: mobile && openable,
+            trailing: [
+              if (!mobile && openDetail != null)
+                Transform.translate(
+                  offset: const Offset(8, 0),
+                  child: DashboardIconButton(
+                    glyph: AppGlyphs.chevronForward,
+                    tooltip: appLocalizations.details(
+                      appLocalizations.routeBoard,
+                    ),
+                    onPressed: openDetail,
+                  ),
+                ),
+            ],
           ),
           const SizedBox(height: 14),
           RouteMap(stops: stops),
@@ -218,10 +271,7 @@ class _RoutingBoardCardState extends ConsumerState<RoutingBoardCard>
                   label: appLocalizations.routeFrom,
                   value: localPlace?.label(chinese: chinese) ??
                       localCountry?.label(chinese: chinese),
-                  detail: switch (location?.ip ?? direct?.ip) {
-                    final ip? => hideIp ? ipMask : ip,
-                    null => null,
-                  },
+                  detail: detail.localIp,
                 ),
               ),
               const _LegendArrow(),
@@ -229,7 +279,7 @@ class _RoutingBoardCardState extends ConsumerState<RoutingBoardCard>
                 child: _Legend(
                   label: appLocalizations.routeVia,
                   value: exit ?? (active == null ? null : appLocalizations.direct),
-                  detail: _relaysOf(active, chinese),
+                  detail: relays,
                 ),
               ),
               const _LegendArrow(),
@@ -332,6 +382,39 @@ GeoPlace? _placeIn(GeoCountry? country, GeoPlace? place) {
     return place;
   }
   return place.countryCode == country.code ? place : null;
+}
+
+/// Country first, then the province or city inside it: the province alone
+/// would leave an address outside the mainland with no country named.
+String? _regionOf(
+  GeoCountry? country,
+  GeoPlace? place, {
+  required bool chinese,
+}) {
+  final parts = <String>[
+    if (country != null) country.label(chinese: chinese),
+    if (place != null) place.label(chinese: chinese),
+  ];
+  return parts.isEmpty ? null : parts.join(' · ');
+}
+
+String? _endpointOf(TrackerInfo? active) {
+  final metadata = active?.metadata;
+  if (metadata == null || metadata.destinationIP.isEmpty) {
+    return null;
+  }
+  return metadata.destinationPort.isEmpty
+      ? metadata.destinationIP
+      : '${metadata.destinationIP}:${metadata.destinationPort}';
+}
+
+String? _ruleOf(TrackerInfo? active) {
+  if (active == null || active.rule.isEmpty) {
+    return null;
+  }
+  return active.rulePayload.isEmpty
+      ? active.rule
+      : '${active.rule}(${active.rulePayload})';
 }
 
 /// Hosts that answer their own question: a resolver's lookups and the

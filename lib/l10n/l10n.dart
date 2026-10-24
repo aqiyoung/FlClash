@@ -7994,6 +7994,16 @@ class AppLocalizations {
     );
   }
 
+  /// `Carrier`
+  String get routeCarrier {
+    return Intl.message(
+      'Carrier',
+      name: 'routeCarrier',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `From`
   String get routeFrom {
     return Intl.message(
