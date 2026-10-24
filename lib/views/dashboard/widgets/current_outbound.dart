@@ -20,12 +20,13 @@ import 'package:material_new_shapes/material_new_shapes.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'card.dart';
+import 'traffic.dart';
 
 const _builtinOutbounds = {'DIRECT', 'REJECT', 'REJECT-DROP', 'PASS'};
 
 bool isBuiltinOutbound(String name) => _builtinOutbounds.contains(name);
 
-const _ipMask = '*****';
+const ipMask = '*****';
 
 const _decorationGrowth = 0.12;
 
@@ -43,6 +44,10 @@ class CurrentOutboundCard extends ConsumerStatefulWidget {
 class _CurrentOutboundCardState extends ConsumerState<CurrentOutboundCard>
     with ProbeStartHold<CurrentOutboundCard> {
   late final OutboundIpProbe _probe;
+
+  /// The last address shown, kept across a recheck so a long background's
+  /// revalidation dims the row instead of blanking it.
+  IpInfo? _lastIp;
 
   @override
   void initState() {
@@ -75,15 +80,24 @@ class _CurrentOutboundCardState extends ConsumerState<CurrentOutboundCard>
       outboundIpProbeProvider.select((state) => state.entryOf(routedOutbound)),
     );
     final ipInfo = entry.value;
+    if (ipInfo != null) {
+      _lastIp = ipInfo;
+    }
+    // A recheck (the route moved under a long background, say) drops the
+    // answer while it asks again; hold the last address on screen, dimmed,
+    // and swap it only once the new answer lands.
+    final rechecking = entry.phase == ProbePhase.probing && ipInfo == null;
+    final shown = ipInfo ?? (rechecking ? _lastIp : null);
+    final stale = rechecking && shown != null;
     final phase = shownPhase(entry);
-    final failed = phase == ProbePhase.failed && ipInfo == null;
-    final qualityState = ipInfo == null
+    final failed = phase == ProbePhase.failed && shown == null;
+    final qualityState = shown == null
         ? null
-        : ref.watch(ipQualityProvider(ipInfo.ip));
+        : ref.watch(ipQualityProvider(shown.ip));
     final quality = qualityState?.value;
     final qualityLoading =
         qualityState != null && quality == null && qualityState.isLoading;
-    final loading = ipInfo == null ? !failed : qualityLoading;
+    final loading = shown == null ? !failed : qualityLoading;
     final metrics = _OutboundMetrics.of(density);
     final appLocalizations = context.appLocalizations;
     final colorScheme = context.colorScheme;
@@ -93,6 +107,93 @@ class _CurrentOutboundCardState extends ConsumerState<CurrentOutboundCard>
         : isStart
         ? (appLocalizations.running, DashboardChipTone.ok)
         : (appLocalizations.notRunning, DashboardChipTone.idle);
+    final header = DashboardCardHeader(
+      glyph: AppGlyphs.status,
+      title: appLocalizations.status,
+      leading: [
+        DashboardChip(label: chipLabel, tone: chipTone, dot: isStart),
+      ],
+    );
+    final exitRow = _ExitRow(
+      info: shown,
+      stale: stale,
+      failed: failed,
+      loading: loading,
+      checking: phase == ProbePhase.probing || qualityLoading,
+      onRefresh: () => _refresh(shown?.ip),
+      quality: quality,
+      active: isStart,
+      metrics: metrics,
+      large: !density.isDesktop,
+    );
+    final cells = _Cells(
+      quality: quality,
+      loading: loading,
+      active: isStart && !suspended,
+      gap: metrics.cellGap,
+    );
+    final startToggle = SizedBox(
+      width: metrics.buttonSlot,
+      child: _StartToggle(
+        size: metrics.buttonSize,
+        enabled: hasProfile,
+        running: isStart,
+        suspended: suspended,
+      ),
+    );
+    // The phone has one status card, so the rates sit in its header, level
+    // with the status, and the floor belongs to the charts alone. A desktop
+    // card is a fixed tile that keeps the speed cards beside it.
+    final content = density.isDesktop
+        ? Row(
+            spacing: metrics.gap,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    header,
+                    SizedBox(height: metrics.ipTop),
+                    exitRow,
+                    const Spacer(),
+                    cells,
+                  ],
+                ),
+              ),
+              startToggle,
+            ],
+          )
+        : Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                spacing: 12,
+                children: [
+                  Expanded(child: header),
+                  const _HeaderRates(),
+                ],
+              ),
+              SizedBox(height: metrics.ipTop),
+              Row(
+                spacing: metrics.gap,
+                children: [
+                  Expanded(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        exitRow,
+                        const SizedBox(height: 16),
+                        cells,
+                      ],
+                    ),
+                  ),
+                  startToggle,
+                ],
+              ),
+            ],
+          );
     return DashboardCard(
       padding: EdgeInsets.zero,
       semanticLabel: appLocalizations.status,
@@ -134,71 +235,136 @@ class _CurrentOutboundCardState extends ConsumerState<CurrentOutboundCard>
                       ),
                     ),
                   ),
+                  // The speed card's charts become this card's backdrop: the
+                  // numbers moved into the header, the shape of the traffic
+                  // stays behind everything the card shows.
+                  if (!density.isDesktop)
+                    const Positioned.fill(child: _SpeedWaveform()),
                 ],
               ),
             ),
           ),
-          Padding(
-            padding: metrics.padding,
-            child: Row(
-              spacing: metrics.gap,
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      DashboardCardHeader(
-                        glyph: AppGlyphs.status,
-                        title: appLocalizations.status,
-                        leading: [
-                          DashboardChip(
-                            label: chipLabel,
-                            tone: chipTone,
-                            dot: isStart,
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: metrics.ipTop),
-                      _ExitRow(
-                        info: ipInfo,
-                        failed: failed,
-                        loading: loading,
-                        checking: phase == ProbePhase.probing || qualityLoading,
-                        onRefresh: () => _refresh(ipInfo?.ip),
-                        quality: quality,
-                        active: isStart,
-                        metrics: metrics,
-                        large: !density.isDesktop,
-                      ),
-                      if (density.isDesktop)
-                        const Spacer()
-                      else
-                        const SizedBox(height: 16),
-                      _Cells(
-                        quality: quality,
-                        loading: loading,
-                        active: isStart && !suspended,
-                        gap: metrics.cellGap,
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(
-                  width: metrics.buttonSlot,
-                  child: Center(
-                    child: _StartToggle(
-                      size: metrics.buttonSize,
-                      enabled: hasProfile,
-                      running: isStart,
-                      suspended: suspended,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+          Padding(padding: metrics.padding, child: content),
         ],
       ),
+    );
+  }
+}
+
+/// The two charts, faint, behind everything the card shows. Watching the
+/// traffic here keeps that repaint out of the card itself.
+class _SpeedWaveform extends ConsumerWidget {
+  const _SpeedWaveform();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final traffics = ref.watch(trafficsProvider);
+    return IgnorePointer(
+      child: RepaintBoundary(
+        child: Opacity(
+          opacity: 0.16,
+          child: Stack(
+            children: [
+              for (final direction in TrafficDirection.values)
+                Positioned.fill(
+                  child: SpeedChart(direction: direction, traffics: traffics),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The two rates at the header's end, level with the status: the phone has no
+/// room for a row of their own, and each keeps what it has carried.
+class _HeaderRates extends ConsumerWidget {
+  const _HeaderRates();
+
+  static const _maxWidth = 124.0;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final traffics = ref.watch(trafficsProvider);
+    final total = ref.watch(totalTrafficProvider);
+    final latest = traffics.list.safeLast(const Traffic());
+    final outline = context.colorScheme.outlineVariant;
+    return ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: _maxWidth),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        alignment: AlignmentDirectional.centerEnd,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 8,
+          children: [
+            _HeaderRate(
+              direction: TrafficDirection.upload,
+              latest: latest,
+              total: total,
+            ),
+            Container(width: 0.5, height: 26, color: outline),
+            _HeaderRate(
+              direction: TrafficDirection.download,
+              latest: latest,
+              total: total,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _HeaderRate extends StatelessWidget {
+  const _HeaderRate({
+    required this.direction,
+    required this.latest,
+    required this.total,
+  });
+
+  final TrafficDirection direction;
+  final Traffic latest;
+  final Traffic total;
+
+  @override
+  Widget build(BuildContext context) {
+    final appLocalizations = context.appLocalizations;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      spacing: 1,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 3,
+          children: [
+            GlyphIcon(
+              direction.glyph,
+              size: 12,
+              color: direction.glyphColorOf(context),
+            ),
+            Text(
+              '${dashboardTraffic(direction.of(latest))}/s',
+              maxLines: 1,
+              style: DashboardText.figure(
+                context,
+                AppTextStyle.caption1,
+                color: context.colorScheme.onSurface,
+              ),
+            ),
+          ],
+        ),
+        Text(
+          appLocalizations.trafficTotal(dashboardTraffic(direction.of(total))),
+          maxLines: 1,
+          style: AppTextStyle.caption2
+              .of(context)
+              .toTabular
+              .copyWith(color: context.colorScheme.onSurfaceVariant),
+        ),
+      ],
     );
   }
 }
@@ -276,6 +442,7 @@ class _OutboundMetrics {
 class _ExitRow extends StatelessWidget {
   const _ExitRow({
     required this.info,
+    required this.stale,
     required this.failed,
     required this.loading,
     required this.checking,
@@ -287,6 +454,10 @@ class _ExitRow extends StatelessWidget {
   });
 
   final IpInfo? info;
+
+  /// Showing the last address while a recheck runs, dimmed so it reads as
+  /// provisional rather than as the current exit.
+  final bool stale;
   final bool failed;
   final bool loading;
   final bool checking;
@@ -299,10 +470,11 @@ class _ExitRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = context.colorScheme;
+    final color = active ? colorScheme.onSurface : colorScheme.onSurfaceVariant;
     final style = DashboardText.figure(
       context,
       metrics.ip,
-      color: active ? colorScheme.onSurface : colorScheme.onSurfaceVariant,
+      color: stale ? color.withValues(alpha: 0.45) : color,
     ).copyWith(letterSpacing: 0);
     final info = this.info;
     final appLocalizations = context.appLocalizations;
@@ -387,7 +559,7 @@ class _IpText extends ConsumerWidget {
     final hideIp = ref.watch(
       appSettingProvider.select((state) => state.hideIp),
     );
-    return DashboardFitText(hideIp ? _ipMask : ip, style: style);
+    return DashboardFitText(hideIp ? ipMask : ip, style: style);
   }
 }
 
@@ -649,8 +821,11 @@ class _Cell extends StatelessWidget {
   }
 }
 
+/// A cell's value sits under its label rather than beside it, at the value
+/// weight: the address above it is the card's figure, and two figures of one
+/// weight leave neither reading first.
 TextStyle _cellStyle(BuildContext context) =>
-    AppTextStyle.subheadline.of(context, emphasized: true).toTabular;
+    DashboardText.value(context, AppTextStyle.subheadline);
 
 class _CellText extends StatelessWidget {
   const _CellText(this.text);
@@ -769,10 +944,19 @@ class _StartToggleState extends ConsumerState<_StartToggle>
     final glass = LiquidGlassScope.of(context);
     final size = widget.size;
     final enabled = widget.enabled;
-    final fill = enabled
+    final up = widget.running || widget.suspended;
+    // A stopped button wears a soft primary, so a filled one only ever means
+    // the tunnel is up.
+    final fill = !enabled
+        ? DashboardColors.of(context).tone2
+        : up
         ? colorScheme.primary
-        : DashboardColors.of(context).tone2;
-    final ink = enabled ? colorScheme.onPrimary : colorScheme.onSurfaceVariant;
+        : colorScheme.primaryContainer;
+    final ink = !enabled
+        ? colorScheme.onSurfaceVariant
+        : up
+        ? colorScheme.onPrimary
+        : colorScheme.onPrimaryContainer;
     final tooltip = widget.suspended
         ? appLocalizations.suspended
         : widget.running
@@ -810,7 +994,9 @@ class _StartToggleState extends ConsumerState<_StartToggle>
                       progress: progress,
                       color: glass ? null : color,
                       shadow: enabled
-                          ? colorScheme.primary.withValues(alpha: 0.3)
+                          ? colorScheme.primary.withValues(
+                              alpha: up ? 0.3 : 0.16,
+                            )
                           : Colors.transparent,
                       ring: _focused
                           ? focusRingSide(colorScheme, standsOff: true)

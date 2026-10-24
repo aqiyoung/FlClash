@@ -238,23 +238,76 @@ void main() {
       expect(GroupIconSource.of(name: 'mine', icon: ''), GroupIconSource.logo);
     });
 
-    test('takes the name over the picture its config names', () {
+    test('reads the words a subscription actually writes', () {
+      for (final (name, file) in [
+        ('🇭🇰 香港 01', 'hong_kong.png'),
+        ('香港节点', 'hong_kong.png'),
+        ('🇭🇰', 'hong_kong.png'),
+        ('US-01', 'united_states.png'),
+        ('日本 IEPL', 'japan.png'),
+        ('🚀 节点选择', 'rocket.png'),
+        ('♻️ 自动选择', 'auto.png'),
+        ('Netflix 媒体', 'netflix.png'),
+        ('OpenAI', 'chatgpt.png'),
+        ('广告拦截', 'adblock.png'),
+        ('剩余流量', 'world_map.png'),
+        ('🌍 国外媒体', 'netflix.png'),
+        ('🎮 游戏', 'steam.png'),
+        ('手动切换', 'rocket.png'),
+        ('巴哈姆特', 'area.png'),
+        ('哔哩哔哩', 'youtube.png'),
+        ('游戏平台', 'steam.png'),
+        ('网易音乐', 'spotify.png'),
+        ('全球直连', 'direct.png'),
+        ('应用净化', 'adblock.png'),
+      ]) {
+        expect(
+          GroupIconSource.of(name: name, icon: ''),
+          '$_groupDir$file',
+          reason: name,
+        );
+      }
+    });
+
+    test('a two-letter code is a word, not a fragment', () {
+      expect(GroupIconSource.of(name: 'Rush', icon: ''), GroupIconSource.logo);
+    });
+
+    test('a region the bundle has no picture for wears its flag', () {
+      expect(GroupIconSource.of(name: '韩国', icon: ''), '');
+      expect(GroupIconSource.flagOf('韩国'), '🇰🇷');
+      expect(GroupIconSource.flagOf('英国 01'), '🇬🇧');
+      expect(GroupIconSource.flagOf('国内媒体'), '🇨🇳');
+      expect(GroupIconSource.flagOf('mine'), '');
+    });
+
+    test('a code carries the node number behind it', () {
       expect(
-        GroupIconSource.of(name: '自动选择', icon: own),
-        '${_groupDir}auto.png',
+        GroupIconSource.of(name: 'US01', icon: ''),
+        '${_groupDir}united_states.png',
       );
+      expect(
+        GroupIconSource.of(name: '美国 01', icon: ''),
+        '${_groupDir}united_states.png',
+      );
+    });
+
+    test('the picture its config names wins over the name it is known by', () {
+      expect(GroupIconSource.of(name: '自动选择', icon: own), own);
+      expect(GroupIconSource.of(name: '美国', icon: own), own);
+      // a group the profile leaves bare still wears the name it is known by
       expect(
         GroupIconSource.of(name: '漏网之鱼', icon: ''),
         '${_groupDir}final.png',
       );
       expect(
-        GroupIconSource.of(name: '美国', icon: own),
-        '${_groupDir}united_states.png',
+        GroupIconSource.of(name: '自动选择', icon: ''),
+        '${_groupDir}auto.png',
       );
     });
 
-    test('keeps the picture a config names for a group the set does not know, '
-        'and the monogram in the Core GLOBAL', () {
+    test('a config icon wins for a group the set does not know, and the '
+        'Core GLOBAL wears its globe when handed no icon', () {
       expect(GroupIconSource.of(name: 'mine', icon: own), own);
       expect(GroupIconSource.of(name: 'GLOBAL', icon: ''), '');
     });
@@ -276,6 +329,14 @@ void main() {
       );
 
       expect(find.text('🇭🇰'), findsOne);
+    });
+
+    testWidgets('the badge wears the flag of a region without a picture', (
+      tester,
+    ) async {
+      await _pump(tester, const GroupBadge(name: '韩国'));
+
+      expect(find.text('🇰🇷'), findsOne);
     });
   });
 }

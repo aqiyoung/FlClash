@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- From Android 12 the system draws the splash itself, so the window theme
+         only names the plate behind the picture and the picture itself. The
+         plate is the artwork's own light field, which lets the tile's edge
+         disappear into the splash instead of reading as a square. -->
+    <style name="LaunchTheme" parent="@android:style/Theme.Black.NoTitleBar">
+        <item name="android:windowSplashScreenBackground">@color/splash_background</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_icon</item>
+    </style>
+</resources>

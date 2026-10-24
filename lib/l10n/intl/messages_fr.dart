@@ -247,11 +247,9 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
+    "accessControlAllowDesc": MessageLookupByLibrary.simpleMessage("Seules les apps sélectionnées passent par le VPN"),
     "about": MessageLookupByLibrary.simpleMessage("À propos"),
     "accessControl": MessageLookupByLibrary.simpleMessage("Contrôle d’accès"),
-    "accessControlAllowDesc": MessageLookupByLibrary.simpleMessage(
-      "Seules les apps sélectionnées passent par le VPN",
-    ),
     "accessControlDesc": MessageLookupByLibrary.simpleMessage(
       "Le contrôle d’accès choisit les apps qui utilisent le proxy.",
     ),
@@ -1300,7 +1298,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "networkHostLookupError": MessageLookupByLibrary.simpleMessage(
       "Impossible de résoudre l’adresse du serveur. Vérifiez que l’URL est correcte et que le DNS fonctionne",
     ),
+    "networkControl": MessageLookupByLibrary.simpleMessage("Contrôle du réseau"),
     "networkName": MessageLookupByLibrary.simpleMessage("Nom du réseau"),
+    "networkOverview": MessageLookupByLibrary.simpleMessage("Aperçu du réseau"),
     "networkNotFoundError": m54,
     "networkRateLimitedError": MessageLookupByLibrary.simpleMessage(
       "Trop de requêtes (HTTP 429). Patientez un instant puis réessayez",
@@ -1597,9 +1597,17 @@ class MessageLookup extends MessageLookupByLibrary {
     "result": MessageLookupByLibrary.simpleMessage("Résultat"),
     "retry": MessageLookupByLibrary.simpleMessage("Réessayer"),
     "routeAddress": MessageLookupByLibrary.simpleMessage("Adresses de route"),
+    "routeBoard": MessageLookupByLibrary.simpleMessage("Route"),
+    "routeBoardDesc": MessageLookupByLibrary.simpleMessage(
+      "Le chemin du trafic depuis cet appareil",
+    ),
     "routeExcludeAddress": MessageLookupByLibrary.simpleMessage(
       "Adresses de route exclues",
     ),
+    "routeCarrier": MessageLookupByLibrary.simpleMessage("Opérateur"),
+    "routeFrom": MessageLookupByLibrary.simpleMessage("Appareil"),
+    "routeTo": MessageLookupByLibrary.simpleMessage("Destination"),
+    "routeVia": MessageLookupByLibrary.simpleMessage("Nœud"),
     "routingMark": MessageLookupByLibrary.simpleMessage("Marque de routage"),
     "ru": MessageLookupByLibrary.simpleMessage("Russe"),
     "rule": MessageLookupByLibrary.simpleMessage("Règle"),

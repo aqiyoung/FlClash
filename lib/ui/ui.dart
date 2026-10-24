@@ -20,6 +20,7 @@ export 'focus.dart';
 export 'font.dart';
 export 'foot_bar.dart';
 export 'form_sheet.dart';
+export 'goo.dart';
 export 'inherited.dart';
 export 'input.dart';
 export 'item_position.dart';

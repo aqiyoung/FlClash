@@ -208,11 +208,9 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
+    "accessControlAllowDesc": MessageLookupByLibrary.simpleMessage("只允许选中应用进入VPN"),
     "about": MessageLookupByLibrary.simpleMessage("关于"),
     "accessControl": MessageLookupByLibrary.simpleMessage("访问控制"),
-    "accessControlAllowDesc": MessageLookupByLibrary.simpleMessage(
-      "只允许选中应用进入VPN",
-    ),
     "accessControlDesc": MessageLookupByLibrary.simpleMessage(
       "访问控制决定哪些应用使用代理。",
     ),
@@ -944,7 +942,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "networkHostLookupError": MessageLookupByLibrary.simpleMessage(
       "无法解析服务器地址，请确认链接正确且 DNS 可用",
     ),
+    "networkControl": MessageLookupByLibrary.simpleMessage("网络控制"),
     "networkName": MessageLookupByLibrary.simpleMessage("网络名称"),
+    "networkOverview": MessageLookupByLibrary.simpleMessage("网络概览"),
     "networkNotFoundError": m54,
     "networkRateLimitedError": MessageLookupByLibrary.simpleMessage(
       "请求过于频繁（HTTP 429），请稍后再试",
@@ -1151,7 +1151,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "result": MessageLookupByLibrary.simpleMessage("结果"),
     "retry": MessageLookupByLibrary.simpleMessage("重试"),
     "routeAddress": MessageLookupByLibrary.simpleMessage("路由地址"),
+    "routeBoard": MessageLookupByLibrary.simpleMessage("路由"),
+    "routeBoardDesc": MessageLookupByLibrary.simpleMessage("本机到目的地经过的节点"),
     "routeExcludeAddress": MessageLookupByLibrary.simpleMessage("排除路由地址"),
+    "routeCarrier": MessageLookupByLibrary.simpleMessage("运营商"),
+    "routeFrom": MessageLookupByLibrary.simpleMessage("本机"),
+    "routeTo": MessageLookupByLibrary.simpleMessage("目的地"),
+    "routeVia": MessageLookupByLibrary.simpleMessage("节点"),
     "routingMark": MessageLookupByLibrary.simpleMessage("路由标记"),
     "ru": MessageLookupByLibrary.simpleMessage("俄语"),
     "rule": MessageLookupByLibrary.simpleMessage("规则"),

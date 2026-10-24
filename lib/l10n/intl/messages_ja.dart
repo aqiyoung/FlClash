@@ -211,11 +211,9 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
+    "accessControlAllowDesc": MessageLookupByLibrary.simpleMessage("選択したアプリのみVPNを経由します"),
     "about": MessageLookupByLibrary.simpleMessage("アプリについて"),
     "accessControl": MessageLookupByLibrary.simpleMessage("アクセス制御"),
-    "accessControlAllowDesc": MessageLookupByLibrary.simpleMessage(
-      "選択したアプリのみVPNを経由します",
-    ),
     "accessControlDesc": MessageLookupByLibrary.simpleMessage(
       "アクセス制御では、プロキシを利用するアプリを選びます。",
     ),
@@ -1037,7 +1035,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "networkHostLookupError": MessageLookupByLibrary.simpleMessage(
       "サーバーのアドレスを解決できませんでした。URL が正しいこと、DNS が使えることを確認してください",
     ),
+    "networkControl": MessageLookupByLibrary.simpleMessage("ネットワーク制御"),
     "networkName": MessageLookupByLibrary.simpleMessage("ネットワーク名"),
+    "networkOverview": MessageLookupByLibrary.simpleMessage("ネットワーク概要"),
     "networkNotFoundError": m54,
     "networkRateLimitedError": MessageLookupByLibrary.simpleMessage(
       "リクエストが多すぎます（HTTP 429）。しばらく待ってから再試行してください",
@@ -1258,7 +1258,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "result": MessageLookupByLibrary.simpleMessage("結果"),
     "retry": MessageLookupByLibrary.simpleMessage("再試行"),
     "routeAddress": MessageLookupByLibrary.simpleMessage("ルートアドレス"),
+    "routeBoard": MessageLookupByLibrary.simpleMessage("ルート"),
+    "routeBoardDesc": MessageLookupByLibrary.simpleMessage("この端末から目的地までの経路"),
     "routeExcludeAddress": MessageLookupByLibrary.simpleMessage("ルート除外アドレス"),
+    "routeCarrier": MessageLookupByLibrary.simpleMessage("回線事業者"),
+    "routeFrom": MessageLookupByLibrary.simpleMessage("端末"),
+    "routeTo": MessageLookupByLibrary.simpleMessage("宛先"),
+    "routeVia": MessageLookupByLibrary.simpleMessage("ノード"),
     "routingMark": MessageLookupByLibrary.simpleMessage("ルーティングマーク"),
     "ru": MessageLookupByLibrary.simpleMessage("ロシア語"),
     "rule": MessageLookupByLibrary.simpleMessage("ルール"),

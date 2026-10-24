@@ -75,8 +75,8 @@ class _Figure extends StatelessWidget {
 
 /// The zero line is the chart's bottom: a card lets the chart bleed past its
 /// edge so idle traffic, or none sampled yet, leaves no line.
-class _SpeedChart extends StatelessWidget {
-  const _SpeedChart({required this.direction, required this.traffics});
+class SpeedChart extends StatelessWidget {
+  const SpeedChart({super.key, required this.direction, required this.traffics});
 
   final TrafficDirection direction;
   final FixedList<Traffic> traffics;
@@ -131,7 +131,7 @@ class SpeedCard extends ConsumerWidget {
             bottom: -_chartBleed,
             height: compact ? 62 : 88,
             child: RepaintBoundary(
-              child: _SpeedChart(direction: direction, traffics: traffics),
+              child: SpeedChart(direction: direction, traffics: traffics),
             ),
           ),
           Padding(
@@ -188,152 +188,6 @@ class SpeedCard extends ConsumerWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-/// The phone's single card: both directions side by side.
-class NetworkSpeedCard extends ConsumerWidget {
-  const NetworkSpeedCard({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final traffics = ref.watch(trafficsProvider);
-    final total = ref.watch(totalTrafficProvider);
-    final latest = traffics.list.safeLast(const Traffic());
-    return DashboardCard(
-      semanticLabel: context.appLocalizations.networkSpeed,
-      child: Column(
-        children: [
-          DashboardCardHeader(
-            glyph: AppGlyphs.speed,
-            title: context.appLocalizations.networkSpeed,
-          ),
-          const SizedBox(height: 12),
-          Row(
-            spacing: 10,
-            children: [
-              for (final direction in TrafficDirection.values)
-                Expanded(
-                  child: _SpeedTile(
-                    direction: direction,
-                    speed: direction.of(latest),
-                    total: direction.of(total),
-                    traffics: traffics,
-                  ),
-                ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-/// Keeps one shape at every width: the chart takes the height the tile's
-/// aspect ratio leaves under the text, down to [_minChartHeight].
-class _SpeedTile extends StatelessWidget {
-  const _SpeedTile({
-    required this.direction,
-    required this.speed,
-    required this.total,
-    required this.traffics,
-  });
-
-  final TrafficDirection direction;
-  final num speed;
-  final num total;
-  final FixedList<Traffic> traffics;
-
-  static const _aspectRatio = 1.06;
-  static const _padding = EdgeInsets.fromLTRB(16, 14, 16, 0);
-  static const _titleGap = 4.0;
-  static const _chartGap = 12.0;
-  static const _bleed = 2.0;
-  static const _minChartHeight = 36.0;
-
-  @override
-  Widget build(BuildContext context) {
-    final color = direction.glyphColorOf(context);
-    final show = speed.traffic;
-    final scale = DashboardDensityScope.scaleOf(context);
-    final textHeight =
-        _padding.top +
-        _titleGap +
-        (AppTextStyle.footnote.leading +
-                AppTextStyle.title1.leading +
-                AppTextStyle.caption1.leading) *
-            scale;
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final chartHeight = math.max(
-          _minChartHeight,
-          constraints.maxWidth / _aspectRatio - textHeight - _chartGap + _bleed,
-        );
-        return Container(
-          clipBehavior: Clip.antiAlias,
-          decoration: ShapeDecoration(
-            color: DashboardColors.of(context).tone,
-            shape: AppShape.all(DashboardCorner.mobileBlock),
-          ),
-          child: Stack(
-            children: [
-              Positioned(
-                left: -_bleed,
-                right: -_bleed,
-                bottom: -_bleed,
-                height: chartHeight,
-                child: RepaintBoundary(
-                  child: _SpeedChart(direction: direction, traffics: traffics),
-                ),
-              ),
-              Padding(
-                padding: _padding.copyWith(
-                  bottom: chartHeight - _bleed + _chartGap,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      spacing: 4,
-                      children: [
-                        GlyphIcon(direction.glyph, size: 16, color: color),
-                        Flexible(
-                          child: Text(
-                            direction.labelOf(context),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: AppTextStyle.footnote
-                                .of(context, emphasized: true)
-                                .copyWith(
-                                  color: context.colorScheme.onSurfaceVariant,
-                                ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: _titleGap),
-                    _Figure(
-                      show: show,
-                      unit: _speedUnit(show),
-                      style: AppTextStyle.title1,
-                      unitStyle: AppTextStyle.footnote,
-                    ),
-                    Text(
-                      context.appLocalizations.trafficTotal(
-                        dashboardTraffic(total),
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: DashboardText.label(context),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 }

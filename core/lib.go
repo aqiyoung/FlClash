@@ -344,13 +344,25 @@ func marshalResult(value any) string {
 	return string(data)
 }
 
+// deliverEvent hands the frame to the bus; a single draining subscriber
+// invokes the Dart callback off the core's goroutines, so a slow or paused UI
+// thread drops frames instead of stalling a proxy dial or a config parse.
 func deliverEvent(data []byte) {
-	eventListenerLock.RLock()
-	defer eventListenerLock.RUnlock()
-	if eventListener == nil {
-		return
-	}
-	eventListener(data)
+	bus.publish(data)
+}
+
+func init() {
+	go func() {
+		_, ch := bus.subscribe()
+		for data := range ch {
+			eventListenerLock.RLock()
+			cb := eventListener
+			eventListenerLock.RUnlock()
+			if cb != nil {
+				cb(data)
+			}
+		}
+	}()
 }
 
 func StopTun() {

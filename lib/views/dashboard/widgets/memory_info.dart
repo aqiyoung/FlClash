@@ -264,9 +264,7 @@ class _MemorySummary extends StatelessWidget {
                   Text(part.label, style: DashboardText.label(context)),
                   Text(
                     '${part.bytes.traffic.value} ${part.bytes.traffic.unit}',
-                    style: AppTextStyle.footnote
-                        .of(context, emphasized: true)
-                        .toTabular,
+                    style: DashboardText.value(context, AppTextStyle.footnote),
                   ),
                 ],
               ),
@@ -511,9 +509,10 @@ class _MemoryOverview extends StatelessWidget {
         children: [
           Text(
             appLocalizations.total,
-            style: AppTextStyle.headline
-                .of(context)
-                .copyWith(color: colorScheme.onSurfaceVariant),
+            style: DashboardText.label(
+              context,
+              color: colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: 4),
           Row(
@@ -522,16 +521,16 @@ class _MemoryOverview extends StatelessWidget {
             children: [
               Text(
                 total.value,
-                style: AppTextStyle.title1
-                    .of(context, emphasized: true)
-                    .copyWith(color: colorScheme.onSurface),
+                style: DashboardText.figure(
+                  context,
+                  AppTextStyle.title1,
+                  color: colorScheme.onSurface,
+                ),
               ),
               const SizedBox(width: 6),
               Text(
                 total.unit,
-                style: AppTextStyle.headline
-                    .of(context)
-                    .copyWith(color: colorScheme.onSurfaceVariant),
+                style: DashboardText.unit(context, AppTextStyle.headline),
               ),
             ],
           ),

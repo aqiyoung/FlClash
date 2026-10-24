@@ -1,6 +1,7 @@
 import 'package:skyward/common/common.dart';
 import 'package:skyward/enum/enum.dart';
 import 'package:skyward/ui/color.dart';
+import 'package:flutter/foundation.dart' show setEquals;
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -111,28 +112,42 @@ final List<HotKeyAction> defaultHotKeyActions = system.isWindows
 
 const List<DashboardWidget> defaultDashboardWidgets = [
   DashboardWidget.currentOutbound,
-  DashboardWidget.networkSpeed,
-  DashboardWidget.outboundMode,
-  DashboardWidget.vpnButton,
-  DashboardWidget.networkTakeover,
-  DashboardWidget.intranetIp,
-  DashboardWidget.serviceStatus,
+  DashboardWidget.networkControl,
+  DashboardWidget.networkOverview,
+  DashboardWidget.routingBoard,
   DashboardWidget.profiles,
   DashboardWidget.proxyGroups,
-  DashboardWidget.connectionStats,
 ];
 
-/// A phone starts without the VPN switch and the diagnostic cards, which stay
-/// addable. The field default keeps the shared list because it must be const.
+/// A phone starts without the diagnostic cards, which stay addable. The field
+/// default keeps the shared list because it must be const.
 final List<DashboardWidget> platformDefaultDashboardWidgets = system.isAndroid
     ? const [
         DashboardWidget.currentOutbound,
-        DashboardWidget.networkSpeed,
-        DashboardWidget.outboundMode,
+        DashboardWidget.routingBoard,
+        DashboardWidget.networkControl,
         DashboardWidget.profiles,
         DashboardWidget.proxyGroups,
       ]
     : defaultDashboardWidgets;
+
+/// The sets the build before the route board shipped as its default. A saved
+/// list that still matches one of them was never edited, so it takes the new
+/// default instead of hiding the card behind the editor's add menu.
+const _previousPhoneDefaults = {
+  DashboardWidget.currentOutbound,
+  DashboardWidget.networkControl,
+  DashboardWidget.profiles,
+  DashboardWidget.proxyGroups,
+};
+
+const _previousDesktopDefaults = {
+  DashboardWidget.currentOutbound,
+  DashboardWidget.networkControl,
+  DashboardWidget.networkOverview,
+  DashboardWidget.profiles,
+  DashboardWidget.proxyGroups,
+};
 
 const _legacyDefaultDashboardWidgets = {
   'networkSpeed',
@@ -144,17 +159,26 @@ const _legacyDefaultDashboardWidgets = {
   'intranetIp',
 };
 
-/// The run time has no replacement: it moved onto the current outbound card,
-/// as did the outbound IP, whose card became the intranet one.
+/// The run time has no replacement: it moved onto the current outbound card.
+/// The speed, the mode and the switches were merged into the cards that now
+/// hold them, and the intranet one into the control card, whose LAN row is
+/// where its address and its switch both live.
 const _legacyDashboardWidgets = {
-  'networkDetection': DashboardWidget.intranetIp,
-  'outboundModeV2': DashboardWidget.outboundMode,
-  'systemProxyButton': DashboardWidget.networkTakeover,
-  'tunButton': DashboardWidget.networkTakeover,
-  'connections': DashboardWidget.connectionStats,
-  'requests': DashboardWidget.connectionStats,
-  'dnsQueries': DashboardWidget.connectionStats,
-  'trafficUsage': DashboardWidget.networkSpeed,
+  'networkDetection': DashboardWidget.networkControl,
+  'intranetIp': DashboardWidget.networkControl,
+  'outboundModeV2': DashboardWidget.networkControl,
+  'outboundMode': DashboardWidget.networkControl,
+  'systemProxyButton': DashboardWidget.networkControl,
+  'tunButton': DashboardWidget.networkControl,
+  'vpnButton': DashboardWidget.networkControl,
+  'networkTakeover': DashboardWidget.networkControl,
+  'connections': DashboardWidget.networkOverview,
+  'requests': DashboardWidget.networkOverview,
+  'dnsQueries': DashboardWidget.networkOverview,
+  'serviceStatus': DashboardWidget.networkOverview,
+  'connectionStats': DashboardWidget.networkOverview,
+  'trafficUsage': DashboardWidget.currentOutbound,
+  'networkSpeed': DashboardWidget.currentOutbound,
 };
 
 const _retiredDashboardWidgets = {
@@ -172,15 +196,21 @@ List<DashboardWidget> dashboardWidgetsFromJson(
   }
   final byName = DashboardWidget.values.asNameMap();
   if (dashboardWidgets.contains(DashboardWidget.currentOutbound.name)) {
-    return dashboardWidgets
+    final kept = dashboardWidgets
         .map((e) => _legacyDashboardWidgets[e] ?? byName[e])
         .nonNulls
-        .toSet()
-        .toList();
+        .toSet();
+    if (setEquals(kept, _previousPhoneDefaults) ||
+        setEquals(kept, _previousDesktopDefaults)) {
+      return platformDefaultDashboardWidgets;
+    }
+    return kept.toList();
   }
+  // The one default that knew the mode card by an older name; the sets below
+  // are compared by the names they were saved under.
   final names = {
     for (final name in dashboardWidgets)
-      name == 'outboundModeV2' ? DashboardWidget.outboundMode.name : name,
+      name == 'outboundModeV2' ? 'outboundMode' : name,
   };
   if (names.length == _legacyDefaultDashboardWidgets.length &&
       names.containsAll(_legacyDefaultDashboardWidgets)) {

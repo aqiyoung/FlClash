@@ -242,11 +242,9 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
+    "accessControlAllowDesc": MessageLookupByLibrary.simpleMessage("Solo las apps seleccionadas usan la VPN"),
     "about": MessageLookupByLibrary.simpleMessage("Acerca de"),
     "accessControl": MessageLookupByLibrary.simpleMessage("Control de acceso"),
-    "accessControlAllowDesc": MessageLookupByLibrary.simpleMessage(
-      "Solo las apps seleccionadas usan la VPN",
-    ),
     "accessControlDesc": MessageLookupByLibrary.simpleMessage(
       "El control de acceso elige qué apps usan el proxy.",
     ),
@@ -1303,7 +1301,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "networkHostLookupError": MessageLookupByLibrary.simpleMessage(
       "No se pudo resolver la dirección del servidor. Comprueba que la URL sea correcta y que el DNS funcione",
     ),
+    "networkControl": MessageLookupByLibrary.simpleMessage("Control de red"),
     "networkName": MessageLookupByLibrary.simpleMessage("Nombre de la red"),
+    "networkOverview": MessageLookupByLibrary.simpleMessage("Resumen de red"),
     "networkNotFoundError": m54,
     "networkRateLimitedError": MessageLookupByLibrary.simpleMessage(
       "Demasiadas solicitudes (HTTP 429). Espera un momento e inténtalo de nuevo",
@@ -1596,9 +1596,17 @@ class MessageLookup extends MessageLookupByLibrary {
     "result": MessageLookupByLibrary.simpleMessage("Resultado"),
     "retry": MessageLookupByLibrary.simpleMessage("Reintentar"),
     "routeAddress": MessageLookupByLibrary.simpleMessage("Direcciones de ruta"),
+    "routeBoard": MessageLookupByLibrary.simpleMessage("Ruta"),
+    "routeBoardDesc": MessageLookupByLibrary.simpleMessage(
+      "El camino del tráfico desde este dispositivo",
+    ),
     "routeExcludeAddress": MessageLookupByLibrary.simpleMessage(
       "Direcciones excluidas de la ruta",
     ),
+    "routeCarrier": MessageLookupByLibrary.simpleMessage("Operador"),
+    "routeFrom": MessageLookupByLibrary.simpleMessage("Dispositivo"),
+    "routeTo": MessageLookupByLibrary.simpleMessage("Destino"),
+    "routeVia": MessageLookupByLibrary.simpleMessage("Nodo"),
     "routingMark": MessageLookupByLibrary.simpleMessage(
       "Marca de enrutamiento",
     ),

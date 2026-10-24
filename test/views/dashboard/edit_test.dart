@@ -100,21 +100,19 @@ void main() {
     seed(const [
       DashboardWidget.currentOutbound,
       DashboardWidget.proxyGroups,
-      DashboardWidget.networkSpeed,
+      DashboardWidget.memoryInfo,
     ]);
     await pumpEditor(tester);
 
     expect(find.byType(DashboardEditor), findsOneWidget);
     final current = top(tester, find.byType(CurrentOutboundCard));
     final groups = top(tester, find.byType(ProxyGroupsCard));
-    final speed = top(tester, find.byType(NetworkSpeedCard));
+    final memory = top(tester, find.byType(MemoryInfo));
     expect(current, lessThan(groups));
-    expect(groups, lessThan(speed));
-    expect(speed, lessThan(top(tester, find.text('Available to add'))));
-    expect(find.byTooltip('Add Memory info'), findsOneWidget);
+    expect(groups, lessThan(memory));
+    expect(memory, lessThan(top(tester, find.text('Available to add'))));
+    expect(find.byTooltip('Add Profile'), findsOneWidget);
     expect(find.byType(SortHandle), findsNothing);
-    // The desktop-only card has no row on a phone.
-    expect(find.byTooltip('Add Traffic takeover'), findsNothing);
     expect(tester.takeException(), isNull);
 
     await teardown(tester);
@@ -125,7 +123,7 @@ void main() {
   ) async {
     seed(const [
       DashboardWidget.currentOutbound,
-      DashboardWidget.networkSpeed,
+      DashboardWidget.memoryInfo,
       DashboardWidget.profiles,
     ]);
     await pumpEditor(tester);
@@ -135,7 +133,7 @@ void main() {
           widget is Tooltip && (widget.message?.startsWith('Remove ') ?? false),
     );
     expect(removeBadges, findsNWidgets(2));
-    expect(find.byTooltip('Remove Network speed'), findsOneWidget);
+    expect(find.byTooltip('Remove Memory info'), findsOneWidget);
     expect(find.byTooltip('Remove Profile'), findsOneWidget);
 
     await teardown(tester);
@@ -145,69 +143,67 @@ void main() {
       'and can come back', (tester) async {
     seed(const [
       DashboardWidget.currentOutbound,
-      DashboardWidget.networkSpeed,
+      DashboardWidget.memoryInfo,
       DashboardWidget.profiles,
     ]);
     await pumpEditor(tester);
     final profiles = top(tester, find.byType(ProfilesCard));
 
-    await tester.tap(find.byTooltip('Remove Network speed'));
+    await tester.tap(find.byTooltip('Remove Memory info'));
     await tester.pump();
 
     expect(saved(), const [
       DashboardWidget.currentOutbound,
       DashboardWidget.profiles,
     ]);
-    final speed = find.byType(NetworkSpeedCard);
+    final memory = find.byType(MemoryInfo);
     await tester.pump(const Duration(milliseconds: 100));
-    expect(opacityOf(tester, speed), inExclusiveRange(0, 1));
+    expect(opacityOf(tester, memory), inExclusiveRange(0, 1));
     expect(top(tester, find.byType(ProfilesCard)), closeTo(profiles, 4));
 
     await tester.pump(const Duration(milliseconds: 200));
-    expect(opacityOf(tester, speed), 0);
+    expect(opacityOf(tester, memory), 0);
     expect(top(tester, find.byType(ProfilesCard)), lessThan(profiles - 4));
 
     await settle(tester);
-    expect(find.byType(NetworkSpeedCard), findsNothing);
+    expect(find.byType(MemoryInfo), findsNothing);
     expect(
-      top(tester, find.byTooltip('Add Network speed')),
+      top(tester, find.byTooltip('Add Memory info')),
       greaterThan(top(tester, find.text('Available to add'))),
     );
 
-    await tester.tap(find.byTooltip('Add Network speed'));
+    await tester.tap(find.byTooltip('Add Memory info'));
     await settle(tester);
 
     expect(saved(), const [
       DashboardWidget.currentOutbound,
       DashboardWidget.profiles,
-      DashboardWidget.networkSpeed,
+      DashboardWidget.memoryInfo,
     ]);
     expect(
-      top(tester, find.byType(NetworkSpeedCard)),
+      top(tester, find.byType(MemoryInfo)),
       greaterThan(top(tester, find.byType(ProfilesCard))),
     );
-    expect(find.byTooltip('Add Network speed'), findsNothing);
+    expect(find.byTooltip('Add Memory info'), findsNothing);
 
     await teardown(tester);
   });
 
-  testWidgets('an edit keeps the cards only another platform shows', (
-    tester,
-  ) async {
+  testWidgets('an edit keeps the cards it did not touch', (tester) async {
     seed(const [
       DashboardWidget.currentOutbound,
-      DashboardWidget.networkTakeover,
-      DashboardWidget.networkSpeed,
+      DashboardWidget.networkControl,
+      DashboardWidget.memoryInfo,
       DashboardWidget.profiles,
     ]);
     await pumpEditor(tester);
 
-    await tester.tap(find.byTooltip('Remove Network speed'));
+    await tester.tap(find.byTooltip('Remove Memory info'));
     await tester.pump();
 
     expect(saved(), const [
       DashboardWidget.currentOutbound,
-      DashboardWidget.networkTakeover,
+      DashboardWidget.networkControl,
       DashboardWidget.profiles,
     ]);
 
@@ -219,34 +215,34 @@ void main() {
   ) async {
     seed(const [
       DashboardWidget.currentOutbound,
-      DashboardWidget.outboundMode,
+      DashboardWidget.networkControl,
       DashboardWidget.profiles,
       DashboardWidget.proxyGroups,
-      DashboardWidget.serviceStatus,
+      DashboardWidget.networkOverview,
     ]);
     await pumpEditor(tester, size: const Size(412, 700));
     final position = positionOf(tester);
     position.jumpTo(math.max(0, position.maxScrollExtent - 330));
     await tester.pump();
-    final addSpeed = find.byTooltip('Add Network speed');
+    final addMemory = find.byTooltip('Add Memory info');
     await tester.scrollUntilVisible(
-      addSpeed,
+      addMemory,
       120,
       scrollable: find.byType(Scrollable).first,
     );
     await tester.pump();
-    final speed = find.byType(NetworkSpeedCard);
+    final memory = find.byType(MemoryInfo);
 
-    await tester.tap(addSpeed);
+    await tester.tap(addMemory);
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
 
-    expect(opacityOf(tester, speed), 0);
+    expect(opacityOf(tester, memory), 0);
 
     await settle(tester);
 
-    expect(opacityOf(tester, speed), 1);
-    final card = tester.getRect(find.byType(NetworkSpeedCard));
+    expect(opacityOf(tester, memory), 1);
+    final card = tester.getRect(find.byType(MemoryInfo));
     expect(card.top, greaterThan(0));
     expect(card.bottom, lessThanOrEqualTo(700 - 16 + 1));
     expect(tester.takeException(), isNull);
@@ -258,14 +254,14 @@ void main() {
       'state', (tester) async {
     seed(const [
       DashboardWidget.currentOutbound,
-      DashboardWidget.networkSpeed,
+      DashboardWidget.proxyGroups,
       DashboardWidget.memoryInfo,
     ]);
     await pumpEditor(tester);
     final memory = tester.state(find.byType(MemoryInfo));
     final card = find.byType(MemoryInfo);
     final rise =
-        top(tester, card) - top(tester, find.byType(NetworkSpeedCard)) - 10;
+        top(tester, card) - top(tester, find.byType(ProxyGroupsCard)) - 10;
 
     final gesture = await tester.startGesture(tester.getCenter(card));
     await tester.pump(kLongPressTimeout + const Duration(milliseconds: 50));
@@ -281,7 +277,7 @@ void main() {
     expect(saved(), const [
       DashboardWidget.currentOutbound,
       DashboardWidget.memoryInfo,
-      DashboardWidget.networkSpeed,
+      DashboardWidget.proxyGroups,
     ]);
     expect(tester.state(find.byType(MemoryInfo)), same(memory));
     expect(tester.takeException(), isNull);
@@ -315,7 +311,7 @@ void main() {
   ) async {
     seed(const [
       DashboardWidget.currentOutbound,
-      DashboardWidget.networkSpeed,
+      DashboardWidget.networkOverview,
       DashboardWidget.memoryInfo,
       DashboardWidget.profiles,
       DashboardWidget.proxyGroups,
@@ -341,7 +337,7 @@ void main() {
     await tester.pump();
 
     expect(find.byType(DashboardEditor), findsNothing);
-    expect(find.byTooltip('Remove Network speed'), findsNothing);
+    expect(find.byTooltip('Remove Memory info'), findsNothing);
     expect(find.byTooltip('Edit dashboard'), findsOneWidget);
     expect(position.pixels, offset);
     expect(
@@ -377,7 +373,7 @@ void main() {
       'held and dragged with a mouse too', (tester) async {
     seed(const [
       DashboardWidget.currentOutbound,
-      DashboardWidget.networkTakeover,
+      DashboardWidget.networkControl,
       DashboardWidget.profiles,
     ]);
     await pumpEditor(
@@ -394,7 +390,7 @@ void main() {
 
     final card = find.byType(ProfilesCard);
     final rise =
-        top(tester, card) - top(tester, find.byType(NetworkTakeoverCard)) - 10;
+        top(tester, card) - top(tester, find.byType(NetworkControlCard)) - 10;
     final gesture = await tester.startGesture(
       tester.getCenter(card),
       kind: PointerDeviceKind.mouse,
@@ -410,14 +406,14 @@ void main() {
     expect(saved(), const [
       DashboardWidget.currentOutbound,
       DashboardWidget.profiles,
-      DashboardWidget.networkTakeover,
+      DashboardWidget.networkControl,
     ]);
 
-    await tester.tap(find.byTooltip('Remove Traffic takeover'));
+    await tester.tap(find.byTooltip('Remove Network control'));
     await settle(tester);
 
-    expect(saved(), isNot(contains(DashboardWidget.networkTakeover)));
-    expect(find.byTooltip('Add Traffic takeover'), findsOneWidget);
+    expect(saved(), isNot(contains(DashboardWidget.networkControl)));
+    expect(find.byTooltip('Add Network control'), findsOneWidget);
 
     await teardown(tester);
   });

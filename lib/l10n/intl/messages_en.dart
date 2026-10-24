@@ -237,11 +237,9 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
+    "accessControlAllowDesc": MessageLookupByLibrary.simpleMessage("Only selected apps go through the VPN"),
     "about": MessageLookupByLibrary.simpleMessage("About"),
     "accessControl": MessageLookupByLibrary.simpleMessage("Access control"),
-    "accessControlAllowDesc": MessageLookupByLibrary.simpleMessage(
-      "Only selected apps go through the VPN",
-    ),
     "accessControlDesc": MessageLookupByLibrary.simpleMessage(
       "Access control picks which apps use the proxy.",
     ),
@@ -1210,8 +1208,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "networkHostLookupError": MessageLookupByLibrary.simpleMessage(
       "Couldn\'t resolve the server address. Check that the URL is correct and DNS is working",
     ),
+    "networkControl": MessageLookupByLibrary.simpleMessage("Network control"),
     "networkName": MessageLookupByLibrary.simpleMessage("Network name"),
     "networkNotFoundError": m54,
+    "networkOverview": MessageLookupByLibrary.simpleMessage(
+      "Network overview",
+    ),
     "networkRateLimitedError": MessageLookupByLibrary.simpleMessage(
       "Too many requests (HTTP 429). Wait a moment and try again",
     ),
@@ -1477,9 +1479,17 @@ class MessageLookup extends MessageLookupByLibrary {
     "result": MessageLookupByLibrary.simpleMessage("Result"),
     "retry": MessageLookupByLibrary.simpleMessage("Retry"),
     "routeAddress": MessageLookupByLibrary.simpleMessage("Route addresses"),
+    "routeBoard": MessageLookupByLibrary.simpleMessage("Route"),
+    "routeBoardDesc": MessageLookupByLibrary.simpleMessage(
+      "The hops this device's traffic takes",
+    ),
     "routeExcludeAddress": MessageLookupByLibrary.simpleMessage(
       "Route exclude addresses",
     ),
+    "routeCarrier": MessageLookupByLibrary.simpleMessage("Carrier"),
+    "routeFrom": MessageLookupByLibrary.simpleMessage("From"),
+    "routeTo": MessageLookupByLibrary.simpleMessage("To"),
+    "routeVia": MessageLookupByLibrary.simpleMessage("Via"),
     "routingMark": MessageLookupByLibrary.simpleMessage("Routing mark"),
     "ru": MessageLookupByLibrary.simpleMessage("Russian"),
     "rule": MessageLookupByLibrary.simpleMessage("Rule"),

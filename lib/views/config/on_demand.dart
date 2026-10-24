@@ -39,9 +39,8 @@ class _OnDemandViewState extends ConsumerState<OnDemandView>
   void _handlePermanentlyDeniedLocationPermission() {
     if (_isMacOS) {
       final appLocalizations = context.appLocalizations;
-      dialogs.showMessage(
+      dialogs.showAlert(
         title: appLocalizations.locationPermissionRequired,
-        cancelable: false,
         message: TextSpan(
           style: AppTextStyle.subheadline.of(context),
           text: appLocalizations.locationPermissionGuide(appName),

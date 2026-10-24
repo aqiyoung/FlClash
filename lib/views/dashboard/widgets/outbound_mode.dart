@@ -21,8 +21,9 @@ void _changeMode(WidgetRef ref, Mode mode) {
   ref.read(setupActionProvider.notifier).changeMode(mode);
 }
 
-class OutboundModeCard extends ConsumerWidget {
-  const OutboundModeCard({super.key});
+/// The three modes as one connected group, for the card that holds them.
+class OutboundModeSelector extends ConsumerWidget {
+  const OutboundModeSelector({super.key});
 
   static const _outer = 26.0;
 
@@ -32,55 +33,43 @@ class OutboundModeCard extends ConsumerWidget {
       patchClashConfigProvider.select((state) => state.mode),
     );
     final tone = DashboardColors.of(context).tone;
-    final style = AppTextStyle.footnote.of(context, emphasized: true);
-    return DashboardCard(
-      semanticLabel: context.appLocalizations.outboundMode,
-      child: Column(
-        children: [
-          DashboardCardHeader(
-            glyph: AppGlyphs.split,
-            title: context.appLocalizations.outboundMode,
-          ),
-          const SizedBox(height: 12),
-          DashboardConnectedGroup(
-            children: [
-              for (final (index, item) in Mode.values.indexed)
-                Expanded(
-                  child: DashboardConnectedButton(
-                    selected: item == mode,
-                    first: index == 0,
-                    last: index == Mode.values.length - 1,
-                    outer: _outer,
-                    inner: 12,
-                    background: tone,
-                    semanticLabel: item.label,
-                    onTap: () => _changeMode(ref, item),
-                    builder: (foreground) => SizedBox(
-                      height: 52,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        spacing: 2,
-                        children: [
-                          GlyphIcon(
-                            _glyphOf(item),
-                            size: 18,
-                            color: foreground,
-                          ),
-                          Text(
-                            item.label,
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: style.copyWith(color: foreground),
-                          ),
-                        ],
+    final style = AppTextStyle.footnote
+        .of(context)
+        .copyWith(fontWeight: DashboardWeight.value);
+    return DashboardConnectedGroup(
+      children: [
+        for (final (index, item) in Mode.values.indexed)
+          Expanded(
+            child: DashboardConnectedButton(
+              selected: item == mode,
+              first: index == 0,
+              last: index == Mode.values.length - 1,
+              outer: _outer,
+              inner: 12,
+              background: tone,
+              semanticLabel: item.label,
+              onTap: () => _changeMode(ref, item),
+              builder: (foreground) => SizedBox(
+                height: 46,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  spacing: 6,
+                  children: [
+                    GlyphIcon(_glyphOf(item), size: 17, color: foreground),
+                    Flexible(
+                      child: Text(
+                        item.label,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: style.copyWith(color: foreground),
                       ),
                     ),
-                  ),
+                  ],
                 ),
-            ],
+              ),
+            ),
           ),
-        ],
-      ),
+      ],
     );
   }
 }
@@ -100,7 +89,7 @@ class OutboundModeBar extends ConsumerWidget {
     );
     final appLocalizations = context.appLocalizations;
     final outer = dashboardCardRadius(density) - _inset;
-    final style = AppTextStyle.subheadline.of(context, emphasized: true);
+    final style = DashboardText.rowTitle(context);
     return DashboardCard(
       semanticLabel: appLocalizations.outboundMode,
       padding: EdgeInsetsDirectional.fromSTEB(

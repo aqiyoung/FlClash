@@ -214,7 +214,7 @@ void main() {
     expect(find.byType(TextField), findsOneWidget);
 
     await tester.binding.handlePopRoute();
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     expect(find.byType(TextField), findsNothing);
     expect(rootBackCount, 0);
@@ -368,8 +368,8 @@ void main() {
         dashboardStateProvider.overrideWithValue(
           const DashboardState(
             dashboardWidgets: [
-              DashboardWidget.networkSpeed,
-              DashboardWidget.outboundMode,
+              DashboardWidget.memoryInfo,
+              DashboardWidget.networkControl,
             ],
           ),
         ),
@@ -395,15 +395,14 @@ void main() {
     await tester.tap(find.byTooltip('Edit dashboard'));
     await tester.pump(const Duration(milliseconds: 500));
 
-    await tester.tap(find.byTooltip('Remove Network speed'));
+    await tester.tap(find.byTooltip('Remove Memory info'));
     await tester.pump();
     await tester.binding.handlePopRoute();
     await tester.pump(const Duration(milliseconds: 500));
 
     expect(find.byType(DashboardEditor), findsNothing);
     expect(container.read(appSettingProvider).dashboardWidgets, [
-      DashboardWidget.outboundMode,
-      DashboardWidget.networkTakeover,
+      DashboardWidget.networkControl,
     ]);
   });
 }

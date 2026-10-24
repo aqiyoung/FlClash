@@ -195,7 +195,7 @@ class _EditProfileViewState extends ConsumerState<EditProfileView> {
     }, silence: false);
     if (message?.isNotEmpty == true) {
       unawaited(
-        dialogs.showMessage(
+        dialogs.showAlert(
           title: currentAppLocalizations.tip,
           message: TextSpan(text: message),
         ),

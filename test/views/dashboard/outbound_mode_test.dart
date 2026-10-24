@@ -71,8 +71,8 @@ void main() {
     return (shape.borderRadius as BorderRadius).topLeft.x;
   }
 
-  testWidgets('the card shows every mode with its own glyph', (tester) async {
-    await pump(tester, const OutboundModeCard());
+  testWidgets('the selector shows every mode with its own glyph', (tester) async {
+    await pump(tester, const OutboundModeSelector());
 
     for (final (mode, glyph) in [
       (Mode.rule, AppGlyphs.rules),
@@ -89,9 +89,9 @@ void main() {
   testWidgets('tapping a mode selects it and turns it into the pill', (
     tester,
   ) async {
-    await pump(tester, const OutboundModeCard());
+    await pump(tester, const OutboundModeSelector());
     final colorScheme = Theme.of(
-      tester.element(find.byType(OutboundModeCard)),
+      tester.element(find.byType(OutboundModeSelector)),
     ).colorScheme;
     expect(decorationOf(tester, Mode.rule).color, colorScheme.primary);
     final innerRadius = startRadiusOf(tester, Mode.direct);
@@ -108,10 +108,10 @@ void main() {
   testWidgets('the modes keep their fills with glass on', (tester) async {
     await pump(
       tester,
-      const LiquidGlassScope(enabled: true, child: OutboundModeCard()),
+      const LiquidGlassScope(enabled: true, child: OutboundModeSelector()),
     );
     final colorScheme = Theme.of(
-      tester.element(find.byType(OutboundModeCard)),
+      tester.element(find.byType(OutboundModeSelector)),
     ).colorScheme;
 
     expect(find.byType(LiquidGlass), findsNothing);
@@ -121,9 +121,9 @@ void main() {
   testWidgets('a pressed mode swells alone, over its neighbours', (
     tester,
   ) async {
-    await pump(tester, const OutboundModeCard());
+    await pump(tester, const OutboundModeSelector());
     final colorScheme = Theme.of(
-      tester.element(find.byType(OutboundModeCard)),
+      tester.element(find.byType(OutboundModeSelector)),
     ).colorScheme;
     double swellOf(Mode mode) {
       final box = tester.renderObject<RenderBox>(buttonOf(mode));
@@ -179,7 +179,7 @@ void main() {
   });
 
   testWidgets('large text on a narrow phone still fits', (tester) async {
-    await pump(tester, const OutboundModeCard(), width: 300, textScale: 1.4);
+    await pump(tester, const OutboundModeSelector(), width: 300, textScale: 1.4);
 
     expect(tester.takeException(), isNull);
   });

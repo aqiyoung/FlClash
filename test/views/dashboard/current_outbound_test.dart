@@ -295,6 +295,28 @@ void main() {
       expect(find.text('AS64500'), findsOneWidget);
     });
 
+    testWidgets('a phone puts the two rates side by side under the address', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _app((_, _) async => _residential, density: DashboardDensity.mobile),
+      );
+      await tester.pump();
+
+      // The speed card folded into this one: both directions read here now,
+      // one beside the other rather than stacked in the corner.
+      final rates = find.textContaining('/s');
+      expect(rates, findsNWidgets(2));
+      final up = tester.getRect(rates.first);
+      final down = tester.getRect(rates.last);
+      expect(up.center.dy, closeTo(down.center.dy, 0.5));
+      expect(up.right, lessThan(down.left));
+      expect(up.top, greaterThan(tester.getRect(find.text(_ip)).bottom));
+      expect(find.byGlyph(AppGlyphs.arrowUp), findsOneWidget);
+      expect(find.byGlyph(AppGlyphs.arrowDown), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('fits a phone', (tester) async {
       await tester.pumpWidget(
         _app((_, _) async => _residential, density: DashboardDensity.mobile),
@@ -404,6 +426,38 @@ void main() {
     ProbePhase phaseOf(WidgetTester tester) => containerOf(
       tester,
     ).read(outboundIpProbeProvider).entryOf(routedOutbound).phase;
+
+    testWidgets('keeps the last address, dimmed, while it checks again', (
+      tester,
+    ) async {
+      final core = _MockCore();
+      final recheck = Completer<OutboundIpResult?>();
+      var calls = 0;
+      when(() => core.outboundIp(any())).thenAnswer((_) {
+        calls++;
+        return calls == 1 ? Future.value(_address()) : recheck.future;
+      });
+
+      await tester.pumpWidget(_probingApp(core));
+      await tester.pump();
+      await tester.pump(commonDuration);
+      expect(find.text(_ip), findsOneWidget);
+
+      // Starting is a route move, so the address is asked again -- and this
+      // check is left pending on purpose.
+      start(tester);
+      await tester.pump();
+      await tester.pump(probeSettleDuration);
+
+      // The last address stays on screen, dimmed, instead of blanking.
+      expect(find.text(_ip), findsOneWidget);
+      expect(tester.widget<Text>(find.text(_ip)).style!.color!.a, lessThan(1));
+
+      recheck.complete(_address());
+      await tester.pumpAndSettle();
+      expect(find.text(_ip), findsOneWidget);
+      expect(tester.widget<Text>(find.text(_ip)).style!.color!.a, 1);
+    });
 
     testWidgets('that fails as the proxy starts shows as checking', (
       tester,

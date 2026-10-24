@@ -7758,6 +7758,26 @@ class AppLocalizations {
     );
   }
 
+  /// `Network control`
+  String get networkControl {
+    return Intl.message(
+      'Network control',
+      name: 'networkControl',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Network overview`
+  String get networkOverview {
+    return Intl.message(
+      'Network overview',
+      name: 'networkOverview',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Port {port}`
   String portValue(Object port) {
     return Intl.message(
@@ -7949,6 +7969,66 @@ class AppLocalizations {
     return Intl.message(
       'Memory the app and the core use',
       name: 'memoryInfoDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Route`
+  String get routeBoard {
+    return Intl.message(
+      'Route',
+      name: 'routeBoard',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The hops this device\'s traffic takes`
+  String get routeBoardDesc {
+    return Intl.message(
+      'The hops this device\'s traffic takes',
+      name: 'routeBoardDesc',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Carrier`
+  String get routeCarrier {
+    return Intl.message(
+      'Carrier',
+      name: 'routeCarrier',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `From`
+  String get routeFrom {
+    return Intl.message(
+      'From',
+      name: 'routeFrom',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Via`
+  String get routeVia {
+    return Intl.message(
+      'Via',
+      name: 'routeVia',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `To`
+  String get routeTo {
+    return Intl.message(
+      'To',
+      name: 'routeTo',
       desc: '',
       args: [],
     );

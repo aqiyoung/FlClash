@@ -202,9 +202,10 @@ class GroupMonogram extends StatelessWidget {
   }
 }
 
-/// The pictures the fork's default config gives its groups, carried in the
-/// bundle so a group wears the same face whether its config names one, whether
-/// the network is up and whether the cache survived a reinstall.
+/// The pictures a group wears when its config names none of its own, carried
+/// in the bundle so a bare group still wears the face its name is known by,
+/// whether the network is up and whether the cache survived a reinstall. A
+/// profile's own `icon` is always authoritative — it wins before any of these.
 abstract final class GroupIconSource {
   static const _dir = 'assets/images/groups/';
 
@@ -236,7 +237,9 @@ abstract final class GroupIconSource {
   /// Service groups, by the name the default config gives them: each wears its
   /// service's mark.
   static const _services = {
-    'GoogleFCM': 'spark.png',
+    // GoogleFCM is deliberately absent: its bundled mark was a paper plane,
+    // which reads as Telegram's. Without an entry the group falls through to
+    // the icon its config names, so a profile can dress it as it likes.
     'YouTube': 'youtube.png',
     'Google': 'google_search.png',
     'ChatGPT': 'chatgpt.png',
@@ -259,7 +262,15 @@ abstract final class GroupIconSource {
   };
 
   /// The entry a group wears, or empty for a [GroupBadge] to stand in.
+  ///
+  /// The profile's own picture wins whenever it names one: a bundled mark is
+  /// only the face a group wears when its config leaves it bare. That keeps a
+  /// subscription's icons authoritative — the same fix [262523e0] first gave
+  /// GoogleFCM, now extended to every group.
   static String of({required String name, required String icon}) {
+    if (icon.isNotEmpty) {
+      return icon;
+    }
     final known = _routing[name] ?? _regions[name] ?? _regionAuto(name);
     if (known != null) {
       return '$_dir$known';
@@ -271,13 +282,383 @@ abstract final class GroupIconSource {
     if (GroupMonogram.isGlobal(name)) {
       return '';
     }
-    return icon.isEmpty ? logo : icon;
+    final guessed = _guess(name, _serviceKeywords);
+    if (guessed != null) {
+      return '$_dir$guessed';
+    }
+    final country = _country(name);
+    if (country != null) {
+      final picture = _countryPictures[country];
+      if (picture != null) {
+        return '$_dir$picture';
+      }
+      // The flag stands in for a picture the bundle lacks.
+      return '';
+    }
+    final kind = _guess(name, _kindKeywords);
+    if (kind != null) {
+      return '$_dir$kind';
+    }
+    return logo;
   }
 
   /// `<地区>-自动选择` is how the default config names the url-test group it
   /// builds beside each region, and it wears the same picture as the rest.
   static String? _regionAuto(String name) =>
       name.endsWith('-自动选择') ? 'auto.png' : null;
+
+  /// The same pictures for the names a subscription actually writes: the lists
+  /// above are the fork's own default config, a provider writes its own. A
+  /// service wins over a region, a region over the group's kind.
+  static const _serviceKeywords = <String, List<String>>{
+    'youtube.png': ['youtube', '油管', 'yt', '哔哩哔哩', 'bilibili'],
+    'netflix.png': ['netflix', '奈飞', '网飞', '影视', '国外媒体', '电影'],
+    'disney.png': ['disney', '迪士尼'],
+    'spotify.png': ['spotify', '音乐'],
+    'chatgpt.png': ['chatgpt', 'openai', 'gpt', 'ai', '人工智能'],
+    'github.png': ['github'],
+    'telegram.png': ['telegram', '电报', '纸飞机', 'tg'],
+    'twitter.png': ['twitter', '推特'],
+    'meta.png': ['meta', 'facebook', 'instagram', '社交', '脸书', 'fb'],
+    'line.png': ['line', '连我'],
+    'tiktok.png': ['tiktok', '抖音'],
+    'pikpak.png': ['pikpak'],
+    'crypto.png': ['crypto', 'binance', 'okx', 'coinbase', '加密', '数字货币'],
+    'adblock.png': ['adblock', 'adguard', '广告', '拦截', '去广告', '屏蔽', '净化'],
+    'apple.png': ['apple', 'icloud', '苹果', 'itunes'],
+    'microsoft.png': ['microsoft', '微软', 'office'],
+    'onedrive.png': ['onedrive'],
+    'google_search.png': ['google', '谷歌', '搜索', 'gmail'],
+    'spark.png': ['fcm', 'gcm', '推送'],
+    'steam.png': ['steam', '游戏', 'game'],
+    'area.png': ['巴哈姆特', 'bahamut', '资讯站', '门户'],
+  };
+
+  /// The kinds of group, by the words a config writes for them.
+  static const _kindKeywords = <String, List<String>>{
+    'auto.png': ['自动', 'auto', 'urltest', '测速', '速度'],
+    'round_robin.png': ['故障转移', 'failover', 'fallback', '容错'],
+    'stack.png': ['负载', 'balance', '轮询'],
+    'final.png': ['漏网', 'final', '兜底'],
+    'direct.png': ['直连', 'direct', '绕过'],
+    'world_map.png': ['其他', 'other', '剩余', 'world', '全球', '全部', '所有'],
+    'rocket.png': ['选择', 'select', 'proxy', '节点', '手动', 'manual', '策略', '默认'],
+  };
+
+  /// The countries a subscription names its region groups after. The bundle has
+  /// a picture for a few; the rest wear the flag the app already has the font
+  /// for.
+  static const _countries = <String, String>{
+    '香港': 'HK',
+    'hk': 'HK',
+    'hongkong': 'HK',
+    '深港': 'HK',
+    '沪港': 'HK',
+    '京港': 'HK',
+    '日本': 'JP',
+    'jp': 'JP',
+    'japan': 'JP',
+    '东京': 'JP',
+    'tokyo': 'JP',
+    '大阪': 'JP',
+    'osaka': 'JP',
+    '美国': 'US',
+    'us': 'US',
+    'usa': 'US',
+    'unitedstates': 'US',
+    'america': 'US',
+    '洛杉矶': 'US',
+    '硅谷': 'US',
+    '西雅图': 'US',
+    '纽约': 'US',
+    '美西': 'US',
+    '美东': 'US',
+    '新加坡': 'SG',
+    'sg': 'SG',
+    'singapore': 'SG',
+    '狮城': 'SG',
+    '沪新': 'SG',
+    '京新': 'SG',
+    '深新': 'SG',
+    '台湾': 'TW',
+    'tw': 'TW',
+    'taiwan': 'TW',
+    '台北': 'TW',
+    '台中': 'TW',
+    '新北': 'TW',
+    '韩国': 'KR',
+    'kr': 'KR',
+    'korea': 'KR',
+    'southkorea': 'KR',
+    '首尔': 'KR',
+    '春川': 'KR',
+    '英国': 'GB',
+    'uk': 'GB',
+    'gb': 'GB',
+    'england': 'GB',
+    'unitedkingdom': 'GB',
+    '伦敦': 'GB',
+    '德国': 'DE',
+    'de': 'DE',
+    'germany': 'DE',
+    '法兰克福': 'DE',
+    '法国': 'FR',
+    'fr': 'FR',
+    'france': 'FR',
+    '巴黎': 'FR',
+    '加拿大': 'CA',
+    'ca': 'CA',
+    'canada': 'CA',
+    '多伦多': 'CA',
+    '澳大利亚': 'AU',
+    'au': 'AU',
+    'australia': 'AU',
+    '悉尼': 'AU',
+    '墨尔本': 'AU',
+    '俄罗斯': 'RU',
+    'ru': 'RU',
+    'russia': 'RU',
+    '莫斯科': 'RU',
+    '圣彼得堡': 'RU',
+    '印度': 'IN',
+    'in': 'IN',
+    'india': 'IN',
+    '孟买': 'IN',
+    '荷兰': 'NL',
+    'nl': 'NL',
+    'netherlands': 'NL',
+    'holland': 'NL',
+    '阿姆斯特丹': 'NL',
+    '土耳其': 'TR',
+    'tr': 'TR',
+    'turkey': 'TR',
+    '伊斯坦布尔': 'TR',
+    '巴西': 'BR',
+    'br': 'BR',
+    'brazil': 'BR',
+    '圣保罗': 'BR',
+    '里约热内卢': 'BR',
+    '阿根廷': 'AR',
+    'ar': 'AR',
+    'argentina': 'AR',
+    '布宜诺斯艾利斯': 'AR',
+    '泰国': 'TH',
+    'th': 'TH',
+    'thailand': 'TH',
+    '曼谷': 'TH',
+    '越南': 'VN',
+    'vn': 'VN',
+    'vietnam': 'VN',
+    '胡志明': 'VN',
+    '马来西亚': 'MY',
+    'my': 'MY',
+    'malaysia': 'MY',
+    '吉隆坡': 'MY',
+    '印尼': 'ID',
+    'id': 'ID',
+    'indonesia': 'ID',
+    '雅加达': 'ID',
+    '菲律宾': 'PH',
+    'ph': 'PH',
+    'philippines': 'PH',
+    '马尼拉': 'PH',
+    '意大利': 'IT',
+    'it': 'IT',
+    'italy': 'IT',
+    '米兰': 'IT',
+    '罗马': 'IT',
+    '西班牙': 'ES',
+    'es': 'ES',
+    'spain': 'ES',
+    '马德里': 'ES',
+    '瑞士': 'CH',
+    'ch': 'CH',
+    'switzerland': 'CH',
+    '苏黎世': 'CH',
+    '瑞典': 'SE',
+    'se': 'SE',
+    'sweden': 'SE',
+    '挪威': 'NO',
+    'no': 'NO',
+    'norway': 'NO',
+    '芬兰': 'FI',
+    'fi': 'FI',
+    'finland': 'FI',
+    '丹麦': 'DK',
+    'dk': 'DK',
+    'denmark': 'DK',
+    '波兰': 'PL',
+    'pl': 'PL',
+    'poland': 'PL',
+    '乌克兰': 'UA',
+    'ua': 'UA',
+    'ukraine': 'UA',
+    '爱尔兰': 'IE',
+    'ie': 'IE',
+    'ireland': 'IE',
+    '都柏林': 'IE',
+    '奥地利': 'AT',
+    'at': 'AT',
+    'austria': 'AT',
+    '维也纳': 'AT',
+    '捷克': 'CZ',
+    'cz': 'CZ',
+    'czechia': 'CZ',
+    '布拉格': 'CZ',
+    '匈牙利': 'HU',
+    'hu': 'HU',
+    'hungary': 'HU',
+    '布达佩斯': 'HU',
+    '葡萄牙': 'PT',
+    'pt': 'PT',
+    'portugal': 'PT',
+    '里斯本': 'PT',
+    '希腊': 'GR',
+    'gr': 'GR',
+    'greece': 'GR',
+    '雅典': 'GR',
+    '南非': 'ZA',
+    'za': 'ZA',
+    'southafrica': 'ZA',
+    '开普敦': 'ZA',
+    '墨西哥': 'MX',
+    'mx': 'MX',
+    'mexico': 'MX',
+    '以色列': 'IL',
+    'il': 'IL',
+    'israel': 'IL',
+    '特拉维夫': 'IL',
+    '阿联酋': 'AE',
+    'ae': 'AE',
+    'dubai': 'AE',
+    '迪拜': 'AE',
+    '沙特': 'SA',
+    'sa': 'SA',
+    'saudiarabia': 'SA',
+    '新西兰': 'NZ',
+    'nz': 'NZ',
+    'newzealand': 'NZ',
+    '哈萨克斯坦': 'KZ',
+    'kz': 'KZ',
+    'kazakhstan': 'KZ',
+    '蒙古': 'MN',
+    'mn': 'MN',
+    'mongolia': 'MN',
+    '巴基斯坦': 'PK',
+    'pk': 'PK',
+    'pakistan': 'PK',
+    '中国': 'CN',
+    'cn': 'CN',
+    'china': 'CN',
+    '回国': 'CN',
+    '国内': 'CN',
+    '卢森堡': 'LU',
+    'lu': 'LU',
+    'luxembourg': 'LU',
+    '爱沙尼亚': 'EE',
+    'ee': 'EE',
+    'estonia': 'EE',
+    '拉脱维亚': 'LV',
+    'lv': 'LV',
+    'latvia': 'LV',
+    '立陶宛': 'LT',
+    'lt': 'LT',
+    'lithuania': 'LT',
+    '塞尔维亚': 'RS',
+    'rs': 'RS',
+    'serbia': 'RS',
+    '保加利亚': 'BG',
+    'bg': 'BG',
+    'bulgaria': 'BG',
+    '罗马尼亚': 'RO',
+    'ro': 'RO',
+    'romania': 'RO',
+  };
+
+  /// The pictures the bundle carries for the countries above.
+  static const _countryPictures = <String, String>{
+    'HK': 'hong_kong.png',
+    'JP': 'japan.png',
+    'US': 'united_states.png',
+    'SG': 'singapore.png',
+    'TW': 'taiwan.png',
+  };
+
+  /// The flag a country group wears when the bundle has no picture for it.
+  static String flagOf(String name) {
+    final country = _country(name);
+    if (country == null || _countryPictures.containsKey(country)) {
+      return '';
+    }
+    return country.countryFlagEmoji;
+  }
+
+  static String? _country(String name) {
+    final words = _words(name);
+    for (final entry in _countries.entries) {
+      if (_mentions(words, entry.key)) {
+        return entry.value;
+      }
+    }
+    return null;
+  }
+
+  static String? _guess(String name, Map<String, List<String>> table) {
+    final words = _words(name);
+    for (final entry in table.entries) {
+      if (entry.value.any((key) => _mentions(words, key))) {
+        return entry.key;
+      }
+    }
+    return null;
+  }
+
+  /// The words a name is worth matching on: a flag emoji becomes the two-letter
+  /// code it stands for, everything that is not a letter or a digit splits words.
+  static List<String> _words(String name) {
+    final buffer = StringBuffer();
+    for (final rune in name.runes) {
+      if (rune >= 0x1F1E6 && rune <= 0x1F1FF) {
+        buffer.writeCharCode(0x61 + rune - 0x1F1E6);
+      } else if (_keeps(rune)) {
+        buffer.writeCharCode(rune);
+      } else {
+        buffer.write(' ');
+      }
+    }
+    return buffer
+        .toString()
+        .toLowerCase()
+        .split(' ')
+        .where((word) => word.isNotEmpty)
+        .toList();
+  }
+
+  static bool _keeps(int rune) =>
+      (rune >= 0x30 && rune <= 0x39) ||
+      (rune >= 0x41 && rune <= 0x5A) ||
+      (rune >= 0x61 && rune <= 0x7A) ||
+      (rune >= 0x4E00 && rune <= 0x9FFF) ||
+      (rune >= 0x3040 && rune <= 0x30FF) ||
+      (rune >= 0xAC00 && rune <= 0xD7AF);
+
+  /// A one- or two-letter code (`us`, `hk`) only counts as its own word, so
+  /// `Russia` does not read as `US`; longer keys match inside the word.
+  static bool _mentions(List<String> words, String key) {
+    final ascii = key.codeUnits.every((unit) => unit < 0x80);
+    if (!ascii || key.length > 2) {
+      return words.any((word) => word.contains(key));
+    }
+    return words.any(
+      (word) =>
+          word == key ||
+          (word.startsWith(key) && _isNumber(word.substring(key.length))),
+    );
+  }
+
+  static bool _isNumber(String text) =>
+      text.isNotEmpty &&
+      text.codeUnits.every((unit) => unit >= 0x30 && unit <= 0x39);
 }
 
 /// Stands in for a group whose picture is empty or unreadable: the app's own
@@ -313,6 +694,20 @@ class GroupBadge extends StatelessWidget {
       return GroupMonogram(name, exitCountryCode: exitCountryCode);
     }
     final size = IconTheme.of(context).size ?? 24;
+    final flag = GroupIconSource.flagOf(name);
+    if (flag.isNotEmpty) {
+      return SizedBox.square(
+        dimension: size,
+        child: FittedBox(
+          fit: BoxFit.contain,
+          child: EmojiText(
+            flag,
+            maxLines: 1,
+            style: AppTextStyle.custom(context, size: size, leading: size),
+          ),
+        ),
+      );
+    }
     return Image.asset(
       GroupIconSource.logo,
       width: size,

@@ -473,9 +473,12 @@ class DashboardChip extends StatelessWidget {
             label,
             maxLines: 1,
             style: AppTextStyle.caption1
-                .of(context, emphasized: true)
+                .of(context)
                 .toTabular
-                .copyWith(color: foreground),
+                .copyWith(
+                  color: foreground,
+                  fontWeight: DashboardWeight.value,
+                ),
           ),
         ],
       ),
@@ -674,6 +677,7 @@ class DashboardSwitchRow extends StatelessWidget {
     this.color,
     this.onTap,
     this.showIcon = true,
+    this.trailing,
   });
 
   final Glyph glyph;
@@ -687,6 +691,10 @@ class DashboardSwitchRow extends StatelessWidget {
   final Color? color;
   final VoidCallback? onTap;
   final bool showIcon;
+
+  /// Sits between the text and the switch, for an action on what the row now
+  /// says rather than on its setting.
+  final Widget? trailing;
 
   static const _gap = 12.0;
 
@@ -777,11 +785,100 @@ class DashboardSwitchRow extends StatelessWidget {
               ],
             ),
           ),
+          if (trailing case final trailing?) trailing,
           DashboardSwitch(
             value: value,
             onChanged: onChanged,
             semanticLabel: title,
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// A switch sized to share a row with another: no icon, the title on the
+/// switch's line and its value under both, where half a card is too narrow
+/// for the icon a full-width row carries.
+class DashboardSwitchTile extends StatelessWidget {
+  const DashboardSwitchTile({
+    super.key,
+    required this.title,
+    this.subtitle,
+    required this.value,
+    required this.onChanged,
+    this.onTap,
+    this.trailing,
+    this.radius = DashboardCorner.mobileBlock,
+  });
+
+  final String title;
+  final String? subtitle;
+  final bool value;
+  final ValueChanged<bool>? onChanged;
+  final VoidCallback? onTap;
+
+  /// Rides the value's line, which spans the tile, rather than the title's.
+  final Widget? trailing;
+  final double radius;
+
+  @override
+  Widget build(BuildContext context) {
+    return DashboardBlock(
+      radius: radius,
+      padding: const EdgeInsets.fromLTRB(12, 8, 10, 10),
+      onTap: onTap,
+      semanticLabel: title,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            spacing: 6,
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTextStyle.footnote
+                      .of(context)
+                      .copyWith(fontWeight: DashboardWeight.value),
+                ),
+              ),
+              DashboardSwitch(
+                value: value,
+                onChanged: onChanged,
+                semanticLabel: title,
+              ),
+            ],
+          ),
+          if (subtitle case final subtitle?)
+            SizedBox(
+              height: 22,
+              child: Row(
+                spacing: 2,
+                children: [
+                  Flexible(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: AlignmentDirectional.centerStart,
+                      child: Text(
+                        subtitle,
+                        maxLines: 1,
+                        style: AppTextStyle.caption2
+                            .of(context)
+                            .toTabular
+                            .copyWith(
+                              color: context.colorScheme.onSurfaceVariant,
+                            ),
+                      ),
+                    ),
+                  ),
+                  if (trailing case final trailing?) trailing,
+                ],
+              ),
+            ),
         ],
       ),
     );

@@ -166,10 +166,11 @@ class _GroupDelay extends ConsumerWidget {
           ? '$delay ms'
           : delayFailureText(delay, context.appLocalizations),
       maxLines: 1,
-      style: AppTextStyle.caption1
-          .of(context, emphasized: true)
-          .toTabular
-          .copyWith(color: colorScheme.delayColor(delay > 0 ? delay : -1)),
+      style: DashboardText.value(
+        context,
+        AppTextStyle.caption1,
+        color: colorScheme.delayColor(delay > 0 ? delay : -1),
+      ),
     );
   }
 }
@@ -403,11 +404,17 @@ class _GroupsFigure extends StatelessWidget {
         children: [
           TextSpan(
             text: '${groups.length}',
-            style: DashboardText.figure(context, metrics.style),
+            style: DashboardText.figure(
+              context,
+              metrics.style,
+              weight: DashboardWeight.hero,
+            ),
           ),
           TextSpan(
             text: ' ${context.appLocalizations.groupCountUnit}',
-            style: DashboardText.unit(context),
+            style: DashboardText.unit(
+              context,
+            ).copyWith(fontWeight: DashboardWeight.hero),
           ),
         ],
       ),
@@ -477,10 +484,11 @@ class _IconStack extends StatelessWidget {
                 child: Center(
                   child: Text(
                     '+$rest',
-                    style: AppTextStyle.caption1
-                        .of(context, emphasized: true)
-                        .toTabular
-                        .copyWith(color: context.colorScheme.onSurfaceVariant),
+                    style: DashboardText.value(
+                      context,
+                      AppTextStyle.caption1,
+                      color: context.colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
               ),

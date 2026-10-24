@@ -298,7 +298,7 @@ class _CustomProxiesViewState extends ConsumerState<CustomProxiesView> {
         for (final proxy in previous) proxy.definition,
       ]);
     } catch (error) {
-      await dialogs.showMessage(message: TextSpan(text: compactError(error)));
+      await dialogs.showAlert(message: TextSpan(text: compactError(error)));
       return;
     }
     if (!mounted) {

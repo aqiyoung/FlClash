@@ -66,6 +66,19 @@ void main() {
 
     expect(theme.filled, isTrue);
     expect(theme.border?.borderSide, BorderSide.none);
+
+    // The theme alone cannot dress the field: SearchField pins `filled` in
+    // its own decoration, so the pill only shows when the field carries the
+    // fill itself.
+    final colorScheme = Theme.of(
+      tester.element(find.byType(TextField).first),
+    ).colorScheme;
+    final field = tester.widget<TextField>(find.byType(TextField).first);
+    expect(field.decoration!.filled, isTrue);
+    expect(
+      field.decoration!.fillColor,
+      SurfaceLevel.floatingOf(colorScheme).colorOf(colorScheme),
+    );
   });
 
   testWidgets('a DNS row is found by its own name', (tester) async {

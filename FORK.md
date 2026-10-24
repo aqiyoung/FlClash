@@ -8,6 +8,7 @@
 
 - **正式版**（推荐）：[最新 Release](../../releases/latest) 里 `Skyward-` 开头的安装包。`/releases/latest` 永远指向正式版。
 - **测试版**：在 [Releases 列表](../../releases) 里标着 *Pre-release* 的那个，跟上游 `dev` 走，比正式版新，也可能有问题。
+- **预览版**：只有 Android arm64 一个包，每次代码有改动就自动构建（tag 形如 `preview-<构建号>`）。它是我们自己装机试新功能用的，比测试版更早、也更糙。
 
 Android 一般下 `-arm64-v8a.apk`（绝大多数手机）或 `-armeabi-v7a.apk`（老机器），模拟器下 `-x86_64.apk`。
 
@@ -19,28 +20,32 @@ Android 一般下 `-arm64-v8a.apk`（绝大多数手机）或 `-armeabi-v7a.apk`
 ```
 
 - 前三段跟上游一致（取自上游 `pubspec.yaml`）。
-- 第四位是我们自己的迭代号：**一路往上数、不随上游版本重置**。每次发版（正式版或测试版）都 +1，把 beta 晋升成正式版时也拿一个新号——这样 beta 用户也会收到正式版的更新提示。
+- 第四位是我们自己的迭代号：**一路往上数、不随上游版本重置**。每次发版（测试版或正式版）都 +1，把 beta 晋升成正式版时也拿一个新号——这样 beta 用户也会收到正式版的更新提示。预览版不占这个号，它走 `preview-*` tag。
 - **Release tag 就是这四段版本**（如 `v0.9.1.13`）：App 拿自己的版本名去比 tag，相等就不提示，第四位变大了才提示。所以"上游没动、只是我们重建"现在也能推送给用户。（2026-10-18 之前发的包版本名只有三段，它们不会因为第四位提示更新，需要手动来下载页看一眼。）
-- 桌面端（Linux / Windows / macOS）显示的也是四段：pub 不接受四段版本号，`pubspec.yaml` 里只能写三段，所以四段版本名在构建时以 `APP_VERSION` 注入（`setup.dart` 读 CI 的 `APP_VERSION_NAME`，写进 `env.json` 的 dart-define）。`PackageInfo.displayVersion` 优先用它，为空时回落到 `package_info_plus` 的三段。桌面端的「检查更新」也走这条，所以第四位变大同样能提示。
+- 装上去的包处处显示四段：pub 不接受四段版本号，`pubspec.yaml` 里只能写三段，所以四段版本名在构建时以 `APP_VERSION` 注入（`setup.dart` 读 CI 的 `APP_VERSION_NAME`，写进 `env.json` 的 dart-define），`PackageInfo.displayVersion` 优先用它、为空时回落到 `package_info_plus` 的三段；Android 的 `versionName` 也直接写这四段，所以「设置 → 应用 → Skyward」里看到的和 App 里的一致。「检查更新」同样走四段比较，第四位变大就能提示。
 - 每次构建另外带一个 `<YYYYMMDD><当天序号>` 的**构建号**，写进 `pubspec.yaml`（构建时注入、不提交），它就是 APK 的 `versionCode`，保证新包一定比手机里那个"更新"，否则 Android 会拒绝覆盖安装。构建号记在 Release 说明里。
 
-## 两个渠道
+## 三个渠道
 
 | 渠道 | 分支 | 内容 | Release |
 | --- | --- | --- | --- |
-| 正式版 | [`main`](../../tree/main) | 已经跑过 beta、被晋升进来的代码 | 标为 Latest |
+| 正式版 | [`main`](../../tree/main) | 已经跑过测试版的代码，晋升进来的 | 标为 Latest |
 | 测试版 | [`beta`](../../tree/beta) | 上游 `dev` 的最新代码 + 我们自己的改动 | prerelease，不抢占 Latest |
+| 预览版 | [`beta`](../../tree/beta) | 同上，只构建 Android arm64、不跑测试 | prerelease，tag 是 `preview-*` |
 
-两个渠道**同包名**（`com.threely.skyward`）、**同签名**，可以互相覆盖安装，`versionCode` 保证单调递增。
+三个渠道依次走：预览版是还在改的快速验证包，稳定下来才发测试版，测试版跑一段没问题才晋升成正式版。三个渠道**同包名**（`com.threely.skyward`）、**同签名**，可以互相覆盖安装，`versionCode` 保证单调递增。
+
+每个 Release 的说明里先列**自该渠道上一个版本以来的提交标题**（自动生成的更新日志，最多 40 条），TG 推送里也带上前面几条；`ci:` 这类纯自动化的提交不列。
 
 ## 与上游的差异
 
-改动都在 `main` / `beta` 上，以提交的形式存在。`beta` 每次同步时用 rebase 重放到上游最新代码上，`main` 则从 `beta` 晋升而来：
+改动都在 `main` / `beta` 上，以提交的形式存在。`beta` 手动同步上游时用 rebase 重放到上游最新代码上，`main` 则从 `beta` 晋升而来：
 
 | 改动 | 说明 |
 | --- | --- |
 | 免责声明 | 保留全部条款文案，把手机上"照着把声明敲一遍"改成勾选确认 |
 | 关于页 | 去掉上游的 Telegram 频道入口（那个频道不是本仓库运营的） |
+| 内核来源 | 内核（mihomo）改从本仓库作者的 fork `aqiyoung/skyward-core` 取，`FlClash` 分支是官方 mihomo 版本加上补丁层，关于页的「内核」链接也指向它。上游 README 要求非 MetaCubeX 的下游项目名字里不能带 `mihomo`，所以 fork 叫 `skyward-core`。Go 模块路径仍是 `github.com/metacubex/mihomo`、目录仍是 `core/Clash.Meta`——不为了改名去动上游代码的 import |
 | 更新检查 | 指向本仓库的 Releases，而不是上游；版本比较额外认我们自己的第四位 |
 | 版本名 | 四段版本号由构建注入：Android 走 `versionName`，桌面端走 `APP_VERSION` dart-define（`pubspec.yaml` 仍是三段） |
 | 包名 | Android 的 `applicationId` 改成 `com.threely.skyward`（2026-10-18 起先用 `com.threely.clash`，2026-10-21 随改名换成现在这个）。本仓库用自己的名字发布，和上游官方包分别安装 |
@@ -74,10 +79,9 @@ Android 一般下 `-arm64-v8a.apk`（绝大多数手机）或 `-armeabi-v7a.apk`
 
 ## 构建流程
 
-默认分支 `main` 上带着工作流。它只跟上游的**预览分支 `dev`**（不再跟上游的正式分支），每小时检查一次：
+默认分支 `main` 上带着工作流，自动化脚本的源头在 `ci` 分支。**上游同步是手动的**（不再每小时跑一次）：需要的时候手动 rebase `beta` 到上游 `dev`，跑完整测试、构建 7 个平台（Android / Linux / Windows / macOS，含 arm64）、打 tag、发测试版 Release、推 TG。**冲突则中止并推 TG 告警，不会静默地用上游代码盖掉我们的改动。**
 
-- 上游动了 → rebase `beta`、跑完整测试、构建 7 个平台（Android / Linux / Windows / macOS，含 arm64）、打 tag、发 beta Release、推 TG。**冲突则中止并推 TG 告警，不会静默地用上游代码盖掉我们的改动。**
-- `main` 不自动更新：**稳定之后手动"晋升"**（`promote`）——把 `beta` 的代码合进 `main`，再构建并发布正式版。所以正式版发出去的代码一定先在 beta 上跑过。
+`main` 不自动更新：**稳定之后手动"晋升"**（`promote`）——把 `beta` 的代码合进 `main`，再构建并发布正式版。所以正式版发出去的代码一定先在 `beta` 上跑过。预览版不占版本号，只是每次推 `beta` 时出的 Android 试机包。
 
 macOS 产物没有 Apple 开发者证书，是**未签名**的，首次打开要在「系统设置 → 隐私与安全性」里放行。
 

@@ -15,6 +15,8 @@ Read these only when the task touches their area:
 
 - [.agents/architecture.md](.agents/architecture.md): core integration, providers, database, managers, build system, and
   local plugins.
+- [.agents/core-sync.md](.agents/core-sync.md): the mihomo core submodule, the version string it is built
+  with, and how to move it to a new release.
 - [.agents/setting-changes.md](.agents/setting-changes.md): whether a changed setting is patched live, re-applies the
   profile, or asks for an Android VPN restart.
 - [.agents/surfaces.md](.agents/surfaces.md): fill levels, selection and status colors, and the few borders that

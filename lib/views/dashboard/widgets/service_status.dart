@@ -145,7 +145,13 @@ class _ServiceView {
 }
 
 class ServiceStatusCard extends ConsumerStatefulWidget {
-  const ServiceStatusCard({super.key});
+  const ServiceStatusCard({super.key, this.title, this.footer});
+
+  /// The card's own name, when it stands for more than the services.
+  final String? title;
+
+  /// What sits under the grid, inside the same card.
+  final Widget? footer;
 
   @override
   ConsumerState<ServiceStatusCard> createState() => _ServiceStatusCardState();
@@ -237,8 +243,10 @@ class _ServiceStatusCardState extends ConsumerState<ServiceStatusCard>
           scale,
       gap: density.isCompact ? 6 : 8,
     );
+    final footer = widget.footer;
+    final title = widget.title ?? appLocalizations.serviceStatus;
     return DashboardCard(
-      semanticLabel: appLocalizations.serviceStatus,
+      semanticLabel: title,
       onTap: mobile ? _openSheet : null,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -246,7 +254,7 @@ class _ServiceStatusCardState extends ConsumerState<ServiceStatusCard>
         children: [
           DashboardCardHeader(
             glyph: AppGlyphs.verified,
-            title: appLocalizations.serviceStatus,
+            title: title,
             chevron: mobile,
             trailing: [
               ?verdict,
@@ -262,7 +270,7 @@ class _ServiceStatusCardState extends ConsumerState<ServiceStatusCard>
                       ),
                       DashboardIconButton(
                         glyph: AppGlyphs.chevronForward,
-                        tooltip: appLocalizations.serviceStatus,
+                        tooltip: title,
                         onPressed: _openSheet,
                       ),
                     ],
@@ -272,6 +280,10 @@ class _ServiceStatusCardState extends ConsumerState<ServiceStatusCard>
           ),
           if (mobile) const SizedBox(height: 12) else const Spacer(),
           grid,
+          if (footer != null) ...[
+            const SizedBox(height: 10),
+            footer,
+          ],
         ],
       ),
     );
@@ -356,10 +368,11 @@ class _ServiceCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (label, color) = service.statusOf(context);
-    final status = AppTextStyle.caption1
-        .of(context, emphasized: true)
-        .toTabular
-        .copyWith(color: color);
+    final status = DashboardText.value(
+      context,
+      AppTextStyle.caption1,
+      color: color,
+    );
     final badge = _ServiceBadge(
       target: service.target,
       size: height - _inset * 2,
@@ -375,7 +388,9 @@ class _ServiceCell extends StatelessWidget {
             service.target.label,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: AppTextStyle.footnote.of(context, emphasized: true),
+            // The name says which check this is; the latency under it is the
+            // cell's value, so the name keeps the label's weight.
+            style: AppTextStyle.footnote.of(context),
           ),
           if (service.loading)
             SkeletonText(width: 44, style: status)
@@ -522,8 +537,11 @@ class _StatusPill extends StatelessWidget {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
           style: AppTextStyle.caption1
-              .of(context, emphasized: true)
-              .copyWith(color: colors.onContainer),
+              .of(context)
+              .copyWith(
+                color: colors.onContainer,
+                fontWeight: DashboardWeight.value,
+              ),
         ),
       ),
     );
@@ -1025,10 +1043,11 @@ class _ServiceRowTrailing extends StatelessWidget {
         if (delay != null)
           Text(
             '$delay ms',
-            style: AppTextStyle.footnote
-                .of(context, emphasized: true)
-                .toTabular
-                .copyWith(color: context.colorScheme.onSurface),
+            style: DashboardText.value(
+              context,
+              AppTextStyle.footnote,
+              color: context.colorScheme.onSurface,
+            ),
           ),
         if (checkedAt != null)
           Text(

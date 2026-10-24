@@ -14,6 +14,7 @@ export 'file.dart';
 export 'fixed.dart';
 export 'function.dart';
 export 'future.dart';
+export 'geo.dart';
 export 'http.dart';
 export 'indexing.dart';
 export 'input_entries.dart';

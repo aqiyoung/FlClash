@@ -235,11 +235,9 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
+    "accessControlAllowDesc": MessageLookupByLibrary.simpleMessage("Через VPN проходят только выбранные приложения"),
     "about": MessageLookupByLibrary.simpleMessage("О программе"),
     "accessControl": MessageLookupByLibrary.simpleMessage("Контроль доступа"),
-    "accessControlAllowDesc": MessageLookupByLibrary.simpleMessage(
-      "Через VPN проходят только выбранные приложения",
-    ),
     "accessControlDesc": MessageLookupByLibrary.simpleMessage(
       "Контроль доступа выбирает приложения, использующие прокси.",
     ),
@@ -1262,7 +1260,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "networkHostLookupError": MessageLookupByLibrary.simpleMessage(
       "Не удалось определить адрес сервера. Проверьте правильность URL и работу DNS",
     ),
+    "networkControl": MessageLookupByLibrary.simpleMessage("Управление сетью"),
     "networkName": MessageLookupByLibrary.simpleMessage("Имя сети"),
+    "networkOverview": MessageLookupByLibrary.simpleMessage("Обзор сети"),
     "networkNotFoundError": m54,
     "networkRateLimitedError": MessageLookupByLibrary.simpleMessage(
       "Слишком много запросов (HTTP 429). Подождите немного и повторите попытку",
@@ -1543,9 +1543,17 @@ class MessageLookup extends MessageLookupByLibrary {
     "result": MessageLookupByLibrary.simpleMessage("Результат"),
     "retry": MessageLookupByLibrary.simpleMessage("Повторить"),
     "routeAddress": MessageLookupByLibrary.simpleMessage("Адреса маршрутов"),
+    "routeBoard": MessageLookupByLibrary.simpleMessage("Маршрут"),
+    "routeBoardDesc": MessageLookupByLibrary.simpleMessage(
+      "Путь трафика от устройства до назначения",
+    ),
     "routeExcludeAddress": MessageLookupByLibrary.simpleMessage(
       "Исключённые адреса маршрутов",
     ),
+    "routeCarrier": MessageLookupByLibrary.simpleMessage("Оператор"),
+    "routeFrom": MessageLookupByLibrary.simpleMessage("Устройство"),
+    "routeTo": MessageLookupByLibrary.simpleMessage("Назначение"),
+    "routeVia": MessageLookupByLibrary.simpleMessage("Узел"),
     "routingMark": MessageLookupByLibrary.simpleMessage("Метка маршрутизации"),
     "ru": MessageLookupByLibrary.simpleMessage("Русский"),
     "rule": MessageLookupByLibrary.simpleMessage("Правило"),

@@ -212,11 +212,9 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
+    "accessControlAllowDesc": MessageLookupByLibrary.simpleMessage("선택한 앱만 VPN을 거칩니다"),
     "about": MessageLookupByLibrary.simpleMessage("정보"),
     "accessControl": MessageLookupByLibrary.simpleMessage("접근 제어"),
-    "accessControlAllowDesc": MessageLookupByLibrary.simpleMessage(
-      "선택한 앱만 VPN을 거칩니다",
-    ),
     "accessControlDesc": MessageLookupByLibrary.simpleMessage(
       "접근 제어는 프록시를 사용할 앱을 선택합니다.",
     ),
@@ -1022,7 +1020,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "networkHostLookupError": MessageLookupByLibrary.simpleMessage(
       "서버 주소를 확인할 수 없습니다. URL이 올바른지, DNS가 정상인지 확인하세요",
     ),
+    "networkControl": MessageLookupByLibrary.simpleMessage("네트워크 제어"),
     "networkName": MessageLookupByLibrary.simpleMessage("네트워크 이름"),
+    "networkOverview": MessageLookupByLibrary.simpleMessage("네트워크 개요"),
     "networkNotFoundError": m54,
     "networkRateLimitedError": MessageLookupByLibrary.simpleMessage(
       "요청이 너무 많습니다(HTTP 429). 잠시 후 다시 시도하세요",
@@ -1239,7 +1239,15 @@ class MessageLookup extends MessageLookupByLibrary {
     "result": MessageLookupByLibrary.simpleMessage("결과"),
     "retry": MessageLookupByLibrary.simpleMessage("다시 시도"),
     "routeAddress": MessageLookupByLibrary.simpleMessage("라우팅 주소"),
+    "routeBoard": MessageLookupByLibrary.simpleMessage("라우팅"),
+    "routeBoardDesc": MessageLookupByLibrary.simpleMessage(
+      "이 기기에서 목적지까지 가는 경로",
+    ),
     "routeExcludeAddress": MessageLookupByLibrary.simpleMessage("라우팅 제외 주소"),
+    "routeCarrier": MessageLookupByLibrary.simpleMessage("통신사"),
+    "routeFrom": MessageLookupByLibrary.simpleMessage("기기"),
+    "routeTo": MessageLookupByLibrary.simpleMessage("목적지"),
+    "routeVia": MessageLookupByLibrary.simpleMessage("노드"),
     "routingMark": MessageLookupByLibrary.simpleMessage("라우팅 마크"),
     "ru": MessageLookupByLibrary.simpleMessage("러시아어"),
     "rule": MessageLookupByLibrary.simpleMessage("규칙"),
