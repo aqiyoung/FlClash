@@ -35,15 +35,25 @@ class NetworkControlCard extends ConsumerWidget {
           ),
           const SizedBox(height: 12),
           const OutboundModeSelector(),
+          const SizedBox(height: 10),
           if (desktopPlatforms.contains(platform)) ...[
-            const SizedBox(height: 10),
             const TakeoverSwitchRows(),
-          ] else if (platform == SupportPlatform.Android) ...[
-            const SizedBox(height: 10),
-            const VpnSwitchRow(),
-          ],
-          const SizedBox(height: 8),
-          const LanSwitchRow(showAddress: true),
+            const SizedBox(height: 8),
+            const LanSwitchRow(showAddress: true),
+          ] else if (platform == SupportPlatform.Android)
+            // The two switches a phone has sit side by side: each is a single
+            // value, and neither needs the card's full width.
+            const Row(
+              spacing: 8,
+              children: [
+                Expanded(child: VpnSwitchRow(compact: true)),
+                Expanded(
+                  child: LanSwitchRow(showAddress: true, compact: true),
+                ),
+              ],
+            )
+          else
+            const LanSwitchRow(showAddress: true),
         ],
       ),
     );

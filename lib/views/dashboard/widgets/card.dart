@@ -794,6 +794,84 @@ class DashboardSwitchRow extends StatelessWidget {
   }
 }
 
+/// A switch sized to share a row with another: no icon, the title on the
+/// switch's line and its value under both, where half a card is too narrow
+/// for the icon a full-width row carries.
+class DashboardSwitchTile extends StatelessWidget {
+  const DashboardSwitchTile({
+    super.key,
+    required this.title,
+    this.subtitle,
+    required this.value,
+    required this.onChanged,
+    this.onTap,
+    this.trailing,
+    this.radius = DashboardCorner.mobileBlock,
+  });
+
+  final String title;
+  final String? subtitle;
+  final bool value;
+  final ValueChanged<bool>? onChanged;
+  final VoidCallback? onTap;
+
+  /// Rides the value's line, which spans the tile, rather than the title's.
+  final Widget? trailing;
+  final double radius;
+
+  @override
+  Widget build(BuildContext context) {
+    return DashboardBlock(
+      radius: radius,
+      padding: const EdgeInsets.fromLTRB(12, 8, 10, 10),
+      onTap: onTap,
+      semanticLabel: title,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            spacing: 6,
+            children: [
+              Expanded(
+                child: Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: DashboardText.rowTitle(context),
+                ),
+              ),
+              DashboardSwitch(
+                value: value,
+                onChanged: onChanged,
+                semanticLabel: title,
+              ),
+            ],
+          ),
+          if (subtitle case final subtitle?)
+            SizedBox(
+              height: 22,
+              child: Row(
+                spacing: 2,
+                children: [
+                  Flexible(
+                    child: Text(
+                      subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: DashboardText.label(context),
+                    ),
+                  ),
+                  if (trailing case final trailing?) trailing,
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
 /// The last [height] dp of a list that runs past its card fade out instead of
 /// showing a scroll bar.
 class DashboardFadeOut extends StatelessWidget {

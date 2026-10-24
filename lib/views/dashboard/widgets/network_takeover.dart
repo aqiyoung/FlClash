@@ -215,7 +215,11 @@ class VpnTile extends ConsumerWidget {
 
 /// The VPN switch as a row, for the card that holds it.
 class VpnSwitchRow extends ConsumerWidget {
-  const VpnSwitchRow({super.key});
+  const VpnSwitchRow({super.key, this.compact = false});
+
+  /// Shares a row with the LAN switch on a phone, where half the card is too
+  /// narrow for an icon beside the title.
+  final bool compact;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -224,12 +228,22 @@ class VpnSwitchRow extends ConsumerWidget {
     final enabled = ref.watch(
       vpnSettingProvider.select((state) => state.enable),
     );
+    final subtitle = enabled
+        ? appLocalizations.enabled
+        : appLocalizations.disabled;
+    if (compact) {
+      return DashboardSwitchTile(
+        title: 'VPN',
+        subtitle: subtitle,
+        value: enabled,
+        onTap: () => _setVpn(ref, !enabled),
+        onChanged: (value) => _setVpn(ref, value),
+      );
+    }
     return DashboardSwitchRow(
       glyph: AppGlyphs.vpn,
       title: 'VPN',
-      subtitle: enabled
-          ? appLocalizations.enabled
-          : appLocalizations.disabled,
+      subtitle: subtitle,
       value: enabled,
       iconSize: metrics.icon,
       padding: metrics.padding,
