@@ -929,6 +929,8 @@
   "ipTypeUnknown": "Unknown type",
   "tapIconToRetry": "Tap the icon to retry",
   "networkTakeover": "Traffic takeover",
+  "networkControl": "Network control",
+  "networkOverview": "Network overview",
   "portValue": "Port {port}",
   "serviceAbnormalCount": "{count, plural, =1{1 issue} other{{count} issues}}",
   "serviceAllAvailable": "All available",

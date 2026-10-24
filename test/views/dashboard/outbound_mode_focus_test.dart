@@ -53,7 +53,7 @@ void main() {
                     Row(
                       children: [
                         Expanded(child: neighbor('left')),
-                        const Expanded(child: OutboundModeCard()),
+                        const Expanded(child: OutboundModeSelector()),
                         Expanded(child: neighbor('right')),
                       ],
                     ),

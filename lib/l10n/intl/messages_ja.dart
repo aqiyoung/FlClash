@@ -1035,7 +1035,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "networkHostLookupError": MessageLookupByLibrary.simpleMessage(
       "サーバーのアドレスを解決できませんでした。URL が正しいこと、DNS が使えることを確認してください",
     ),
+    "networkControl": MessageLookupByLibrary.simpleMessage("ネットワーク制御"),
     "networkName": MessageLookupByLibrary.simpleMessage("ネットワーク名"),
+    "networkOverview": MessageLookupByLibrary.simpleMessage("ネットワーク概要"),
     "networkNotFoundError": m54,
     "networkRateLimitedError": MessageLookupByLibrary.simpleMessage(
       "リクエストが多すぎます（HTTP 429）。しばらく待ってから再試行してください",

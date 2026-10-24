@@ -1260,7 +1260,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "networkHostLookupError": MessageLookupByLibrary.simpleMessage(
       "Не удалось определить адрес сервера. Проверьте правильность URL и работу DNS",
     ),
+    "networkControl": MessageLookupByLibrary.simpleMessage("Управление сетью"),
     "networkName": MessageLookupByLibrary.simpleMessage("Имя сети"),
+    "networkOverview": MessageLookupByLibrary.simpleMessage("Обзор сети"),
     "networkNotFoundError": m54,
     "networkRateLimitedError": MessageLookupByLibrary.simpleMessage(
       "Слишком много запросов (HTTP 429). Подождите немного и повторите попытку",

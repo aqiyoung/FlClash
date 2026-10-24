@@ -1020,7 +1020,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "networkHostLookupError": MessageLookupByLibrary.simpleMessage(
       "서버 주소를 확인할 수 없습니다. URL이 올바른지, DNS가 정상인지 확인하세요",
     ),
+    "networkControl": MessageLookupByLibrary.simpleMessage("네트워크 제어"),
     "networkName": MessageLookupByLibrary.simpleMessage("네트워크 이름"),
+    "networkOverview": MessageLookupByLibrary.simpleMessage("네트워크 개요"),
     "networkNotFoundError": m54,
     "networkRateLimitedError": MessageLookupByLibrary.simpleMessage(
       "요청이 너무 많습니다(HTTP 429). 잠시 후 다시 시도하세요",

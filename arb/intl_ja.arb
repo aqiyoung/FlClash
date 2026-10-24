@@ -929,6 +929,8 @@
   "ipTypeUnknown": "タイプ不明",
   "tapIconToRetry": "アイコンをタップして再試行",
   "networkTakeover": "トラフィックの引き継ぎ",
+  "networkControl": "ネットワーク制御",
+  "networkOverview": "ネットワーク概要",
   "portValue": "ポート {port}",
   "serviceAbnormalCount": "{count} 件に問題",
   "serviceAllAvailable": "すべて利用可能",

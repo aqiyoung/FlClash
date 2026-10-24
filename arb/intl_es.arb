@@ -929,6 +929,8 @@
   "ipTypeUnknown": "Tipo desconocido",
   "tapIconToRetry": "Toca el icono para reintentar",
   "networkTakeover": "Control del tráfico",
+  "networkControl": "Control de red",
+  "networkOverview": "Resumen de red",
   "portValue": "Puerto {port}",
   "serviceAbnormalCount": "{count, plural, =1{1 problema} other{{count} problemas}}",
   "serviceAllAvailable": "Todo disponible",

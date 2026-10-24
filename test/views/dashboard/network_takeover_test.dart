@@ -34,20 +34,20 @@ class _RowCase {
 final _rowCases = <_RowCase>[
   _RowCase(
     'system proxy',
-    const NetworkTakeoverCard(),
+    const TakeoverSwitchRows(),
     'System proxy',
     (container) => container.read(networkSettingProvider).systemProxy,
     initial: true,
   ),
   _RowCase(
     'TUN',
-    const NetworkTakeoverCard(),
+    const TakeoverSwitchRows(),
     'TUN',
     (container) => container.read(patchClashConfigProvider).tun.enable,
   ),
   _RowCase(
     'VPN',
-    const VpnCard(),
+    const VpnSwitchRow(),
     'VPN',
     (container) => container.read(vpnSettingProvider).enable,
     initial: true,
@@ -132,7 +132,7 @@ void main() {
   ) async {
     await pumpCard(
       tester,
-      const LiquidGlassScope(enabled: true, child: NetworkTakeoverCard()),
+      const LiquidGlassScope(enabled: true, child: TakeoverSwitchRows()),
     );
     final tun = switchOf(_rowCases[1]);
     Finder lensOf(Finder toggle) =>
@@ -153,7 +153,7 @@ void main() {
   });
 
   testWidgets('a row says what it is set to', (tester) async {
-    await pumpCard(tester, const NetworkTakeoverCard());
+    await pumpCard(tester, const TakeoverSwitchRows());
 
     expect(find.text('Port 7890'), findsOneWidget);
     expect(find.text(currentAppLocalizations.disabled), findsOneWidget);

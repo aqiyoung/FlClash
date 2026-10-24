@@ -7758,6 +7758,26 @@ class AppLocalizations {
     );
   }
 
+  /// `Network control`
+  String get networkControl {
+    return Intl.message(
+      'Network control',
+      name: 'networkControl',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Network overview`
+  String get networkOverview {
+    return Intl.message(
+      'Network overview',
+      name: 'networkOverview',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Port {port}`
   String portValue(Object port) {
     return Intl.message(

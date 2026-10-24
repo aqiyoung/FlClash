@@ -25,47 +25,74 @@ class _ConnectionStatsCardState extends ConsumerState<ConnectionStatsCard>
         ActivePollingMixin<ConnectionStatsCard>,
         RouteMotionHoldMixin<ConnectionStatsCard>,
         ConnectionsPolling<ConnectionStatsCard> {
-  static const _inset = 8.0;
-
   @override
   bool get pollsConnections => false;
+
+  @override
+  Widget build(BuildContext context) {
+    return DashboardCard(
+      semanticLabel: context.appLocalizations.connectionStats,
+      padding: EdgeInsets.zero,
+      child: const ConnectionStatsBar(),
+    );
+  }
+}
+
+/// The same counts as a row, for a card that holds other things above them.
+class ConnectionStatsBar extends StatelessWidget {
+  const ConnectionStatsBar({super.key, this.divider = false});
+
+  /// A hairline above the counts, for the card they now sit at the bottom of.
+  final bool divider;
+
+  static const _inset = 8.0;
 
   @override
   Widget build(BuildContext context) {
     final shape = AppShape.all(
       dashboardCardRadius(DashboardDensityScope.of(context)) - _inset,
     );
-    return DashboardCard(
-      semanticLabel: context.appLocalizations.connectionStats,
-      padding: const EdgeInsets.all(_inset),
-      child: Row(
-        children: [
-          _Stat(
-            feed: DashboardFeed.connections,
-            shape: shape,
-            count: ValueListenableBuilder(
-              valueListenable: connectionCount,
-              builder: (context, count, _) => _Count(count),
-            ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (divider)
+          Divider(
+            height: 1,
+            thickness: 0.5,
+            color: context.colorScheme.outlineVariant,
           ),
-          _Stat(
-            feed: DashboardFeed.requests,
-            shape: shape,
-            count: ThrottledCount(
-              provider: requestCountProvider,
-              builder: (_, count) => _Count(count),
-            ),
+        Padding(
+          padding: const EdgeInsets.all(_inset),
+          child: Row(
+            children: [
+              _Stat(
+                feed: DashboardFeed.connections,
+                shape: shape,
+                count: ValueListenableBuilder(
+                  valueListenable: connectionCount,
+                  builder: (context, count, _) => _Count(count),
+                ),
+              ),
+              _Stat(
+                feed: DashboardFeed.requests,
+                shape: shape,
+                count: ThrottledCount(
+                  provider: requestCountProvider,
+                  builder: (_, count) => _Count(count),
+                ),
+              ),
+              _Stat(
+                feed: DashboardFeed.dns,
+                shape: shape,
+                count: ThrottledCount(
+                  provider: dnsQueryCountProvider,
+                  builder: (_, count) => _Count(count),
+                ),
+              ),
+            ],
           ),
-          _Stat(
-            feed: DashboardFeed.dns,
-            shape: shape,
-            count: ThrottledCount(
-              provider: dnsQueryCountProvider,
-              builder: (_, count) => _Count(count),
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

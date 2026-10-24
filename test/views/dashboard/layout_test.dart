@@ -128,7 +128,7 @@ void main() {
     expect(groups.top, table.top);
     expect(table.bottom, 824 - 24);
     expect(scrollExtentOf(tester), 0);
-    expect(find.byType(OutboundModeCard), findsNothing);
+    expect(find.byType(NetworkControlCard), findsNothing);
     expect(tester.takeException(), isNull);
 
     await teardown(tester);
@@ -290,7 +290,7 @@ void main() {
     tester.view.physicalSize = const Size(600, 800);
     await tester.pump();
     expect(tester.takeException(), isNull);
-    expect(find.byType(OutboundModeCard), findsOneWidget);
+    expect(find.byType(NetworkControlCard), findsOneWidget);
     expect(find.byType(OutboundModeBar), findsNothing);
 
     tester.view.physicalSize = const Size(800, 900);
@@ -363,7 +363,7 @@ void main() {
     final service = rectOf(tester, ServiceStatusCard);
     expect(service.width, closeTo(upload.width, 0.01));
     expect(rectOf(tester, MemoryInfo).top, service.top);
-    expect(find.byType(OutboundModeCard), findsNothing);
+    expect(find.byType(NetworkControlCard), findsNothing);
     expect(tester.takeException(), isNull);
 
     await tester.scrollUntilVisible(
@@ -408,16 +408,15 @@ void main() {
   });
 
   testWidgets('a narrow desktop window shows the phone cards in a centred '
-      'column, takeover in place of the VPN', (tester) async {
+      'column', (tester) async {
     await pumpDashboard(tester, const Size(620, 700));
 
     final card = rectOf(tester, CurrentOutboundCard);
     expect(card.width, 560);
     expect(card.center.dx, closeTo(310, 0.01));
-    expect(find.byType(NetworkTakeoverCard), findsOneWidget);
-    expect(find.byType(VpnCard), findsNothing);
-    expect(find.byType(OutboundModeCard), findsOneWidget);
+    expect(find.byType(NetworkControlCard), findsOneWidget);
     expect(find.byType(OutboundModeBar), findsNothing);
+    expect(find.byType(NetworkOverviewCard), findsOneWidget);
 
     await teardown(tester);
   });
@@ -432,8 +431,7 @@ void main() {
     final card = rectOf(tester, CurrentOutboundCard);
     expect(card.left, 16);
     expect(card.right, 400 - 16);
-    expect(find.byType(VpnCard), findsOneWidget);
-    expect(find.byType(NetworkTakeoverCard), findsNothing);
+    expect(find.byType(NetworkControlCard), findsOneWidget);
 
     await teardown(tester);
   });
@@ -449,7 +447,7 @@ void main() {
       expect(vpn.height, mode.height);
       expect(find.byType(NetworkTakeoverTile), findsNothing);
       expect(find.byType(CurrentOutboundCard), findsOneWidget);
-      expect(find.byType(NetworkSpeedCard), findsNothing);
+      expect(find.byType(NetworkControlCard), findsNothing);
       expect(tester.takeException(), isNull);
     }
 

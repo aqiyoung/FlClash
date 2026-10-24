@@ -929,6 +929,8 @@
   "ipTypeUnknown": "Тип неизвестен",
   "tapIconToRetry": "Нажмите на значок, чтобы повторить",
   "networkTakeover": "Перехват трафика",
+  "networkControl": "Управление сетью",
+  "networkOverview": "Обзор сети",
   "portValue": "Порт {port}",
   "serviceAbnormalCount": "Проблем: {count}",
   "serviceAllAvailable": "Все доступны",

@@ -111,24 +111,19 @@ final List<HotKeyAction> defaultHotKeyActions = system.isWindows
 
 const List<DashboardWidget> defaultDashboardWidgets = [
   DashboardWidget.currentOutbound,
-  DashboardWidget.networkSpeed,
-  DashboardWidget.outboundMode,
-  DashboardWidget.vpnButton,
-  DashboardWidget.networkTakeover,
+  DashboardWidget.networkControl,
+  DashboardWidget.networkOverview,
   DashboardWidget.intranetIp,
-  DashboardWidget.serviceStatus,
   DashboardWidget.profiles,
   DashboardWidget.proxyGroups,
-  DashboardWidget.connectionStats,
 ];
 
-/// A phone starts without the VPN switch and the diagnostic cards, which stay
-/// addable. The field default keeps the shared list because it must be const.
+/// A phone starts without the diagnostic cards, which stay addable. The field
+/// default keeps the shared list because it must be const.
 final List<DashboardWidget> platformDefaultDashboardWidgets = system.isAndroid
     ? const [
         DashboardWidget.currentOutbound,
-        DashboardWidget.networkSpeed,
-        DashboardWidget.outboundMode,
+        DashboardWidget.networkControl,
         DashboardWidget.profiles,
         DashboardWidget.proxyGroups,
       ]
@@ -145,16 +140,23 @@ const _legacyDefaultDashboardWidgets = {
 };
 
 /// The run time has no replacement: it moved onto the current outbound card,
-/// as did the outbound IP, whose card became the intranet one.
+/// as did the outbound IP, whose card became the intranet one. The speed, the
+/// mode and the switches were merged into the cards that now hold them.
 const _legacyDashboardWidgets = {
   'networkDetection': DashboardWidget.intranetIp,
-  'outboundModeV2': DashboardWidget.outboundMode,
-  'systemProxyButton': DashboardWidget.networkTakeover,
-  'tunButton': DashboardWidget.networkTakeover,
-  'connections': DashboardWidget.connectionStats,
-  'requests': DashboardWidget.connectionStats,
-  'dnsQueries': DashboardWidget.connectionStats,
-  'trafficUsage': DashboardWidget.networkSpeed,
+  'outboundModeV2': DashboardWidget.networkControl,
+  'outboundMode': DashboardWidget.networkControl,
+  'systemProxyButton': DashboardWidget.networkControl,
+  'tunButton': DashboardWidget.networkControl,
+  'vpnButton': DashboardWidget.networkControl,
+  'networkTakeover': DashboardWidget.networkControl,
+  'connections': DashboardWidget.networkOverview,
+  'requests': DashboardWidget.networkOverview,
+  'dnsQueries': DashboardWidget.networkOverview,
+  'serviceStatus': DashboardWidget.networkOverview,
+  'connectionStats': DashboardWidget.networkOverview,
+  'trafficUsage': DashboardWidget.currentOutbound,
+  'networkSpeed': DashboardWidget.currentOutbound,
 };
 
 const _retiredDashboardWidgets = {
@@ -178,9 +180,11 @@ List<DashboardWidget> dashboardWidgetsFromJson(
         .toSet()
         .toList();
   }
+  // The one default that knew the mode card by an older name; the sets below
+  // are compared by the names they were saved under.
   final names = {
     for (final name in dashboardWidgets)
-      name == 'outboundModeV2' ? DashboardWidget.outboundMode.name : name,
+      name == 'outboundModeV2' ? 'outboundMode' : name,
   };
   if (names.length == _legacyDefaultDashboardWidgets.length &&
       names.containsAll(_legacyDefaultDashboardWidgets)) {

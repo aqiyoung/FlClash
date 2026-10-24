@@ -929,6 +929,8 @@
   "ipTypeUnknown": "类型未知",
   "tapIconToRetry": "点击图标重试",
   "networkTakeover": "网络接管",
+  "networkControl": "网络控制",
+  "networkOverview": "网络概览",
   "portValue": "端口 {port}",
   "serviceAbnormalCount": "{count} 项异常",
   "serviceAllAvailable": "全部可用",

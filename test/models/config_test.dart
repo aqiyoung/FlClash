@@ -139,14 +139,13 @@ void main() {
       expect(restored.testUrl, defaultTestUrl);
     });
 
-    test('a saved outboundModeV2 card folds into outboundMode', () {
+    test('a saved outboundModeV2 card folds into network control', () {
       final restored = AppSettingProps.fromJson({
         'dashboardWidgets': ['networkSpeed', 'outboundModeV2', 'outboundMode'],
       });
       expect(restored.dashboardWidgets, [
         DashboardWidget.currentOutbound,
-        DashboardWidget.networkSpeed,
-        DashboardWidget.outboundMode,
+        DashboardWidget.networkControl,
       ]);
 
       final alone = AppSettingProps.fromJson({
@@ -154,28 +153,23 @@ void main() {
       });
       expect(alone.dashboardWidgets, [
         DashboardWidget.currentOutbound,
-        DashboardWidget.outboundMode,
-        DashboardWidget.networkSpeed,
+        DashboardWidget.networkControl,
       ]);
     });
 
-    test('the traffic usage card folds into the network speed one', () {
+    test('the speed cards fold into the status card', () {
       final restored = AppSettingProps.fromJson({
         'dashboardWidgets': ['currentOutbound', 'trafficUsage', 'profiles'],
       });
       expect(restored.dashboardWidgets, [
         DashboardWidget.currentOutbound,
-        DashboardWidget.networkSpeed,
         DashboardWidget.profiles,
       ]);
 
       final both = AppSettingProps.fromJson({
         'dashboardWidgets': ['currentOutbound', 'networkSpeed', 'trafficUsage'],
       });
-      expect(both.dashboardWidgets, [
-        DashboardWidget.currentOutbound,
-        DashboardWidget.networkSpeed,
-      ]);
+      expect(both.dashboardWidgets, [DashboardWidget.currentOutbound]);
     });
 
     test('the old default dashboard becomes the new one', () {
@@ -235,9 +229,8 @@ void main() {
       expect(restored.dashboardWidgets, [
         DashboardWidget.currentOutbound,
         DashboardWidget.profiles,
-        DashboardWidget.connectionStats,
-        DashboardWidget.networkTakeover,
-        DashboardWidget.vpnButton,
+        DashboardWidget.networkOverview,
+        DashboardWidget.networkControl,
       ]);
     });
 

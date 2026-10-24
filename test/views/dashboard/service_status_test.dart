@@ -18,6 +18,8 @@ import 'package:skyward/ui/icons/icons.dart';
 import 'package:skyward/views/dashboard/layout.dart';
 import 'package:skyward/views/dashboard/widget_registry.dart';
 import 'package:skyward/views/dashboard/widgets/card.dart';
+import 'package:skyward/views/dashboard/widgets/connection_stats.dart';
+import 'package:skyward/views/dashboard/widgets/network_overview.dart';
 import 'package:skyward/views/dashboard/widgets/service_status.dart';
 import 'package:skyward/widgets/widgets.dart';
 import 'package:flutter/gestures.dart';
@@ -147,8 +149,41 @@ void main() {
     matching: find.text(target.label),
   );
 
-  test('service status is registered as a dashboard card', () {
-    expect(DashboardWidget.serviceStatus.card, isA<ServiceStatusCard>());
+  test('the overview card is registered as a dashboard card', () {
+    expect(DashboardWidget.networkOverview.card, isA<NetworkOverviewCard>());
+  });
+
+  testWidgets('the overview card keeps the counts under the grid', (
+    tester,
+  ) async {
+    answer((_) async => []);
+    await tester.pumpWidget(
+      app(
+        body: const NetworkOverviewCard(),
+        settings: only([ServiceTarget.google]),
+      ),
+    );
+    await tester.pump();
+
+    expect(
+      find.text(currentAppLocalizations.networkOverview),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byType(ServiceStatusCard),
+        matching: find.byType(ConnectionStatsBar),
+      ),
+      findsOneWidget,
+    );
+    expect(
+      find.descendant(
+        of: find.byType(ServiceStatusCard),
+        matching: find.text(ServiceTarget.google.label),
+      ),
+      findsOneWidget,
+    );
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets('holds the latency with a skeleton until checked', (

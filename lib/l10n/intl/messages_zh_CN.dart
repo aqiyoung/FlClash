@@ -942,7 +942,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "networkHostLookupError": MessageLookupByLibrary.simpleMessage(
       "无法解析服务器地址，请确认链接正确且 DNS 可用",
     ),
+    "networkControl": MessageLookupByLibrary.simpleMessage("网络控制"),
     "networkName": MessageLookupByLibrary.simpleMessage("网络名称"),
+    "networkOverview": MessageLookupByLibrary.simpleMessage("网络概览"),
     "networkNotFoundError": m54,
     "networkRateLimitedError": MessageLookupByLibrary.simpleMessage(
       "请求过于频繁（HTTP 429），请稍后再试",

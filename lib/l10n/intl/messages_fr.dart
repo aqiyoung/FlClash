@@ -1298,7 +1298,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "networkHostLookupError": MessageLookupByLibrary.simpleMessage(
       "Impossible de résoudre l’adresse du serveur. Vérifiez que l’URL est correcte et que le DNS fonctionne",
     ),
+    "networkControl": MessageLookupByLibrary.simpleMessage("Contrôle du réseau"),
     "networkName": MessageLookupByLibrary.simpleMessage("Nom du réseau"),
+    "networkOverview": MessageLookupByLibrary.simpleMessage("Aperçu du réseau"),
     "networkNotFoundError": m54,
     "networkRateLimitedError": MessageLookupByLibrary.simpleMessage(
       "Trop de requêtes (HTTP 429). Patientez un instant puis réessayez",

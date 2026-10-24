@@ -162,8 +162,7 @@ class _DesktopDashboard extends StatelessWidget {
         );
         Widget sized(double height, Widget child) =>
             SizedBox(height: height, child: child);
-        final switches =
-            DashboardWidget.networkTakeover.platforms.contains(platform)
+        final switches = desktopPlatforms.contains(platform)
             ? const [
                 (1, NetworkTakeoverTile(TakeoverSwitch.systemProxy)),
                 (1, NetworkTakeoverTile(TakeoverSwitch.tun)),

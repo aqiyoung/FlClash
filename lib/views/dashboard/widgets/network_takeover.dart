@@ -1,16 +1,13 @@
 import 'package:skyward/common/common.dart';
 import 'package:skyward/providers/providers.dart';
 import 'package:skyward/ui/icons/icons.dart';
-import 'package:skyward/ui/ui.dart';
 import 'package:skyward/views/dashboard/layout.dart';
-import 'package:skyward/views/dashboard/style.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:material_new_shapes/material_new_shapes.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'card.dart';
 
-typedef _RowMetrics = ({
+typedef DashboardRowMetrics = ({
   EdgeInsets padding,
   double titleStart,
   double radius,
@@ -18,7 +15,9 @@ typedef _RowMetrics = ({
   bool subtitle,
 });
 
-const _RowMetrics _cardRowMetrics = (
+/// The rows of a card that holds switches, as opposed to a whole switch filling
+/// a card of its own.
+const DashboardRowMetrics cardRowMetrics = (
   padding: EdgeInsets.fromLTRB(10, 10, 12, 10),
   titleStart: 14,
   radius: 20,
@@ -29,7 +28,7 @@ const _RowMetrics _cardRowMetrics = (
 /// A tile's icon and switch sit as far in from its ends as from its edges, so
 /// a full pill keeps both concentric with its corners. Without the icon, the
 /// title lines up with the content of the cards above and below.
-_RowMetrics _tileMetricsOf(DashboardDensity density) => density.isCompact
+DashboardRowMetrics _tileMetricsOf(DashboardDensity density) => density.isCompact
     ? (
         padding: const EdgeInsets.fromLTRB(10, 0, 12, 0),
         titleStart: dashboardCardPadding(density).left,
@@ -47,8 +46,9 @@ _RowMetrics _tileMetricsOf(DashboardDensity density) => density.isCompact
 
 enum TakeoverSwitch { systemProxy, tun }
 
-class _TakeoverRow extends ConsumerWidget {
-  const _TakeoverRow({
+class TakeoverRow extends ConsumerWidget {
+  const TakeoverRow({
+    super.key,
     required this.kind,
     required this.metrics,
     required this.showIcon,
@@ -56,7 +56,7 @@ class _TakeoverRow extends ConsumerWidget {
   });
 
   final TakeoverSwitch kind;
-  final _RowMetrics metrics;
+  final DashboardRowMetrics metrics;
   final bool showIcon;
   final Color? color;
 
@@ -111,52 +111,36 @@ String _titleOf(BuildContext context, TakeoverSwitch kind) => switch (kind) {
   TakeoverSwitch.tun => context.appLocalizations.tun,
 };
 
-/// Both switches in one card, for the card list of a narrow window.
-class NetworkTakeoverCard extends StatelessWidget {
-  const NetworkTakeoverCard({super.key});
+/// Both switches as rows, for the card that holds them.
+class TakeoverSwitchRows extends StatelessWidget {
+  const TakeoverSwitchRows({super.key});
 
   @override
   Widget build(BuildContext context) {
-    const metrics = _cardRowMetrics;
-    final appLocalizations = context.appLocalizations;
-    return DashboardCard(
-      semanticLabel: appLocalizations.networkTakeover,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          DashboardCardHeader(
-            glyph: AppGlyphs.shuffle,
-            title: appLocalizations.networkTakeover,
-          ),
-          const SizedBox(height: 12),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final showIcon = DashboardSwitchRow.iconFits(
-                context,
-                width: constraints.maxWidth,
-                iconSize: metrics.icon,
-                padding: metrics.padding,
-                titles: [
-                  for (final kind in TakeoverSwitch.values)
-                    _titleOf(context, kind),
-                ],
-              );
-              return Column(
-                spacing: 8,
-                children: [
-                  for (final kind in TakeoverSwitch.values)
-                    _TakeoverRow(
-                      kind: kind,
-                      metrics: metrics,
-                      showIcon: showIcon,
-                    ),
-                ],
-              );
-            },
-          ),
-        ],
-      ),
+    const metrics = cardRowMetrics;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final showIcon = DashboardSwitchRow.iconFits(
+          context,
+          width: constraints.maxWidth,
+          iconSize: metrics.icon,
+          padding: metrics.padding,
+          titles: [
+            for (final kind in TakeoverSwitch.values) _titleOf(context, kind),
+          ],
+        );
+        return Column(
+          spacing: 8,
+          children: [
+            for (final kind in TakeoverSwitch.values)
+              TakeoverRow(
+                kind: kind,
+                metrics: metrics,
+                showIcon: showIcon,
+              ),
+          ],
+        );
+      },
     );
   }
 }
@@ -173,7 +157,7 @@ class NetworkTakeoverTile extends StatelessWidget {
     return DashboardCard(
       padding: EdgeInsets.zero,
       child: LayoutBuilder(
-        builder: (context, constraints) => _TakeoverRow(
+        builder: (context, constraints) => TakeoverRow(
           kind: kind,
           metrics: metrics,
           color: Colors.transparent,
@@ -229,71 +213,29 @@ class VpnTile extends ConsumerWidget {
   }
 }
 
-class VpnCard extends ConsumerWidget {
-  const VpnCard({super.key});
-
-  static const _iconSize = 48.0;
+/// The VPN switch as a row, for the card that holds it.
+class VpnSwitchRow extends ConsumerWidget {
+  const VpnSwitchRow({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    const metrics = cardRowMetrics;
     final appLocalizations = context.appLocalizations;
-    final colorScheme = context.colorScheme;
-    final colors = DashboardColors.of(context);
     final enabled = ref.watch(
       vpnSettingProvider.select((state) => state.enable),
     );
-    void change(bool value) => _setVpn(ref, value);
-    return DashboardCard(
-      semanticLabel: 'VPN',
-      padding: dashboardCardPadding(
-        DashboardDensityScope.of(context),
-      ).copyWith(top: 16, bottom: 16),
-      onTap: () => change(!enabled),
-      child: Row(
-        spacing: 14,
-        children: [
-          ShapeBadge(
-            shape: enabled
-                ? MaterialShapes.cookie6Sided
-                : MaterialShapes.circle,
-            color: enabled ? colorScheme.primary : colors.tone,
-            size: _iconSize,
-            child: GlyphIcon(
-              AppGlyphs.vpn,
-              size: 22,
-              color: enabled
-                  ? colorScheme.onPrimary
-                  : colorScheme.onSurfaceVariant,
-            ),
-          ),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'VPN',
-                  style: AppTextStyle.callout.of(context, emphasized: true),
-                ),
-                Text(
-                  enabled
-                      ? appLocalizations.enabled
-                      : appLocalizations.disabled,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: AppTextStyle.footnote
-                      .of(context)
-                      .copyWith(color: colorScheme.onSurfaceVariant),
-                ),
-              ],
-            ),
-          ),
-          DashboardSwitch(
-            value: enabled,
-            semanticLabel: 'VPN',
-            onChanged: change,
-          ),
-        ],
-      ),
+    return DashboardSwitchRow(
+      glyph: AppGlyphs.vpn,
+      title: 'VPN',
+      subtitle: enabled
+          ? appLocalizations.enabled
+          : appLocalizations.disabled,
+      value: enabled,
+      iconSize: metrics.icon,
+      padding: metrics.padding,
+      radius: metrics.radius,
+      onTap: () => _setVpn(ref, !enabled),
+      onChanged: (value) => _setVpn(ref, value),
     );
   }
 }

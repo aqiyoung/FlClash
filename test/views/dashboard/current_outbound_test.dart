@@ -295,6 +295,19 @@ void main() {
       expect(find.text('AS64500'), findsOneWidget);
     });
 
+    testWidgets('a phone shows both rates above the button', (tester) async {
+      await tester.pumpWidget(
+        _app((_, _) async => _residential, density: DashboardDensity.mobile),
+      );
+      await tester.pump();
+
+      // The speed card folded into this one: both directions read here now.
+      expect(find.textContaining('/s'), findsNWidgets(2));
+      expect(find.byGlyph(AppGlyphs.arrowUp), findsOneWidget);
+      expect(find.byGlyph(AppGlyphs.arrowDown), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('fits a phone', (tester) async {
       await tester.pumpWidget(
         _app((_, _) async => _residential, density: DashboardDensity.mobile),

@@ -20,6 +20,7 @@ import 'package:material_new_shapes/material_new_shapes.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'card.dart';
+import 'traffic.dart';
 
 const _builtinOutbounds = {'DIRECT', 'REJECT', 'REJECT-DROP', 'PASS'};
 
@@ -147,6 +148,17 @@ class _CurrentOutboundCardState extends ConsumerState<CurrentOutboundCard>
                       ),
                     ),
                   ),
+                  // The speed card's charts become this card's floor: the
+                  // numbers moved to the corner, the shape of the traffic
+                  // stays as a hint of it.
+                  if (!density.isDesktop)
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      height: 78,
+                      child: const _SpeedWaveform(),
+                    ),
                 ],
               ),
             ),
@@ -199,13 +211,22 @@ class _CurrentOutboundCardState extends ConsumerState<CurrentOutboundCard>
                 ),
                 SizedBox(
                   width: metrics.buttonSlot,
-                  child: Center(
-                    child: _StartToggle(
-                      size: metrics.buttonSize,
-                      enabled: hasProfile,
-                      running: isStart,
-                      suspended: suspended,
-                    ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // A phone has no speed card of its own any more: the
+                      // two rates sit in the corner above the button.
+                      if (!density.isDesktop) ...[
+                        const _SpeedReadout(),
+                        const SizedBox(height: 10),
+                      ],
+                      _StartToggle(
+                        size: metrics.buttonSize,
+                        enabled: hasProfile,
+                        running: isStart,
+                        suspended: suspended,
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -213,6 +234,84 @@ class _CurrentOutboundCardState extends ConsumerState<CurrentOutboundCard>
           ),
         ],
       ),
+    );
+  }
+}
+
+/// The two charts, faint, along the card's floor. Watching the traffic here
+/// keeps that repaint out of the card itself.
+class _SpeedWaveform extends ConsumerWidget {
+  const _SpeedWaveform();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final traffics = ref.watch(trafficsProvider);
+    return IgnorePointer(
+      child: RepaintBoundary(
+        child: Opacity(
+          opacity: 0.22,
+          child: Stack(
+            children: [
+              for (final direction in TrafficDirection.values)
+                Positioned.fill(
+                  child: SpeedChart(direction: direction, traffics: traffics),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The two rates and what each has carried, in the corner above the button.
+class _SpeedReadout extends ConsumerWidget {
+  const _SpeedReadout();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final traffics = ref.watch(trafficsProvider);
+    final total = ref.watch(totalTrafficProvider);
+    final latest = traffics.list.safeLast(const Traffic());
+    final appLocalizations = context.appLocalizations;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        for (final direction in TrafficDirection.values) ...[
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            spacing: 3,
+            children: [
+              GlyphIcon(
+                direction.glyph,
+                size: 12,
+                color: direction.glyphColorOf(context),
+              ),
+              Flexible(
+                child: Text(
+                  '${dashboardTraffic(direction.of(latest))}/s',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: DashboardText.figure(
+                    context,
+                    AppTextStyle.footnote,
+                    color: context.colorScheme.onSurface,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          Text(
+            appLocalizations.trafficTotal(
+              dashboardTraffic(direction.of(total)),
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: DashboardText.label(context),
+          ),
+        ],
+      ],
     );
   }
 }
