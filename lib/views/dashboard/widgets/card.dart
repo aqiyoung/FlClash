@@ -838,7 +838,7 @@ class DashboardSwitchTile extends StatelessWidget {
                   title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: DashboardText.rowTitle(context),
+                  style: AppTextStyle.footnote.of(context, emphasized: true),
                 ),
               ),
               DashboardSwitch(
@@ -855,11 +855,19 @@ class DashboardSwitchTile extends StatelessWidget {
                 spacing: 2,
                 children: [
                   Flexible(
-                    child: Text(
-                      subtitle,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: DashboardText.label(context),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: AlignmentDirectional.centerStart,
+                      child: Text(
+                        subtitle,
+                        maxLines: 1,
+                        style: AppTextStyle.caption2
+                            .of(context)
+                            .toTabular
+                            .copyWith(
+                              color: context.colorScheme.onSurfaceVariant,
+                            ),
+                      ),
                     ),
                   ),
                   if (trailing case final trailing?) trailing,

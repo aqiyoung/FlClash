@@ -137,14 +137,21 @@ abstract final class DashboardText {
       .toTabular
       .copyWith(color: color ?? context.colorScheme.onSurfaceVariant);
 
+  /// Semibold by default: a figure is the card's value, and bold on every one
+  /// of them left the page with nothing that stood out.
   static TextStyle figure(
     BuildContext context,
     AppTextStyle style, {
     Color? color,
+    FontWeight weight = FontWeight.w600,
   }) => style
       .of(context, emphasized: true)
       .toTabular
-      .copyWith(color: color, letterSpacing: -0.02 * style.size);
+      .copyWith(
+        color: color,
+        fontWeight: weight,
+        letterSpacing: -0.02 * style.size,
+      );
 
   static TextStyle unit(
     BuildContext context, [
